@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Review Moderation - Artisan Co-op</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #faf9f6;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Playfair Display', serif;
+        }
+
+        .terracotta {
+            color: #c17c5f;
+        }
+
+        .bg-terracotta {
+            background-color: #c17c5f;
+        }
+
+        .bg-terracotta-dark {
+            background-color: #a5664d;
+        }
+
+        .hover\:bg-terracotta-dark:hover {
+            background-color: #a5664d;
+        }
+
+        .border-terracotta {
+            border-color: #c17c5f;
+        }
+
+        .text-earth {
+            color: #8b7355;
+        }
+
+        .bg-earth {
+            background-color: #8b7355;
+        }
+
+        .card-shadow {
+            box-shadow: 0 4px 6px -1px rgba(139, 115, 85, 0.1), 0 2px 4px -1px rgba(139, 115, 85, 0.06);
+        }
+
+        .card-shadow:hover {
+            box-shadow: 0 10px 15px -3px rgba(139, 115, 85, 0.15), 0 4px 6px -2px rgba(139, 115, 85, 0.1);
+        }
+
+        .sidebar-link {
+            transition: background-color 0.2s ease, color 0.2s ease;
+            color: #d4c5b5;
+        }
+
+        .sidebar-link:hover {
+            background-color: rgba(255, 255, 255, 0.18);
+            color: #ffffff;
+        }
+
+        .sidebar-link:hover i,
+        .sidebar-link:hover span {
+            color: #ffffff;
+        }
+
+        .sidebar-link.active {
+            background-color: rgba(255, 255, 255, 0.25);
+            border-left: 3px solid #ffffff;
+            color: #ffffff;
+        }
+
+        .sidebar-link.active i,
+        .sidebar-link.active span {
+            color: #ffffff;
+        }
+
+        .user-menu {
+            position: relative;
+        }
+
+        .user-menu-dropdown {
+            position: absolute;
+            right: 0;
+            top: calc(100% + 0.5rem);
+            width: 200px;
+            background: #ffffff;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-radius: 1rem;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+            display: none;
+            z-index: 50;
+        }
+
+        .user-menu-dropdown.show {
+            display: block;
+        }
+
+        .user-menu-item {
+            display: block;
+            padding: 0.85rem 1rem;
+            color: #5c4a3d;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            border-radius: 0.75rem;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        .user-menu-item:hover {
+            background-color: #f5ebe0;
+        }
+
+        .user-menu-item.logout:hover {
+            color: #b91c1c;
+            background-color: #fee2e2;
+        }
+
+        .chevron-icon {
+            transition: transform 0.3s ease;
+        }
+
+        .chevron-icon.rotated {
+            transform: rotate(180deg);
+        }
+
+        .table-row-hover:hover {
+            background-color: #fef9f3;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .modal-overlay {
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-content {
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .auto-flagged-row {
+            background-color: #fffbeb;
+        }
+
+        .review-text-truncated {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 52px;
+            height: 28px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #e5e0d8;
+            transition: 0.3s;
+            border-radius: 28px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .toggle-slider {
+            background-color: #c17c5f;
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(24px);
+        }
+
+        .rejection-dropdown {
+            position: absolute;
+            z-index: 50;
+            animation: dropdownSlide 0.2s ease;
+        }
+
+        @keyframes dropdownSlide {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .star-rating {
+            color: #fbbf24;
+        }
+    </style>
+    <script src="/authguard.js"></script>
+</head>
+<body class="min-h-screen flex flex-col">
+    <!-- Top Navigation Bar -->
+    <nav class="bg-[#faf9f6] border-b border-[#e5e0d8] py-4 px-6 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center">
+                <a href="/adminDashboard" class="flex items-center gap-3 group">
+                    <!-- Logo -->
+                    <img src="/images/Logo.png" alt="ArtsyVibe Logo"
+                        class="h-10 w-auto object-contain"
+                        style="filter: drop-shadow(0 0 0.5px rgba(193, 124, 95, 1));">
+
+                    <!-- Brand Name -->
+                    <span class="text-2xl font-semibold" 
+                        style="font-family: 'Playfair Display', serif;">
+                        ArtsyVibe
+                    </span>
+                </a>
+            </div>
+
+            <!-- Right Side - Notifications and User -->
+            <div class="flex items-center space-x-4">
+                 <!-- Notification Bell -->
+                <a href="/adminNotification"><button class="relative p-2 text-[#8b7355] hover:text-[#c17c5f] transition-colors">
+                    <i class="fas fa-bell text-xl"></i>
+                    <span class="absolute top-0 right-0 w-5 h-5 bg-red-500 rounded-full border-2 border-[#faf9f6] text-white text-xs flex items-center justify-center font-semibold">5</span>
+                </button></a>
+
+                <!-- User Profile -->
+                <div class="user-menu flex items-center space-x-3 pl-4 border-l border-[#e5e0d8]">
+                    <button id="userMenuButton" type="button" class="flex items-center gap-3 text-left focus:outline-none">
+                        <img 
+                            src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face" 
+                            alt="Admin User" 
+                            class="w-10 h-10 rounded-full object-cover border-2 border-[#c17c5f]"
+                        />
+                        <div class="hidden md:block">
+                            <p class="font-semibold text-[#5c4a3d] text-sm">Admin User</p>
+                            <p class="text-xs text-[#8b7355]">admin@artisancoop.com</p>
+                        </div>
+                        <i id="chevronIcon" class="chevron-icon fas fa-chevron-down text-[#8b7355] text-xs hidden md:block"></i>
+                    </button>
+                    <div id="userMenuDropdown" class="user-menu-dropdown">
+                        <button id="logoutButton" class="user-menu-item logout w-full text-left">
+                            <i class="fas fa-sign-out-alt mr-3"></i>Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area with Sidebar -->
+    <div class="flex flex-1">
+        <!-- Left Sidebar -->
+        <aside class="w-64 bg-[#5c4a3d] min-h-[calc(100vh-80px)] fixed left-0 top-20 overflow-y-auto">
+            <!-- Admin Profile -->
+            <div class="p-6 border-b border-[#7a6655]">
+                <div class="flex items-center gap-3">
+                    <img 
+                        src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face" 
+                        alt="Admin User" 
+                        class="w-12 h-12 rounded-full object-cover border-2 border-[#c17c5f]"
+                    />
+                    <div>
+                        <h3 class="text-white font-semibold text-sm">Admin User</h3>
+                        <span class="inline-block bg-[#c17c5f] text-white text-xs px-2 py-1 rounded-full mt-1">Administrator</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation Menu -->
+            <nav class="p-4 mt-4">
+                <ul class="space-y-1">
+                    <li>
+                        <a href="/adminDashboard" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-tachometer-alt w-5"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/adminUsersManagement" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-users w-5"></i>
+                            <span>User Management</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/adminArtisanApproval" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-user-check w-5"></i>
+                            <span>Artisan Approvals</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/adminProducts" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-box w-5"></i>
+                            <span>Products</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/adminOrderManagment" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-shopping-bag w-5"></i>
+                            <span>Orders</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/adminAuction" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-gavel w-5"></i>
+                            <span>Auctions</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/adminRefund" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-undo w-5"></i>
+                            <span>Refunds</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/adminReview" class="sidebar-link active flex items-center gap-3 text-white px-4 py-3 rounded-lg">
+                            <i class="fas fa-star w-5"></i>
+                            <span>Review Moderation</span>
+                        </a>
+                    </li>
+                    
+                </ul>
+            </nav>
+
+            <!-- Systems Log Section -->
+            <div class="p-4 mt-2 border-t border-[#7a6655]">
+                <ul class="space-y-1">
+                    <li>
+                        <a href="/adminReports" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-history w-5"></i>
+                            <span>Reports</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 ml-64 p-8">
+            <!-- Page Header -->
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-[#5c4a3d] mb-2">Review Moderation</h1>
+                <p class="text-[#8b7355]">Customer reviews are published immediately. Use this page to monitor, block, or remove inappropriate content.</p>
+            </div>
+
+            <!-- Filters Bar -->
+            <div class="bg-white rounded-xl card-shadow p-6 mb-6">
+                <div class="flex flex-wrap items-center gap-4">
+                    <!-- Search Input -->
+                    <div class="flex-1 min-w-64">
+                        <div class="relative">
+                            <input 
+                                type="text" 
+                                placeholder="Search reviews..." 
+                                class="w-full pl-10 pr-4 py-2.5 border border-[#e5e0d8] rounded-lg focus:border-[#c17c5f] focus:outline-none text-[#5c4a3d] placeholder-[#b8a99a]"
+                            />
+                            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-[#8b7355]"></i>
+                        </div>
+                    </div>
+
+                    <!-- Status Filter Pills -->
+                    <div class="flex items-center gap-2">
+                        <button class="status-pill active px-4 py-2 rounded-full text-sm font-medium bg-[#c17c5f] text-white transition-colors" data-status="all">
+                            All
+                        </button>
+                        <button class="status-pill px-4 py-2 rounded-full text-sm font-medium text-[#8b7355] hover:bg-[#f5ebe0] transition-colors" data-status="active">
+                            Active
+                        </button>
+                        <button class="status-pill px-4 py-2 rounded-full text-sm font-medium text-[#8b7355] hover:bg-[#f5ebe0] transition-colors" data-status="rejected">
+                            Blocked
+                        </button>
+                    </div>
+
+                    <!-- Category Filter -->
+                    <div class="relative">
+                        <select id="categoryFilter" class="appearance-none border border-[#e5e0d8] rounded-lg px-4 py-2.5 pr-10 focus:border-[#c17c5f] focus:outline-none text-[#5c4a3d] bg-white cursor-pointer">
+                            <option value="">All Categories</option>
+                            <option value="ceramics">Ceramics</option>
+                            <option value="jewelry">Jewelry</option>
+                            <option value="paintings">Paintings</option>
+                            <option value="textiles">Textiles</option>
+                            <option value="woodwork">Woodwork</option>
+                        </select>
+                        <i class="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-[#8b7355] pointer-events-none"></i>
+                    </div>
+
+                    <!-- Rating Filter -->
+                    <div class="relative">
+                        <select id="ratingFilter" class="appearance-none border border-[#e5e0d8] rounded-lg px-4 py-2.5 pr-10 focus:border-[#c17c5f] focus:outline-none text-[#5c4a3d] bg-white cursor-pointer">
+                            <option value="">All Ratings</option>
+                            <option value="5">5 Stars</option>
+                            <option value="4">4 Stars</option>
+                            <option value="3">3 Stars</option>
+                            <option value="2">2 Stars</option>
+                            <option value="1">1 Star</option>
+                        </select>
+                        <i class="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-[#8b7355] pointer-events-none"></i>
+                    </div>
+
+                    <!-- Flag Threshold Toggle -->
+                    <div class="flex items-center gap-3 pl-4 border-l border-[#e5e0d8]">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="flagThresholdToggle" onchange="toggleFlagThreshold()">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <span class="text-sm font-medium text-[#5c4a3d]">Flag Threshold</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reviews Table -->
+            <div class="bg-white rounded-xl card-shadow overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-[#f5ebe0]">
+                            <tr>
+                                <th class="text-left text-sm font-semibold text-[#5c4a3d] px-6 py-4">Product</th>
+                                <th class="text-left text-sm font-semibold text-[#5c4a3d] px-6 py-4">Artisan</th>
+                                <th class="text-left text-sm font-semibold text-[#5c4a3d] px-6 py-4">Reviewer</th>
+                                <th class="text-left text-sm font-semibold text-[#5c4a3d] px-6 py-4">Rating</th>
+                                <th class="text-left text-sm font-semibold text-[#5c4a3d] px-6 py-4">Review Text</th>
+                                <th class="text-left text-sm font-semibold text-[#5c4a3d] px-6 py-4">Submitted</th>
+                                <th class="text-left text-sm font-semibold text-[#5c4a3d] px-6 py-4">Auto-Flag</th>
+                                <th class="text-left text-sm font-semibold text-[#5c4a3d] px-6 py-4">Status</th>
+                                <th class="text-left text-sm font-semibold text-[#5c4a3d] px-6 py-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-[#e5e0d8]">
+                            <tr th:each="review : ${reviewsList}" class="table-row-hover"
+                                th:classappend="${review.autoFlagged} ? 'auto-flagged-row' : ''"
+                                th:data-status="${review.status}"
+                                th:data-category="${review.product != null and review.product.category != null ? #strings.toLowerCase(review.product.category) : ''}"
+                                th:data-rating="${review.rating}">
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <img 
+                                            th:src="${review.product != null and review.product.imageUrl != null ? review.product.imageUrl : 'https://images.unsplash.com/photo-1573408301185-9146fe634ad0?w=60&h=60&fit=crop'}" 
+                                            alt="Product Image" 
+                                            class="w-14 h-14 rounded-lg object-cover"
+                                        />
+                                        <div>
+                                            <p class="font-semibold text-[#5c4a3d]" th:text="${review.product != null ? review.product.title : 'Unknown Product'}">Product Name</p>
+                                            <p class="text-xs text-[#8b7355]" th:text="'ID: ' + ${review.product != null ? review.product.id : ''}">ID: 000</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-full bg-[#c17c5f] flex items-center justify-center text-white font-bold"
+                                             th:text="${review.product != null and review.product.artisanName != null ? #strings.substring(review.product.artisanName, 0, 1) : 'A'}">A</div>
+                                        <span class="font-medium text-[#5c4a3d]" th:text="${review.product != null and review.product.artisanName != null ? review.product.artisanName : 'Unknown Artisan'}">Artisan Name</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-full bg-[#8b7355] flex items-center justify-center text-white font-bold"
+                                             th:text="${review.customer != null and review.customer.name != null ? #strings.substring(review.customer.name, 0, 1) : 'C'}">C</div>
+                                        <span class="font-medium text-[#5c4a3d]" th:text="${review.customer != null ? review.customer.name : 'Anonymous'}">Reviewer Name</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="star-rating text-lg">
+                                        <i th:each="i : ${#numbers.sequence(1, 5)}" 
+                                           th:class="${i <= review.rating} ? 'fas fa-star' : 'far fa-star'"></i>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="max-w-xs">
+                                        <p class="text-[#5c4a3d] text-sm review-text-truncated" th:id="'review' + ${review.reviewId}" th:text="${review.comment}">
+                                            Review text
+                                        </p>
+                                        <button th:onclick="'toggleReview(\'review' + ${review.reviewId} + '\')'" class="text-[#c17c5f] text-xs font-medium mt-1 hover:underline">Read More</button>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-[#8b7355] text-sm" th:text="${review.date != null ? #temporals.format(review.date, 'MMM dd, yyyy') : '-'}">Date</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <i th:if="${review.autoFlagged}" class="fas fa-robot text-amber-500 text-lg" title="Auto-flagged"></i>
+                                    <span th:unless="${review.autoFlagged}" class="text-[#8b7355] text-xs">-</span>
+                                </td>
+                                <td class="px-6 py-4 status-cell">
+                                    <span th:if="${review.status != 'rejected'}" class="status-badge bg-green-100 text-green-700">
+                                        <i class="fas fa-check-circle"></i> Active
+                                    </span>
+                                    <div th:if="${review.status == 'rejected'}">
+                                        <span class="status-badge bg-red-100 text-red-700">
+                                            <i class="fas fa-ban"></i> Blocked
+                                        </span>
+                                        <p class="text-xs text-red-600 mt-1" th:text="'Reason: ' + ${review.rejectionReason}"></p>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 review-actions-cell">
+                                    <div th:if="${review.status != 'rejected'}" class="flex items-center gap-2">
+                                        <div class="relative">
+                                            <button th:onclick="'toggleRejectDropdown(\'rejectDropdown' + ${review.reviewId} + '\')'" class="bg-red-600 hover:bg-red-700 text-white p-2 rounded-lg transition-colors" title="Block Review">
+                                                <i class="fas fa-ban"></i>
+                                            </button>
+                                            <div th:id="'rejectDropdown' + ${review.reviewId}" class="rejection-dropdown hidden bg-white border border-[#e5e0d8] rounded-lg shadow-lg mt-2 py-2 min-w-[180px] z-50">
+                                                <button th:onclick="'rejectReviewAJAX(' + ${review.reviewId} + ', this, \'Hate Speech\')'" class="w-full text-left px-4 py-2 text-sm text-[#5c4a3d] hover:bg-[#f5ebe0]">Hate Speech</button>
+                                                <button th:onclick="'rejectReviewAJAX(' + ${review.reviewId} + ', this, \'Spam\')'" class="w-full text-left px-4 py-2 text-sm text-[#5c4a3d] hover:bg-[#f5ebe0]">Spam</button>
+                                                <button th:onclick="'rejectReviewAJAX(' + ${review.reviewId} + ', this, \'Offensive Language\')'" class="w-full text-left px-4 py-2 text-sm text-[#5c4a3d] hover:bg-[#f5ebe0]">Offensive Language</button>
+                                                <button th:onclick="'rejectReviewAJAX(' + ${review.reviewId} + ', this, \'Irrelevant Content\')'" class="w-full text-left px-4 py-2 text-sm text-[#5c4a3d] hover:bg-[#f5ebe0]">Irrelevant Content</button>
+                                                <button th:onclick="'rejectReviewAJAX(' + ${review.reviewId} + ', this, \'Other\')'" class="w-full text-left px-4 py-2 text-sm text-[#5c4a3d] hover:bg-[#f5ebe0]">Other</button>
+                                            </div>
+                                        </div>
+                                        <button class="text-[#8b7355] hover:text-[#5c4a3d] p-2" title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                    <button th:if="${review.status == 'rejected'}" class="text-[#8b7355] hover:text-[#5c4a3d] p-2" title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(reviewsList)}">
+                                <td colspan="9" class="px-6 py-8 text-center text-[#8b7355]">No reviews found</td>
+                            </tr></tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="flex items-center justify-between px-6 py-4 border-t border-[#e5e0d8]">
+                    <p class="text-sm text-[#8b7355]">
+                        Showing <span class="font-semibold text-[#5c4a3d]">1</span> to <span class="font-semibold text-[#5c4a3d]" th:text="${#lists.size(reviewsList) > 5 ? 5 : #lists.size(reviewsList)}">5</span> of <span class="font-semibold text-[#5c4a3d]" th:text="${#lists.size(reviewsList)}">0</span> reviews
+                    </p>
+                    <div class="flex items-center gap-2" id="paginationControls">
+                        <button class="px-4 py-2 border border-[#e5e0d8] rounded-lg text-[#8b7355] hover:bg-[#f5ebe0] transition-colors disabled:opacity-50 pagination-prev" disabled>
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <!-- Page numbers generated by adminReview.js -->
+                        <button class="px-4 py-2 bg-[#c17c5f] text-white rounded-lg font-medium pagination-btn active" data-page="1">1</button>
+                        <button class="px-4 py-2 border border-[#e5e0d8] rounded-lg text-[#8b7355] hover:bg-[#f5ebe0] transition-colors pagination-btn" data-page="2" style="display:none;">2</button>
+                        <button class="px-4 py-2 border border-[#e5e0d8] rounded-lg text-[#8b7355] hover:bg-[#f5ebe0] transition-colors pagination-btn" data-page="3" style="display:none;">3</button>
+                        <span class="text-[#8b7355] pagination-dots" style="display:none;">...</span>
+                        <button class="px-4 py-2 border border-[#e5e0d8] rounded-lg text-[#8b7355] hover:bg-[#f5ebe0] transition-colors pagination-btn" data-page="last" style="display:none;"></button>
+                        <button class="px-4 py-2 border border-[#e5e0d8] rounded-lg text-[#8b7355] hover:bg-[#f5ebe0] transition-colors pagination-next">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+
+    <script>
+        /* Sidebar handled by adminDashboard.js */
+
+        /* User menu handled by adminDashboard.js */
+
+        // Toggle flag threshold
+        function toggleFlagThreshold() {
+            const isChecked = document.getElementById('flagThresholdToggle').checked;
+            const flaggedRows = document.querySelectorAll('.auto-flagged-row');
+
+            flaggedRows.forEach(row => {
+                if (isChecked) {
+                    row.classList.add('auto-flagged-row');
+                } else {
+                    row.classList.remove('auto-flagged-row');
+                }
+            });
+
+            showNotification(isChecked ? 'Flag threshold enabled - inappropriate content highlighted' : 'Flag threshold disabled', 'info');
+        }
+
+        // Toggle review text expansion
+        function toggleReview(reviewId) {
+            const reviewText = document.getElementById(reviewId);
+            reviewText.classList.toggle('review-text-truncated');
+        }
+
+        // Toggle reject dropdown
+        function toggleRejectDropdown(dropdownId) {
+            const dropdown = document.getElementById(dropdownId);
+            const allDropdowns = document.querySelectorAll('.rejection-dropdown');
+
+            allDropdowns.forEach(d => {
+                if (d.id !== dropdownId) {
+                    d.classList.add('hidden');
+                }
+            });
+
+            dropdown.classList.toggle('hidden');
+        }
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.relative')) {
+                document.querySelectorAll('.rejection-dropdown').forEach(d => {
+                    d.classList.add('hidden');
+                });
+            }
+        });
+
+        // Reject (block) review via AJAX
+        function rejectReviewAJAX(reviewId, button, reason) {
+            const dropdown = button.closest('.rejection-dropdown');
+            const row = dropdown.closest('tr');
+            const statusCell = row.querySelector('.status-cell');
+            const actionsCell = row.querySelector('.review-actions-cell');
+
+            fetch(`/admin/review/${reviewId}/reject`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `reason=${encodeURIComponent(reason)}`
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Unable to block review');
+                }
+                return response.json();
+            })
+            .then(() => {
+                statusCell.innerHTML = `
+                    <span class="status-badge bg-red-100 text-red-700">
+                        <i class="fas fa-ban"></i> Blocked
+                    </span>
+                    <p class="text-xs text-red-600 mt-1">Reason: ${reason}</p>
+                `;
+                actionsCell.innerHTML = `
+                    <button class="text-[#8b7355] hover:text-[#5c4a3d] p-2" title="View Details">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                `;
+                dropdown.classList.add('hidden');
+                showNotification(`Review blocked: ${reason}`, 'warning');
+            })
+            .catch(error => {
+                console.error(error);
+                showNotification('Unable to block review. Try again later.', 'error');
+            });
+        }
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeConfirmModal();
+            }
+        });
+
+        // Show notification toast
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+
+            let bgColor = '#c17c5f';
+            if (type === 'success') {
+                bgColor = '#16a34a';
+            } else if (type === 'error') {
+                bgColor = '#dc2626';
+            } else if (type === 'warning') {
+                bgColor = '#d97706';
+            }
+
+            notification.className = 'fixed bottom-4 right-4 text-white px-6 py-3 rounded-xl shadow-lg z-50 transition-opacity duration-300';
+            notification.style.backgroundColor = bgColor;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 3000);
+        }
+    </script>
+    <script>
+        if (window.initAuthGuard) {
+            initAuthGuard({
+                redirectTo: "/login",
+                message: "Administrator access required. Please login."
+            });
+        }
+    </script>
+    <script src="/adminDashboard.js"></script>
+    <script src="/adminReview.js"></script>
+</body>
+</html>
+
+

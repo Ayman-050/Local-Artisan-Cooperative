@@ -90,22 +90,37 @@ document.addEventListener('DOMContentLoaded', () => {
     // ----------------------------------------------------------
     // 3. Add to cart from wishlist
     // ----------------------------------------------------------
-    window.addToCart = function (button) {
+    window.addToCart = async function (button) {
+        const row = button.closest('tr');
+        const productId = row?.dataset?.id;
+        const userEmail = sessionStorage.getItem('userEmail');
+        const loggedIn = sessionStorage.getItem('isLoggedIn') === 'true' || sessionStorage.getItem('loggedIn') === 'true';
+
+        if (!loggedIn || !userEmail) {
+            showToast('Please login to add items to your cart', 'error');
+            return;
+        }
+        if (!productId) return;
+
         const originalHTML = button.innerHTML;
-        button.innerHTML = '<i class="fas fa-check mr-1"></i>Added!';
-        button.classList.remove('bg-[#c17c5f]');
-        button.classList.add('bg-green-600');
         button.disabled = true;
-
-        // Update cart badge
-        incrementCartCount();
-
-        setTimeout(() => {
-            button.innerHTML = originalHTML;
-            button.classList.remove('bg-green-600');
-            button.classList.add('bg-[#c17c5f]');
+        try {
+            if (!window.addProductToCart) throw new Error('Cart unavailable');
+            await window.addProductToCart(productId, 1);
+            button.innerHTML = '<i class="fas fa-check mr-1"></i>Added!';
+            button.classList.remove('bg-[#c17c5f]');
+            button.classList.add('bg-green-600');
+            showToast('Added to cart', 'success');
+            setTimeout(() => {
+                button.innerHTML = originalHTML;
+                button.classList.remove('bg-green-600');
+                button.classList.add('bg-[#c17c5f]');
+                button.disabled = false;
+            }, 1200);
+        } catch (e) {
+            showToast(e.message || 'Could not add to cart', 'error');
             button.disabled = false;
-        }, 1500);
+        }
     };
 
     // ----------------------------------------------------------
@@ -130,6 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (error) {
             console.error('Error loading wishlist:', error);
+            updateWishlistCount();
             checkEmptyState();
         }
     }
@@ -140,6 +156,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         tbody.innerHTML = '';
         if (products.length === 0) {
+            updateWishlistCount();
             checkEmptyState();
             return;
         }
@@ -215,21 +232,6 @@ function checkEmptyState() {
 }
 
 // ============================================================
-// Cart badge helper
-// ============================================================
-
-function incrementCartCount() {
-    const badges = document.querySelectorAll('.fa-shopping-cart + span, .fa-shopping-cart ~ span');
-    let newCount = parseInt(sessionStorage.getItem('cartCount') ?? '0', 10) + 1;
-    sessionStorage.setItem('cartCount', newCount);
-
-    document.querySelectorAll('.fa-shopping-cart').forEach(icon => {
-        const badge = icon.parentElement?.querySelector('span');
-        if (badge) badge.textContent = newCount;
-    });
-}
-
-// ============================================================
 // "Add All to Cart" button injection
 // ============================================================
 
@@ -243,14 +245,34 @@ function buildAddAllButton() {
     btn.innerHTML = '<i class="fas fa-shopping-cart mr-2"></i>Add All to Cart';
     header.appendChild(btn);
 
-    btn.addEventListener('click', () => {
-        const addBtns = document.querySelectorAll('.wishlist-item:not([style*="none"]) .add-to-cart-btn');
-        if (addBtns.length === 0) {
+    btn.addEventListener('click', async () => {
+        const rows = document.querySelectorAll('.wishlist-item:not([style*="none"])');
+        const userEmail = sessionStorage.getItem('userEmail');
+        const loggedIn = sessionStorage.getItem('isLoggedIn') === 'true' || sessionStorage.getItem('loggedIn') === 'true';
+        if (!loggedIn || !userEmail) {
+            showToast('Please login to add items to your cart', 'error');
+            return;
+        }
+        if (rows.length === 0) {
             showToast('No items to add.', 'info');
             return;
         }
-        addBtns.forEach(b => b.click());
-        showToast(`${addBtns.length} item(s) added to cart!`, 'success');
+        if (!window.addProductToCart) {
+            showToast('Cart unavailable', 'error');
+            return;
+        }
+        btn.disabled = true;
+        try {
+            for (const row of rows) {
+                const pid = row.dataset?.id;
+                if (pid) await window.addProductToCart(pid, 1);
+            }
+            showToast(`${rows.length} item(s) added to cart!`, 'success');
+        } catch (e) {
+            showToast(e.message || 'Some items could not be added', 'error');
+        } finally {
+            btn.disabled = false;
+        }
     });
 }
 

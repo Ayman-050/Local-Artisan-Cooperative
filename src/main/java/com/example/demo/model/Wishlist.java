@@ -9,7 +9,6 @@ import java.util.List;
 @Entity
 @Table(name = "wishlists")
 public class Wishlist {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long wishlistId;

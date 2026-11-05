@@ -9,8 +9,9 @@ import lombok.EqualsAndHashCode;
 @Entity
 @Table(name = "artisans")
 public class Artisan extends User {
-
     private String shopName;
     private String biography;
-    // profilePicture removed — it now lives on the base User class
+    private String phone;
+    @Column(columnDefinition = "TEXT")
+    private String shopBanner = "https://images.unsplash.com/photo-1459411552884-841db9b3cc2a?w=800&h=300&fit=crop";
 }

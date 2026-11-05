@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Auctions Management - Artisan Co-op</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #faf9f6;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Playfair Display', serif;
+        }
+
+        .terracotta {
+            color: #c17c5f;
+        }
+
+        .bg-terracotta {
+            background-color: #c17c5f;
+        }
+
+        .bg-terracotta-dark {
+            background-color: #a5664d;
+        }
+
+        .hover\:bg-terracotta-dark:hover {
+            background-color: #a5664d;
+        }
+
+        .border-terracotta {
+            border-color: #c17c5f;
+        }
+
+        .text-earth {
+            color: #8b7355;
+        }
+
+        .bg-earth {
+            background-color: #8b7355;
+        }
+
+        .card-shadow {
+            box-shadow: 0 4px 6px -1px rgba(139, 115, 85, 0.1), 0 2px 4px -1px rgba(139, 115, 85, 0.06);
+        }
+
+        .card-shadow:hover {
+            box-shadow: 0 10px 15px -3px rgba(139, 115, 85, 0.15), 0 4px 6px -2px rgba(139, 115, 85, 0.1);
+        }
+
+        .sidebar-link {
+            transition: background-color 0.2s ease, color 0.2s ease;
+            color: #d4c5b5;
+        }
+
+        .sidebar-link:hover {
+            background-color: rgba(255, 255, 255, 0.18);
+            color: #ffffff;
+        }
+
+        .sidebar-link:hover i,
+        .sidebar-link:hover span {
+            color: #ffffff;
+        }
+
+        .sidebar-link.active {
+            background-color: rgba(255, 255, 255, 0.25);
+            border-left: 3px solid #ffffff;
+            color: #ffffff;
+        }
+
+        .sidebar-link.active i,
+        .sidebar-link.active span {
+            color: #ffffff;
+        }
+
+        .user-menu {
+            position: relative;
+        }
+
+        .user-menu-dropdown {
+            position: absolute;
+            right: 0;
+            top: calc(100% + 0.5rem);
+            width: 200px;
+            background: #ffffff;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-radius: 1rem;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+            display: none;
+            z-index: 50;
+        }
+
+        .user-menu-dropdown.show {
+            display: block;
+        }
+
+        .user-menu-item {
+            display: block;
+            padding: 0.85rem 1rem;
+            color: #5c4a3d;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            border-radius: 0.75rem;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        .user-menu-item:hover {
+            background-color: #f5ebe0;
+        }
+
+        .user-menu-item.logout:hover {
+            color: #b91c1c;
+            background-color: #fee2e2;
+        }
+
+        .chevron-icon {
+            transition: transform 0.3s ease;
+        }
+
+        .chevron-icon.rotated {
+            transform: rotate(180deg);
+        }
+
+        .table-row-hover:hover {
+            background-color: #fef9f3;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .tab-button {
+            transition: all 0.2s ease;
+        }
+
+        .tab-button.active {
+            background-color: #c17c5f;
+            color: white;
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #16a34a;
+            border-radius: 50%;
+            animation: pulse-green 2s infinite;
+        }
+
+        @keyframes pulse-green {
+            0%, 100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.5;
+                transform: scale(1.2);
+            }
+        }
+
+        .modal-overlay {
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-content {
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .countdown-timer {
+            font-family: 'Courier New', monospace;
+            font-weight: 700;
+        }
+    </style>
+    <script src="/authguard.js"></script>
+</head>
+<body class="min-h-screen flex flex-col">
+    <!-- Top Navigation Bar -->
+    <nav class="bg-[#faf9f6] border-b border-[#e5e0d8] py-4 px-6 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center">
+                <a href="/adminDashboard" class="flex items-center gap-3 group">
+                    <!-- Logo -->
+                    <img src="/images/Logo.png" alt="ArtsyVibe Logo"
+                        class="h-10 w-auto object-contain"
+                        style="filter: drop-shadow(0 0 0.5px rgba(193, 124, 95, 1));">
+
+                    <!-- Brand Name -->
+                    <span class="text-2xl font-semibold" 
+                        style="font-family: 'Playfair Display', serif;">
+                        ArtsyVibe
+                    </span>
+                </a>
+            </div>
+
+            <!-- Right Side - Notifications and User -->
+            <div class="flex items-center space-x-4">
+                 <!-- Notification Bell -->
+                <a href="/adminNotification"><button class="relative p-2 text-[#8b7355] hover:text-[#c17c5f] transition-colors">
+                    <i class="fas fa-bell text-xl"></i>
+                    <span class="absolute top-0 right-0 w-5 h-5 bg-red-500 rounded-full border-2 border-[#faf9f6] text-white text-xs flex items-center justify-center font-semibold">5</span>
+                </button></a>
+
+                <!-- User Profile -->
+                <div class="user-menu flex items-center space-x-3 pl-4 border-l border-[#e5e0d8]">
+                    <button id="userMenuButton" type="button" class="flex items-center gap-3 text-left focus:outline-none">
+                        <img 
+                            src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face" 
+                            alt="Admin User" 
+                            class="w-10 h-10 rounded-full object-cover border-2 border-[#c17c5f]"
+                        />
+                        <div class="hidden md:block">
+                            <p class="font-semibold text-[#5c4a3d] text-sm">Admin User</p>
+                            <p class="text-xs text-[#8b7355]">admin@artisancoop.com</p>
+                        </div>
+                        <i id="chevronIcon" class="chevron-icon fas fa-chevron-down text-[#8b7355] text-xs hidden md:block"></i>
+                    </button>
+                    <div id="userMenuDropdown" class="user-menu-dropdown">
+                        <button id="logoutButton" class="user-menu-item logout w-full text-left">
+                            <i class="fas fa-sign-out-alt mr-3"></i>Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area with Sidebar -->
+    <div class="flex flex-1">
+        <!-- Left Sidebar -->
+        <aside class="w-64 bg-[#5c4a3d] min-h-[calc(100vh-80px)] fixed left-0 top-20 overflow-y-auto">
+            <!-- Admin Profile -->
+            <div class="p-6 border-b border-[#7a6655]">
+                <div class="flex items-center gap-3">
+                    <img 
+                        src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face" 
+                        alt="Admin User" 
+                        class="w-12 h-12 rounded-full object-cover border-2 border-[#c17c5f]"
+                    />
+                    <div>
+                        <h3 class="text-white font-semibold text-sm">Admin User</h3>
+                        <span class="inline-block bg-[#c17c5f] text-white text-xs px-2 py-1 rounded-full mt-1">Administrator</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation Menu -->
+            <nav class="p-4 mt-4">
+                <ul class="space-y-1">
+                    <li>
+                        <a href="/adminDashboard" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-tachometer-alt w-5"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/adminUsersManagement" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-users w-5"></i>
+                            <span>User Management</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/adminArtisanApproval" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-user-check w-5"></i>
+                            <span>Artisan Approvals</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/adminProducts" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-box w-5"></i>
+                            <span>Products</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/adminOrderManagment" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-shopping-bag w-5"></i>
+                            <span>Orders</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/adminAuction" class="sidebar-link active flex items-center gap-3 text-white px-4 py-3 rounded-lg">
+                            <i class="fas fa-gavel w-5"></i>
+                            <span>Auctions</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/adminRefund" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-undo w-5"></i>
+                            <span>Refunds</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/adminReview" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-star w-5"></i>
+                            <span>Review Moderation</span>
+                        </a>
+                    </li>
+                    
+                </ul>
+            </nav>
+
+            <!-- Systems Log Section -->
+            <div class="p-4 mt-2 border-t border-[#7a6655]">
+                <ul class="space-y-1">
+                    <li>
+                        <a href="/adminReports" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-history w-5"></i>
+                            <span>Reports</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 ml-64 p-8">
+            <!-- Page Header -->
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-[#5c4a3d] mb-2">Auctions Management</h1>
+                <p class="text-[#8b7355]">Monitor and oversee all auction activity on the platform.</p>
+            </div>
+
+            <!-- Tab Bar -->
+            <div class="bg-white rounded-t-xl card-shadow border-b border-[#e5e0d8] px-6 pt-4 mb-0">
+                <div class="flex items-center gap-2 overflow-x-auto">
+                    <button class="tab-button active px-5 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap flex items-center gap-2" onclick="switchTab('live')">
+                        <span class="pulse-dot"></span>
+                        Live Now
+                        <span class="bg-green-500 text-white text-xs px-2 py-0.5 rounded-full" id="count-live">0</span>
+                    </button>
+                    <button class="tab-button px-5 py-2.5 rounded-lg text-sm font-medium text-[#8b7355] whitespace-nowrap" onclick="switchTab('upcoming')">
+                        Upcoming
+                        <span class="bg-blue-500 text-white text-xs px-2 py-0.5 rounded-full" id="count-upcoming">0</span>
+                    </button>
+                    <button class="tab-button px-5 py-2.5 rounded-lg text-sm font-medium text-[#8b7355] whitespace-nowrap" onclick="switchTab('ended')">
+                        Ended
+                        <span class="bg-gray-500 text-white text-xs px-2 py-0.5 rounded-full" id="count-ended">0</span>
+                    </button>
+                    <button class="tab-button px-5 py-2.5 rounded-lg text-sm font-medium text-[#8b7355] whitespace-nowrap" onclick="switchTab('cancelled')">
+                        Cancelled
+                        <span class="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full" id="count-cancelled">0</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filters Bar -->
+            <div class="bg-white border-b border-[#e5e0d8] px-6 py-4">
+                <div class="flex flex-wrap items-center gap-4">
+                    <!-- Search Input -->
+                    <div class="flex-1 min-w-64">
+                        <div class="relative">
+                            <input id="searchInput" type="text" placeholder="Search auctions..." 
+                                class="w-full pl-10 pr-4 py-2.5 border border-[#e5e0d8] rounded-lg focus:border-[#c17c5f] focus:outline-none text-[#5c4a3d] placeholder-[#b8a99a]"
+                            />
+                            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-[#8b7355]"></i>
+                        </div>
+                    </div>
+
+                    <!-- Category Filter -->
+                    <div class="relative">
+                        <select id="categoryFilter" class="appearance-none border border-[#e5e0d8] rounded-lg px-4 py-2.5 pr-10 focus:border-[#c17c5f] focus:outline-none text-[#5c4a3d] bg-white cursor-pointer">
+                            <option value="">All Categories</option>
+                            <option th:each="cat : ${categoriesList}" th:value="${cat}" th:text="${cat}"></option>
+                        </select>
+                        <i class="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-[#8b7355] pointer-events-none"></i>
+                    </div>
+
+                    <!-- Artisan Filter -->
+                    <div class="relative">
+                        <select id="artisanFilter" class="appearance-none border border-[#e5e0d8] rounded-lg px-4 py-2.5 pr-10 focus:border-[#c17c5f] focus:outline-none text-[#5c4a3d] bg-white cursor-pointer">
+                            <option value="">All Artisans</option>
+                            <option th:each="artisan : ${artisansList}" th:value="${artisan}" th:text="${artisan}"></option>
+                        </select>
+                        <i class="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-[#8b7355] pointer-events-none"></i>
+                    </div>
+
+                    <!-- Date Range Picker -->
+                    <div class="flex items-center gap-2">
+                        <input 
+                            type="date" 
+                            class="border border-[#e5e0d8] rounded-lg px-4 py-2.5 focus:border-[#c17c5f] focus:outline-none text-[#5c4a3d]"
+                        />
+                        <span class="text-[#8b7355]">to</span>
+                        <input 
+                            type="date" 
+                            class="border border-[#e5e0d8] rounded-lg px-4 py-2.5 focus:border-[#c17c5f] focus:outline-none text-[#5c4a3d]"
+                        />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Auctions Table -->
+            <div class="bg-white rounded-b-xl card-shadow overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-[#f5ebe0]">
+                            <tr>
+                                <th class="text-left text-sm font-semibold text-[#5c4a3d] px-6 py-4">Auction #</th>
+                                <th class="text-left text-sm font-semibold text-[#5c4a3d] px-6 py-4">Product</th>
+                                <th class="text-left text-sm font-semibold text-[#5c4a3d] px-6 py-4">Artisan</th>
+                                <th class="text-left text-sm font-semibold text-[#5c4a3d] px-6 py-4">Starting Bid</th>
+                                <th class="text-left text-sm font-semibold text-[#5c4a3d] px-6 py-4">Current Bid</th>
+                                <th class="text-left text-sm font-semibold text-[#5c4a3d] px-6 py-4">Total Bids</th>
+                                <th class="text-left text-sm font-semibold text-[#5c4a3d] px-6 py-4">Start Date</th>
+                                <th class="text-left text-sm font-semibold text-[#5c4a3d] px-6 py-4">End Date</th>
+                                <th class="text-left text-sm font-semibold text-[#5c4a3d] px-6 py-4">Status</th>
+                                <th class="text-left text-sm font-semibold text-[#5c4a3d] px-6 py-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-[#e5e0d8]" id="auctionsTableBody">
+                            <tr th:each="auction, stat : ${auctionsList}" class="table-row-hover auction-row" 
+                                th:data-id="${auction.id}"
+                                th:data-status="${auctionDisplayStatusMap.get(auction.id)}"
+                                th:data-bid-count="${auctionBidsMap.get(auction.id)}"
+                                th:data-category="${auction.product != null ? #strings.toLowerCase(auction.product.category) : ''}"
+                                th:data-artisan="${auction.product != null ? auction.product.artisanName : ''}">
+                                <td class="px-6 py-4">
+                                    <div>
+                                        <span class="font-mono font-semibold text-[#5c4a3d]" th:text="${stat.index + 1}"></span>
+                                        <span class="block text-xs text-[#8b7355]" th:text="'#AUC-' + ${auction.id}"></span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <img 
+                                            th:if="${auction.product != null}"
+                                            th:src="${auction.product.imageUrl}" 
+                                            alt="Product" 
+                                            class="w-14 h-14 rounded-lg object-cover"
+                                            onerror="this.src='/images/placeholder.png'"
+                                        />
+                                        <div th:if="${auction.product != null}">
+                                            <p class="font-semibold text-[#5c4a3d]" th:text="${auction.product.title}"></p>
+                                            <p class="text-xs text-[#8b7355]" th:text="'Category: ' + ${auction.product.category}"></p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <span class="font-medium text-[#5c4a3d]" th:text="${auction.product != null ? auction.product.artisanName : '-'}"></span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-[#8b7355]" th:text="'BD ' + ${auction.startingBid}"></span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="font-bold" th:classappend="${auction.currentHighestBid > auction.startingBid ? 'text-green-600' : 'text-[#5c4a3d]'}" th:text="${auction.currentHighestBid > 0 ? 'BD ' + auction.currentHighestBid : '-'}"></span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="font-semibold text-[#5c4a3d] bid-count-cell"
+                                          th:text="${(auctionBidsMap.containsKey(auction.id) ? auctionBidsMap.get(auction.id) : 0) + ' bids'}">0 bids</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-[#8b7355]" th:text="${auction.startTime != null ? #temporals.format(auction.startTime, 'MMM dd, yyyy') : '-'}"></span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-[#8b7355]" th:text="${auction.endTime != null ? #temporals.format(auction.endTime, 'MMM dd, yyyy') : '-'}"></span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span th:if="${auctionDisplayStatusMap.get(auction.id) == 'live'}" class="status-badge bg-green-100 text-green-700">
+                                        <span class="pulse-dot"></span>Live
+                                    </span>
+                                    <span th:if="${auctionDisplayStatusMap.get(auction.id) == 'upcoming'}" class="status-badge bg-blue-100 text-blue-700">
+                                        <i class="fas fa-clock"></i>Upcoming
+                                    </span>
+                                    <span th:if="${auctionDisplayStatusMap.get(auction.id) == 'ended'}" class="status-badge bg-gray-100 text-gray-700">
+                                        <i class="fas fa-check-circle"></i>Ended
+                                    </span>
+                                    <span th:if="${auctionDisplayStatusMap.get(auction.id) == 'cancelled'}" class="status-badge bg-red-100 text-red-700">
+                                        <i class="fas fa-times-circle"></i>Cancelled
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-2">
+                                        <button th:if="${auctionDisplayStatusMap.get(auction.id) == 'live'}" th:onclick="'openMonitorModal(' + ${auction.id} + ')'" class="bg-[#2563eb] hover:bg-[#1d4ed8] text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors flex items-center gap-2">
+                                            <i class="fas fa-eye"></i> Monitor
+                                        </button>
+                                        <button th:if="${auctionDisplayStatusMap.get(auction.id) == 'upcoming'}" class="border-2 border-red-500 text-red-500 hover:bg-red-50 px-4 py-2 rounded-lg font-medium text-sm transition-colors">
+                                            Cancel
+                                        </button>
+                                        <button th:if="${auctionDisplayStatusMap.get(auction.id) == 'ended' or auctionDisplayStatusMap.get(auction.id) == 'cancelled'}" th:onclick="'openEndedModal(' + ${auction.id} + ')'" class="bg-[#5c4a3d] hover:bg-[#7a6655] text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors">
+                                            View
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="flex items-center justify-between px-6 py-4 border-t border-[#e5e0d8]">
+                    <p id="paginationLabel" class="text-sm text-[#8b7355]">
+                        Showing <span class="font-semibold text-[#5c4a3d]">0</span> auctions
+                    </p>
+                    <div id="paginationControls" class="flex items-center gap-2">
+                        <button type="button" id="paginationPrev" class="px-4 py-2 border border-[#e5e0d8] rounded-lg text-[#8b7355] hover:bg-[#f5ebe0] transition-colors disabled:opacity-50" disabled>
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <div id="paginationPages" class="flex items-center gap-2"></div>
+                        <button type="button" id="paginationNext" class="px-4 py-2 border border-[#e5e0d8] rounded-lg text-[#8b7355] hover:bg-[#f5ebe0] transition-colors disabled:opacity-50">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Live Auction Monitoring Modal -->
+    <div id="monitorModal" class="fixed inset-0 modal-overlay z-50 hidden items-center justify-center p-4">
+        <div class="modal-content bg-white rounded-2xl w-full max-w-6xl max-h-[90vh] overflow-y-auto">
+            <!-- Modal Header -->
+            <div class="sticky top-0 bg-white border-b border-[#e5e0d8] px-6 py-4 flex items-center justify-between z-10">
+                <div class="flex items-center gap-3">
+                    <h2 class="text-2xl font-bold text-[#5c4a3d]">Live Auction Monitor</h2>
+                    <span id="monitorStatusBadge" class="status-badge bg-green-100 text-green-700">
+                        <span class="pulse-dot"></span>
+                        Live
+                    </span>
+                </div>
+                <button onclick="closeMonitorModal()" class="text-[#8b7355] hover:text-red-500 transition-colors p-2">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <!-- Modal Content -->
+            <div class="p-6">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Left Column - Product Details -->
+                    <div class="lg:col-span-1 space-y-4">
+                        <img id="monitorProductImage" src="/images/Logo.png" alt="Product" class="w-full h-64 object-cover rounded-xl shadow-lg" onerror="this.src='/images/Logo.png'"/>
+
+                        <div>
+                            <h3 id="monitorProductTitle" class="text-xl font-bold text-[#5c4a3d] mb-2">—</h3>
+                            <p id="monitorProductSku" class="text-sm text-[#8b7355] mb-3">SKU: —</p>
+                            <p id="monitorProductDesc" class="text-[#5c4a3d] text-sm leading-relaxed">—</p>
+                        </div>
+
+                        <div class="bg-[#f5ebe0] rounded-lg p-4">
+                            <div class="flex items-center gap-3 mb-3">
+                                <img id="monitorArtisanImage" src="/images/Logo.png" alt="Artisan" class="w-12 h-12 rounded-full object-cover" onerror="this.src='/images/Logo.png'"/>
+                                <div>
+                                    <p id="monitorArtisanName" class="font-semibold text-[#5c4a3d]">—</p>
+                                    <p id="monitorArtisanCategory" class="text-xs text-[#8b7355]">—</p>
+                                </div>
+                            </div>
+                            <div id="monitorArtisanMeta" class="flex items-center gap-4 text-xs text-[#8b7355]">
+                                <span><i class="fas fa-gavel mr-1"></i>0 auctions</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column - Bidding Info -->
+                    <div class="lg:col-span-2 space-y-6">
+                        <!-- Current Bid & Timer -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl p-6">
+                                <p class="text-sm text-green-700 font-medium mb-2">Current Bid</p>
+                                <p class="text-4xl font-bold text-green-600" id="currentBid">BD 0</p>
+                                <p class="text-xs text-green-600 mt-2" id="monitorBidDelta"><i class="fas fa-arrow-up mr-1"></i> —</p>
+                            </div>
+
+                            <div class="bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200 rounded-xl p-6">
+                                <p class="text-sm text-amber-700 font-medium mb-2">Time Remaining</p>
+                                <p class="text-3xl countdown-timer text-amber-600" id="countdown">00:00:00</p>
+                                <p class="text-xs text-amber-600 mt-2" id="monitorEndLabel">—</p>
+                            </div>
+                        </div>
+
+                        <!-- Bid Statistics -->
+                        <div class="grid grid-cols-3 gap-4">
+                            <div class="bg-white border border-[#e5e0d8] rounded-lg p-4 text-center">
+                                <p class="text-xs text-[#8b7355] mb-1">Starting Bid</p>
+                                <p id="monitorStartingBid" class="text-lg font-bold text-[#5c4a3d]">BD 0</p>
+                            </div>
+                            <div class="bg-white border border-[#e5e0d8] rounded-lg p-4 text-center">
+                                <p class="text-xs text-[#8b7355] mb-1">Total Bids</p>
+                                <p id="monitorTotalBids" class="text-lg font-bold text-[#5c4a3d]">0</p>
+                            </div>
+                            <div class="bg-white border border-[#e5e0d8] rounded-lg p-4 text-center">
+                                <p class="text-xs text-[#8b7355] mb-1">Unique Bidders</p>
+                                <p id="monitorUniqueBidders" class="text-lg font-bold text-[#5c4a3d]">0</p>
+                            </div>
+                        </div>
+
+                        <!-- Bid History -->
+                        <div>
+                            <h4 class="font-semibold text-[#5c4a3d] mb-3 flex items-center gap-2">
+                                <i class="fas fa-history text-[#c17c5f]"></i>
+                                Bid History
+                            </h4>
+                            <div class="bg-white border border-[#e5e0d8] rounded-lg overflow-hidden">
+                                <table class="w-full">
+                                    <thead class="bg-[#f5ebe0]">
+                                        <tr>
+                                            <th class="text-left text-xs font-semibold text-[#5c4a3d] px-4 py-3">Bidder</th>
+                                            <th class="text-left text-xs font-semibold text-[#5c4a3d] px-4 py-3">Bid Amount</th>
+                                            <th class="text-left text-xs font-semibold text-[#5c4a3d] px-4 py-3">Timestamp</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="monitorBidHistoryBody" class="divide-y divide-[#e5e0d8]">
+                                        <tr><td colspan="3" class="px-4 py-6 text-center text-sm text-[#8b7355]">Loading bid history…</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Admin Actions -->
+                        <div class="pt-4 border-t border-[#e5e0d8]">
+                            <h4 class="font-semibold text-[#5c4a3d] mb-4 flex items-center gap-2">
+                                <i class="fas fa-shield-alt text-[#c17c5f]"></i>
+                                Admin Actions
+                            </h4>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <button onclick="handleMonitorAction('extend')" class="bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-medium py-3 rounded-lg transition-colors flex items-center justify-center gap-2">
+                                    <i class="fas fa-clock"></i>
+                                    Extend Auction (+30 min)
+                                </button>
+                                <button onclick="handleMonitorAction('cancel')" class="bg-red-600 hover:bg-red-700 text-white font-medium py-3 rounded-lg transition-colors flex items-center justify-center gap-2">
+                                    <i class="fas fa-times-circle"></i>
+                                    Cancel Auction
+                                </button>
+                                <button onclick="handleMonitorAction('flag')" class="bg-amber-500 hover:bg-amber-600 text-white font-medium py-3 rounded-lg transition-colors flex items-center justify-center gap-2">
+                                    <i class="fas fa-flag"></i>
+                                    Flag Suspicious Activity
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ended Auction Summary Modal -->
+    <div id="endedModal" class="fixed inset-0 modal-overlay z-50 hidden items-center justify-center p-4">
+        <div class="modal-content bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <!-- Modal Header -->
+            <div class="sticky top-0 bg-white border-b border-[#e5e0d8] px-6 py-4 flex items-center justify-between z-10">
+                <h2 class="text-2xl font-bold text-[#5c4a3d]">Auction Summary</h2>
+                <button onclick="closeEndedModal()" class="text-[#8b7355] hover:text-red-500 transition-colors p-2">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <!-- Modal Content -->
+            <div class="p-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Left Column -->
+                    <div class="space-y-4">
+                        <img 
+                            src="https://images.unsplash.com/photo-1606293926075-69a00dbfde81?w=400&h=400&fit=crop" 
+                            alt="Product" 
+                            class="w-full h-64 object-cover rounded-xl shadow-lg"
+                        />
+
+                        <div>
+                            <h3 class="text-xl font-bold text-[#5c4a3d] mb-2">Woven Wool Blanket</h3>
+                            <p class="text-sm text-[#8b7355]">SKU: TEX-BLK-015</p>
+                            <span class="status-badge bg-gray-100 text-gray-700 mt-2">
+                                <i class="fas fa-check-circle"></i>
+                                Ended
+                            </span>
+                        </div>
+
+                        <div class="bg-[#f5ebe0] rounded-lg p-4">
+                            <div class="flex items-center gap-3">
+                                <img 
+                                    src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=50&h=50&fit=crop&crop=face" 
+                                    alt="Anna Kowalski" 
+                                    class="w-12 h-12 rounded-full object-cover"
+                                />
+                                <div>
+                                    <p class="font-semibold text-[#5c4a3d]">Anna Kowalski</p>
+                                    <p class="text-xs text-[#8b7355]">Textiles Artist</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column -->
+                    <div class="space-y-4">
+                        <!-- Winning Bid -->
+                        <div class="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl p-6">
+                            <p class="text-sm text-green-700 font-medium mb-2">Winning Bid</p>
+                            <p class="text-4xl font-bold text-green-600">BD 245.000</p>
+                        </div>
+
+                        <!-- Winner Info -->
+                        <div class="bg-white border border-[#e5e0d8] rounded-lg p-4">
+                            <h4 class="font-semibold text-[#5c4a3d] mb-3">Winning Bidder</h4>
+                            <div class="flex items-center gap-3">
+                                <img 
+                                    src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=50&h=50&fit=crop&crop=face" 
+                                    alt="Winner" 
+                                    class="w-12 h-12 rounded-full object-cover"
+                                />
+                                <div>
+                                    <p class="font-semibold text-[#5c4a3d]">Thomas White</p>
+                                    <p class="text-xs text-[#8b7355]">thomas.white@email.com</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Auction Stats -->
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-white border border-[#e5e0d8] rounded-lg p-4">
+                                <p class="text-xs text-[#8b7355] mb-1">Starting Bid</p>
+                                <p class="text-lg font-bold text-[#5c4a3d]">BD 150.000</p>
+                            </div>
+                            <div class="bg-white border border-[#e5e0d8] rounded-lg p-4">
+                                <p class="text-xs text-[#8b7355] mb-1">Total Bids</p>
+                                <p class="text-lg font-bold text-[#5c4a3d]">18</p>
+                            </div>
+                        </div>
+
+                        <!-- Payment Status -->
+                        <div class="bg-white border border-[#e5e0d8] rounded-lg p-4">
+                            <div class="flex items-center justify-between mb-3">
+                                <h4 class="font-semibold text-[#5c4a3d]">Payment Status</h4>
+                                <span class="status-badge bg-green-100 text-green-700">
+                                    <i class="fas fa-check-circle"></i>
+                                    Paid
+                                </span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-[#8b7355]">Artisan Notified</span>
+                                <span class="status-badge bg-green-100 text-green-700 text-xs">
+                                    <i class="fas fa-check"></i>
+                                    Yes
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Timeline -->
+                        <div class="bg-white border border-[#e5e0d8] rounded-lg p-4">
+                            <h4 class="font-semibold text-[#5c4a3d] mb-3">Auction Timeline</h4>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[#8b7355]">Started:</span>
+                                    <span class="font-medium text-[#5c4a3d]">Mar 10, 2025 at 10:00 AM</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[#8b7355]">Ended:</span>
+                                    <span class="font-medium text-[#5c4a3d]">Mar 15, 2025 at 10:00 PM</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[#8b7355]">Payment Received:</span>
+                                    <span class="font-medium text-[#5c4a3d]">Mar 16, 2025 at 2:30 PM</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        if (window.initAuthGuard) {
+            initAuthGuard({
+                redirectTo: "/login",
+                message: "Administrator access required. Please login."
+            });
+        }
+    </script>
+    <script src="/adminDashboard.js"></script>
+    <script src="/adminAuction.js"></script>
+</body>
+</html>
+
+

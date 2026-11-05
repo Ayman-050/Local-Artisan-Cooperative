@@ -20,13 +20,13 @@ INSERT INTO product_categories (category_id, name) OVERRIDING SYSTEM VALUE VALUE
 -- Artisans: IDs 2-4
 -- Customers: IDs 5-7
 INSERT INTO users (user_id, name, email, password, role, profile_picture) OVERRIDING SYSTEM VALUE VALUES
-  (1,  'Alice Admin',   'alice@artsyvibe.com',   '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HCGKK2p9J4G1R59dY6d5W', 'ADMIN', 'https://cdn-icons-png.flaticon.com/512/149/149071.png'),
-  (2,  'Elena Craft',   'elena@artsyvibe.com',   '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HCGKK2p9J4G1R59dY6d5W', 'ARTISAN', 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face'),
-  (3,  'Marco Pottery', 'marco@artsyvibe.com',   '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HCGKK2p9J4G1R59dY6d5W', 'ARTISAN', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face'),
-  (4,  'Zara Weaves',   'zara@artsyvibe.com',    '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HCGKK2p9J4G1R59dY6d5W', 'ARTISAN', 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=face'),
-  (5,  'John Doe',      'john@example.com',      '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HCGKK2p9J4G1R59dY6d5W', 'CUSTOMER', 'https://cdn-icons-png.flaticon.com/512/149/149071.png'),
-  (6,  'Sarah Miller',  'sarah@example.com',     '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HCGKK2p9J4G1R59dY6d5W', 'CUSTOMER', 'https://cdn-icons-png.flaticon.com/512/149/149071.png'),
-  (7,  'Tom Brown',     'tom@example.com',       '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HCGKK2p9J4G1R59dY6d5W', 'CUSTOMER', 'https://cdn-icons-png.flaticon.com/512/149/149071.png');
+  (1,  'Alice Admin',   'alice@artsyvibe.com',   '$2a$10$FIVPPbrxrRXHIsD.jIwtkOYaWLhZ1YYpu2mtAzbi2aUlceQT728wu', 'ADMIN', 'https://cdn-icons-png.flaticon.com/512/149/149071.png'),
+  (2,  'Elena Craft',   'elena@artsyvibe.com',   '$2a$10$FIVPPbrxrRXHIsD.jIwtkOYaWLhZ1YYpu2mtAzbi2aUlceQT728wu', 'ARTISAN', 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face'),
+  (3,  'Marco Pottery', 'marco@artsyvibe.com',   '$2a$10$FIVPPbrxrRXHIsD.jIwtkOYaWLhZ1YYpu2mtAzbi2aUlceQT728wu', 'ARTISAN', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face'),
+  (4,  'Zara Weaves',   'zara@artsyvibe.com',    '$2a$10$FIVPPbrxrRXHIsD.jIwtkOYaWLhZ1YYpu2mtAzbi2aUlceQT728wu', 'ARTISAN', 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=face'),
+  (5,  'John Doe',      'john@example.com',      '$2a$10$FIVPPbrxrRXHIsD.jIwtkOYaWLhZ1YYpu2mtAzbi2aUlceQT728wu', 'CUSTOMER', 'https://cdn-icons-png.flaticon.com/512/149/149071.png'),
+  (6,  'Sarah Miller',  'sarah@example.com',     '$2a$10$FIVPPbrxrRXHIsD.jIwtkOYaWLhZ1YYpu2mtAzbi2aUlceQT728wu', 'CUSTOMER', 'https://cdn-icons-png.flaticon.com/512/149/149071.png'),
+  (7,  'Tom Brown',     'tom@example.com',       '$2a$10$FIVPPbrxrRXHIsD.jIwtkOYaWLhZ1YYpu2mtAzbi2aUlceQT728wu', 'CUSTOMER', 'https://cdn-icons-png.flaticon.com/512/149/149071.png');
 
 
 -- ── 3. Admins (joined subtable) ──────────────────────────────
@@ -73,12 +73,12 @@ OVERRIDING SYSTEM VALUE VALUES
 -- ── 8. Auctions ───────────────────────────────────────────────
 INSERT INTO auctions (id, product_id, starting_bid, current_highest_bid, highest_bidder_name, start_time, end_time, status, admin_id)
 OVERRIDING SYSTEM VALUE VALUES
-  (1, 13, 150.00, 210.00, 'Sarah Miller', '2025-05-01 10:00:00', '2025-05-20 20:00:00', 'active',   1),
-  (2, 14, 200.00, 275.00, 'John Doe',     '2025-05-03 10:00:00', '2025-05-22 20:00:00', 'active',   1),
-  (3, 15, 180.00, 180.00, NULL,           '2025-05-05 10:00:00', '2025-05-25 20:00:00', 'active',   1),
-  (4, 16, 500.00, 620.00, 'Tom Brown',    '2025-04-15 10:00:00', '2025-05-10 20:00:00', 'ended',    1),
-  (5, 17, 120.00, 195.00, 'Sarah Miller', '2025-04-20 10:00:00', '2025-05-12 20:00:00', 'active',   1),
-  (6, 18, 300.00, 300.00, NULL,           '2025-05-10 10:00:00', '2025-06-01 20:00:00', 'upcoming', 1);
+  (1, 13, 150.00, 210.00, 'Sarah Miller', '2026-05-01 10:00:00', '2026-05-25 20:00:00', 'LIVE',     1),
+  (2, 14, 200.00, 275.00, 'John Doe',     '2026-05-03 10:00:00', '2026-05-28 20:00:00', 'LIVE',     1),
+  (3, 15, 180.00, 180.00, NULL,           '2026-05-05 10:00:00', '2026-05-30 20:00:00', 'LIVE',     1),
+  (4, 16, 500.00, 620.00, 'Tom Brown',    '2026-04-01 10:00:00', '2026-04-20 20:00:00', 'ENDED',    1),
+  (5, 17, 120.00, 195.00, 'Sarah Miller', '2026-04-10 10:00:00', '2026-05-01 20:00:00', 'ENDED',    1),
+  (6, 18, 300.00, 300.00, NULL,           '2026-05-20 10:00:00', '2026-06-15 20:00:00', 'UPCOMING', 1);
 
 -- ── 9. Bids ───────────────────────────────────────────────────
 INSERT INTO bids (bid_id, bid_amount, bid_time, customer_id, auction_id) OVERRIDING SYSTEM VALUE VALUES

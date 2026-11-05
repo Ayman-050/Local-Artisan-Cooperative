@@ -17,25 +17,22 @@ public class AddressController {
     @Autowired
     private AddressRepository addressRepository;
 
-    // GET /api/addresses?email=john@example.com
     @GetMapping
     public ResponseEntity<List<Address>> getAddresses(@RequestParam String email) {
         return ResponseEntity.ok(addressRepository.findByUserEmail(email));
     }
 
-    // POST /api/addresses — create a new address
     @PostMapping
     public ResponseEntity<Address> createAddress(@RequestBody Address address) {
         if (address.isDefault()) {
             clearDefaults(address.getUserEmail());
         }
-        return ResponseEntity.ok(addressRepository.save(address));
+        Address saved = addressRepository.save(address);
+        return ResponseEntity.ok(saved);
     }
 
-    // PUT /api/addresses/{id} — update an existing address
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateAddress(@PathVariable Long id,
-                                           @RequestBody Address updated) {
+    public ResponseEntity<?> updateAddress(@PathVariable Long id, @RequestBody Address updated) {
         Optional<Address> opt = addressRepository.findById(id);
         if (opt.isEmpty()) {
             return ResponseEntity.notFound().build();
@@ -53,15 +50,12 @@ public class AddressController {
         return ResponseEntity.ok(addressRepository.save(address));
     }
 
-    // DELETE /api/addresses/{id}
     @DeleteMapping("/{id}")
     public ResponseEntity<Map<String, Boolean>> deleteAddress(@PathVariable Long id) {
         addressRepository.deleteById(id);
         return ResponseEntity.ok(Map.of("success", true));
     }
 
-    // Clears the default flag from all existing addresses for a user
-    // before setting a new default — ensures only one default at a time
     private void clearDefaults(String userEmail) {
         addressRepository.findByUserEmail(userEmail).forEach(a -> {
             if (a.isDefault()) {

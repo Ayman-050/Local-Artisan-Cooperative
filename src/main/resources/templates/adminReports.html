@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Reports & Analytics - Artisan Co-op</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #faf9f6;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Playfair Display', serif;
+        }
+
+        .terracotta {
+            color: #c17c5f;
+        }
+
+        .bg-terracotta {
+            background-color: #c17c5f;
+        }
+
+        .bg-terracotta-dark {
+            background-color: #a5664d;
+        }
+
+        .hover\:bg-terracotta-dark:hover {
+            background-color: #a5664d;
+        }
+
+        .border-terracotta {
+            border-color: #c17c5f;
+        }
+
+        .text-earth {
+            color: #8b7355;
+        }
+
+        .bg-earth {
+            background-color: #8b7355;
+        }
+
+        .card-shadow {
+            box-shadow: 0 4px 6px -1px rgba(139, 115, 85, 0.1), 0 2px 4px -1px rgba(139, 115, 85, 0.06);
+        }
+
+        .card-shadow:hover {
+            box-shadow: 0 10px 15px -3px rgba(139, 115, 85, 0.15), 0 4px 6px -2px rgba(139, 115, 85, 0.1);
+        }
+
+        .sidebar-link {
+            transition: background-color 0.2s ease, color 0.2s ease;
+            color: #d4c5b5;
+        }
+
+        .sidebar-link:hover {
+            background-color: rgba(255, 255, 255, 0.18);
+            color: #ffffff;
+        }
+
+        .sidebar-link:hover i,
+        .sidebar-link:hover span {
+            color: #ffffff;
+        }
+
+        .sidebar-link.active {
+            background-color: rgba(255, 255, 255, 0.25);
+            border-left: 3px solid #ffffff;
+            color: #ffffff;
+        }
+
+        .sidebar-link.active i,
+        .sidebar-link.active span {
+            color: #ffffff;
+        }
+
+        .user-menu {
+            position: relative;
+        }
+
+        .user-menu-dropdown {
+            position: absolute;
+            right: 0;
+            top: calc(100% + 0.5rem);
+            width: 200px;
+            background: #ffffff;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-radius: 1rem;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+            display: none;
+            z-index: 50;
+        }
+
+        .user-menu-dropdown.show {
+            display: block;
+        }
+
+        .user-menu-item {
+            display: block;
+            padding: 0.85rem 1rem;
+            color: #5c4a3d;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            border-radius: 0.75rem;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        .user-menu-item:hover {
+            background-color: #f5ebe0;
+        }
+
+        .user-menu-item.logout:hover {
+            color: #b91c1c;
+            background-color: #fee2e2;
+        }
+
+        .chevron-icon {
+            transition: transform 0.3s ease;
+        }
+
+        .chevron-icon.rotated {
+            transform: rotate(180deg);
+        }
+
+        .table-row-hover:hover {
+            background-color: #fef9f3;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .modal-overlay {
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-content {
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .star-rating {
+            color: #fbbf24;
+        }
+
+        /* Rank borders */
+        .rank-gold {
+            border-left: 4px solid #fbbf24;
+        }
+
+        .rank-silver {
+            border-left: 4px solid #9ca3af;
+        }
+
+        .rank-bronze {
+            border-left: 4px solid #b45309;
+        }
+
+        /* Chart tooltips */
+        .chart-tooltip {
+            position: absolute;
+            background: rgba(92, 74, 61, 0.95);
+            color: white;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 0.75rem;
+            pointer-events: none;
+            z-index: 10;
+        }
+    </style>
+    <script src="/authguard.js"></script>
+</head>
+<body class="min-h-screen flex flex-col">
+    <!-- Top Navigation Bar -->
+    <nav class="bg-[#faf9f6] border-b border-[#e5e0d8] py-4 px-6 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center">
+                <a href="/adminDashboard" class="flex items-center gap-3 group">
+                    <!-- Logo -->
+                    <img src="/images/Logo.png" alt="ArtsyVibe Logo"
+                        class="h-10 w-auto object-contain"
+                        style="filter: drop-shadow(0 0 0.5px rgba(193, 124, 95, 1));">
+
+                    <!-- Brand Name -->
+                    <span class="text-2xl font-semibold" 
+                        style="font-family: 'Playfair Display', serif;">
+                        ArtsyVibe
+                    </span>
+                </a>
+            </div>
+
+            <!-- Right Side - Notifications and User -->
+            <div class="flex items-center space-x-4">
+                <!-- Notification Bell -->
+                <a href="/adminNotification"><button class="relative p-2 text-[#8b7355] hover:text-[#c17c5f] transition-colors">
+                    <i class="fas fa-bell text-xl"></i>
+                    <span class="absolute top-0 right-0 w-5 h-5 bg-red-500 rounded-full border-2 border-[#faf9f6] text-white text-xs flex items-center justify-center font-semibold">5</span>
+                </button></a>
+
+                <!-- User Profile -->
+                <div class="user-menu flex items-center space-x-3 pl-4 border-l border-[#e5e0d8]">
+                    <button id="userMenuButton" type="button" class="flex items-center gap-3 text-left focus:outline-none">
+                        <img 
+                            src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face" 
+                            alt="Admin User" 
+                            class="w-10 h-10 rounded-full object-cover border-2 border-[#c17c5f]"
+                        />
+                        <div class="hidden md:block">
+                            <p class="font-semibold text-[#5c4a3d] text-sm">Admin User</p>
+                            <p class="text-xs text-[#8b7355]">admin@artisancoop.com</p>
+                        </div>
+                        <i id="chevronIcon" class="chevron-icon fas fa-chevron-down text-[#8b7355] text-xs hidden md:block"></i>
+                    </button>
+                    <div id="userMenuDropdown" class="user-menu-dropdown">
+                        <button id="logoutButton" class="user-menu-item logout w-full text-left">
+                            <i class="fas fa-sign-out-alt mr-3"></i>Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area with Sidebar -->
+    <div class="flex flex-1">
+        <!-- Left Sidebar -->
+        <aside class="w-64 bg-[#5c4a3d] min-h-[calc(100vh-80px)] fixed left-0 top-20 overflow-y-auto">
+            <!-- Admin Profile -->
+            <div class="p-6 border-b border-[#7a6655]">
+                <div class="flex items-center gap-3">
+                    <img 
+                        src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face" 
+                        alt="Admin User" 
+                        class="w-12 h-12 rounded-full object-cover border-2 border-[#c17c5f]"
+                    />
+                    <div>
+                        <h3 class="text-white font-semibold text-sm">Admin User</h3>
+                        <span class="inline-block bg-[#c17c5f] text-white text-xs px-2 py-1 rounded-full mt-1">Administrator</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation Menu -->
+            <nav class="p-4 mt-4">
+                <ul class="space-y-1">
+                    <li>
+                        <a href="/adminDashboard" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-tachometer-alt w-5"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/adminUsersManagement" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-users w-5"></i>
+                            <span>User Management</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/adminArtisanApproval" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-user-check w-5"></i>
+                            <span>Artisan Approvals</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/adminProducts" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-box w-5"></i>
+                            <span>Products</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/adminOrderManagment" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-shopping-bag w-5"></i>
+                            <span>Orders</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/adminAuction" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-gavel w-5"></i>
+                            <span>Auctions</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/adminRefund" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-undo w-5"></i>
+                            <span>Refunds</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/adminReview" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-star w-5"></i>
+                            <span>Review Moderation</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- Reports Section -->
+            <div class="p-4 mt-2 border-t border-[#7a6655]">
+                <ul class="space-y-1">
+                    <li>
+                        <a href="/adminReports" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-history w-5"></i>
+                            <span>Reports</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 ml-64 p-8">
+            <!-- Page Header -->
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-[#5c4a3d] mb-2">Reports & Analytics</h1>
+                <p class="text-[#8b7355]">Platform-wide performance metrics and insights.</p>
+            </div>
+
+            <!-- Top Bar with Date Range and Download -->
+            <div class="bg-white rounded-xl card-shadow p-6 mb-6">
+                <div class="flex flex-wrap items-center gap-4">
+                    <!-- Date Range Picker -->
+                    <div class="relative">
+                        <select id="dateRangeSelect" onchange="updateDateRange()" class="appearance-none border border-[#e5e0d8] rounded-lg px-4 py-2.5 pr-10 focus:border-[#c17c5f] focus:outline-none text-[#5c4a3d] bg-white cursor-pointer">
+                            <option value="week" th:selected="${selectedRange == 'week'}">This Week</option>
+                            <option value="month" th:selected="${selectedRange == 'month'}">This Month</option>
+                            <option value="3months" th:selected="${selectedRange == '3months'}">Last 3 Months</option>
+                            <option value="year" th:selected="${selectedRange == 'year'}">This Year</option>
+                            <option value="custom" th:selected="${selectedRange == 'custom'}">Custom Range</option>
+                        </select>
+                        <i class="fas fa-calendar-alt absolute right-3 top-1/2 transform -translate-y-1/2 text-[#8b7355] pointer-events-none"></i>
+                    </div>
+
+                    <!-- Custom Date Range (hidden by default) -->
+                    <div id="customDateRange" class="hidden flex items-center gap-2">
+                        <input type="date" id="customStartDate" class="border border-[#e5e0d8] rounded-lg px-4 py-2.5 focus:border-[#c17c5f] focus:outline-none text-[#5c4a3d]" th:value="${startDate}" />
+                        <span class="text-[#8b7355]">to</span>
+                        <input type="date" id="customEndDate" class="border border-[#e5e0d8] rounded-lg px-4 py-2.5 focus:border-[#c17c5f] focus:outline-none text-[#5c4a3d]" th:value="${endDate}" />
+                    </div>
+
+                    <!-- Download Report Button -->
+                    <button onclick="downloadReport()" class="ml-auto bg-[#c17c5f] hover:bg-[#a5664d] text-white px-5 py-2.5 rounded-lg font-medium text-sm transition-colors flex items-center gap-2">
+                        <i class="fas fa-download"></i>
+                        Download Report
+                    </button>
+                </div>
+            </div>
+
+            <!-- First Row: KPI Cards -->
+            <div id="kpiCards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-6">
+                <!-- Total Revenue -->
+                <div class="bg-white rounded-xl card-shadow p-6" data-kpi="revenue">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-dollar-sign text-green-600 text-xl"></i>
+                        </div>
+                        <span class="kpi-change text-sm font-semibold flex items-center gap-1" th:classappend="${totalRevenueChange >= 0} ? 'text-green-600' : 'text-red-500'">
+                            <i class="fas" th:classappend="${totalRevenueChange >= 0} ? 'fa-arrow-up' : 'fa-arrow-down'"></i>
+                            <span th:text="${totalRevenueChange} + '%'">0%</span>
+                        </span>
+                    </div>
+                    <p class="text-[#8b7355] text-sm font-medium mb-1">Total Revenue</p>
+                    <p class="text-2xl font-bold text-[#5c4a3d] kpi-value">BD <span th:text="${#numbers.formatDecimal(totalRevenue, 1, 'COMMA', 0, 'POINT')}">0</span></p>
+                    <p class="text-xs text-[#8b7355] mt-2 kpi-subtitle">orders in selected period</p>
+                </div>
+
+                <!-- Total Orders -->
+                <div class="bg-white rounded-xl card-shadow p-6" data-kpi="orders">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-shopping-bag text-blue-600 text-xl"></i>
+                        </div>
+                        <span class="kpi-change text-sm font-semibold flex items-center gap-1" th:classappend="${totalOrdersChange >= 0} ? 'text-green-600' : 'text-red-500'">
+                            <i class="fas" th:classappend="${totalOrdersChange >= 0} ? 'fa-arrow-up' : 'fa-arrow-down'"></i>
+                            <span th:text="${totalOrdersChange} + '%'">0%</span>
+                        </span>
+                    </div>
+                    <p class="text-[#8b7355] text-sm font-medium mb-1">Total Orders</p>
+                    <p class="text-2xl font-bold text-[#5c4a3d] kpi-value" th:text="${totalOrders}">0</p>
+                    <p class="text-xs text-[#8b7355] mt-2 kpi-subtitle">orders in selected period</p>
+                </div>
+
+                <!-- New Users -->
+                <div class="bg-white rounded-xl card-shadow p-6" data-kpi="newUsers">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-user-plus text-purple-600 text-xl"></i>
+                        </div>
+                        <span class="kpi-change text-sm font-semibold flex items-center gap-1" th:classappend="${newUsersChange >= 0} ? 'text-green-600' : 'text-red-500'">
+                            <i class="fas" th:classappend="${newUsersChange >= 0} ? 'fa-arrow-up' : 'fa-arrow-down'"></i>
+                            <span th:text="${newUsersChange} + '%'">0%</span>
+                        </span>
+                    </div>
+                    <p class="text-[#8b7355] text-sm font-medium mb-1">New Users</p>
+                    <p class="text-2xl font-bold text-[#5c4a3d] kpi-value" th:text="${newUsers}">0</p>
+                    <p class="text-xs text-[#8b7355] mt-2 kpi-subtitle">customers registered in period</p>
+                </div>
+
+                <!-- Active Artisans -->
+                <div class="bg-white rounded-xl card-shadow p-6" data-kpi="artisans">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-palette text-amber-600 text-xl"></i>
+                        </div>
+                        <span class="kpi-change text-sm font-semibold flex items-center gap-1" th:classappend="${activeArtisansChange >= 0} ? 'text-green-600' : 'text-red-500'">
+                            <i class="fas" th:classappend="${activeArtisansChange >= 0} ? 'fa-arrow-up' : 'fa-arrow-down'"></i>
+                            <span th:text="${activeArtisansChange} + '%'">0%</span>
+                        </span>
+                    </div>
+                    <p class="text-[#8b7355] text-sm font-medium mb-1">Active Artisans</p>
+                    <p class="text-2xl font-bold text-[#5c4a3d] kpi-value" th:text="${activeArtisans}">0</p>
+                    <p class="text-xs text-[#8b7355] mt-2 kpi-subtitle"><span th:text="${newArtisansInPeriod}">0</span> new artisans in period</p>
+                </div>
+
+                <!-- Auction Revenue -->
+                <div class="bg-white rounded-xl card-shadow p-6" data-kpi="auctionRev">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-terracotta/20 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-gavel text-[#c17c5f] text-xl"></i>
+                        </div>
+                        <span class="kpi-change text-sm font-semibold flex items-center gap-1" th:classappend="${auctionRevenueChange >= 0} ? 'text-green-600' : 'text-red-500'">
+                            <i class="fas" th:classappend="${auctionRevenueChange >= 0} ? 'fa-arrow-up' : 'fa-arrow-down'"></i>
+                            <span th:text="${auctionRevenueChange} + '%'">0%</span>
+                        </span>
+                    </div>
+                    <p class="text-[#8b7355] text-sm font-medium mb-1">Auction Revenue</p>
+                    <p class="text-2xl font-bold text-[#5c4a3d] kpi-value">BD <span th:text="${#numbers.formatDecimal(auctionRevenue, 1, 'COMMA', 0, 'POINT')}">0</span></p>
+                    <p class="text-xs text-[#8b7355] mt-2 kpi-subtitle">from ended auctions in period</p>
+                </div>
+            </div>
+
+            <!-- Second Row: Revenue Over Time & Orders by Category -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <!-- Revenue Over Time Line Chart -->
+                <div class="bg-white rounded-xl card-shadow p-6" id="revenueChartCard">
+                    <h3 class="text-lg font-bold text-[#5c4a3d] mb-4">Revenue Over Time</h3>
+                    <div class="relative h-64">
+                        <svg id="revenueLineSvg" viewBox="0 0 600 250" class="w-full h-full">
+                            <!-- Grid lines -->
+                            <line x1="50" y1="200" x2="580" y2="200" stroke="#e5e0d8" stroke-width="1"/>
+                            <line x1="50" y1="150" x2="580" y2="150" stroke="#e5e0d8" stroke-width="1" stroke-dasharray="4"/>
+                            <line x1="50" y1="100" x2="580" y2="100" stroke="#e5e0d8" stroke-width="1" stroke-dasharray="4"/>
+                            <line x1="50" y1="50" x2="580" y2="50" stroke="#e5e0d8" stroke-width="1" stroke-dasharray="4"/>
+
+                            <!-- Y-axis labels -->
+                            <text x="45" y="205" class="text-xs fill-[#8b7355]" text-anchor="end">0</text>
+                            <text x="45" y="155" class="text-xs fill-[#8b7355]" text-anchor="end">25K</text>
+                            <text x="45" y="105" class="text-xs fill-[#8b7355]" text-anchor="end">50K</text>
+                            <text x="45" y="55" class="text-xs fill-[#8b7355]" text-anchor="end">75K</text>
+
+                            <!-- X-axis labels (updated by JS) -->
+                            <g id="revenueXLabels"></g>
+
+                            <!-- Area fill -->
+                            <path id="revenueAreaPath" d="M 80 200 L 580 200 Z" fill="url(#gradient)" opacity="0.3"/>
+
+                            <!-- Line -->
+                            <path id="revenueLinePath" d="M 80 200 L 580 200" fill="none" stroke="#c17c5f" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+
+                            <!-- Data points -->
+                            <g id="revenueDataPoints"></g>
+
+                            <!-- Gradient definition -->
+                            <defs>
+                                <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#c17c5f;stop-opacity:0.4"/>
+                                    <stop offset="100%" style="stop-color:#c17c5f;stop-opacity:0"/>
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Orders by Category Donut Chart -->
+                <div class="bg-white rounded-xl card-shadow p-6" id="categoryChartCard">
+                    <h3 class="text-lg font-bold text-[#5c4a3d] mb-4">Orders by Category</h3>
+                    <div class="flex items-center gap-8">
+                        <div class="relative w-48 h-48">
+                            <svg id="categoryDonutSvg" viewBox="0 0 100 100" class="w-full h-full">
+                                <g id="categoryDonutSegments"></g>
+                                <circle cx="50" cy="50" r="25" fill="white"/>
+                                <text x="50" y="48" class="text-xs fill-[#8b7355]" text-anchor="middle">Total</text>
+                                <text id="categoryDonutTotal" x="50" y="60" class="text-sm font-bold fill-[#5c4a3d]" text-anchor="middle" th:text="${totalOrders}">0</text>
+                            </svg>
+                        </div>
+                        <div id="categoryLegend" class="flex-1 space-y-3">
+                            <div th:each="cat, iterStat : ${categoryNames}" class="flex items-center justify-between category-legend-row">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-4 h-4 rounded category-swatch"
+                                         th:style="${iterStat.index == 0 ? 'background-color:#c17c5f' : (iterStat.index == 1 ? 'background-color:#8b7355' : (iterStat.index == 2 ? 'background-color:#a5664d' : (iterStat.index == 3 ? 'background-color:#d4c5b5' : 'background-color:#f5ebe0')))}"></div>
+                                    <span class="text-sm text-[#5c4a3d] category-name" th:text="${cat}">Category</span>
+                                </div>
+                                <span class="text-sm font-semibold text-[#5c4a3d] category-pct" th:text="${categoryPercentages[iterStat.index]} + '%'">0%</span>
+                            </div>
+                            <div th:if="${#lists.isEmpty(categoryNames)}" class="text-sm text-[#8b7355]">No category data available</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Third Row: New User Registrations & Top Performing Artisans -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <!-- New User Registrations Bar Chart -->
+                <div class="bg-white rounded-xl card-shadow p-6" id="registrationsChartCard">
+                    <h3 class="text-lg font-bold text-[#5c4a3d] mb-4">New User Registrations</h3>
+                    <div class="relative h-64">
+                        <svg id="registrationsBarSvg" viewBox="0 0 600 250" class="w-full h-full">
+                            <!-- Grid lines -->
+                            <line x1="50" y1="200" x2="580" y2="200" stroke="#e5e0d8" stroke-width="1"/>
+                            <line x1="50" y1="150" x2="580" y2="150" stroke="#e5e0d8" stroke-width="1" stroke-dasharray="4"/>
+                            <line x1="50" y1="100" x2="580" y2="100" stroke="#e5e0d8" stroke-width="1" stroke-dasharray="4"/>
+                            <line x1="50" y1="50" x2="580" y2="50" stroke="#e5e0d8" stroke-width="1" stroke-dasharray="4"/>
+
+                            <!-- Y-axis labels -->
+                            <text x="45" y="205" class="text-xs fill-[#8b7355]" text-anchor="end">0</text>
+                            <text x="45" y="155" class="text-xs fill-[#8b7355]" text-anchor="end">25</text>
+                            <text x="45" y="105" class="text-xs fill-[#8b7355]" text-anchor="end">50</text>
+                            <text x="45" y="55" class="text-xs fill-[#8b7355]" text-anchor="end">75</text>
+
+                            <g id="registrationsXLabels"></g>
+                            <g id="registrationsBars"></g>
+
+                            <!-- Legend -->
+                            <rect x="200" y="10" width="15" height="15" fill="#8b5cf6" rx="2"/>
+                            <text x="220" y="22" class="text-xs fill-[#5c4a3d]">Customers</text>
+                            <rect x="300" y="10" width="15" height="15" fill="#f59e0b" rx="2"/>
+                            <text x="320" y="22" class="text-xs fill-[#5c4a3d]">Artisans</text>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Top Performing Artisans Horizontal Bar Chart -->
+                <div class="bg-white rounded-xl card-shadow p-6" id="topArtisansCard">
+                    <h3 class="text-lg font-bold text-[#5c4a3d] mb-4">Top Performing Artisans</h3>
+                    <div id="topArtisansList" class="space-y-4">
+                        <div th:each="artisan, iterStat : ${topArtisanNames}">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-full bg-[#c17c5f] flex items-center justify-center text-white font-bold"
+                                         th:text="${#strings.substring(artisan, 0, 1)}">A</div>
+                                    <span class="text-sm font-medium text-[#5c4a3d]" th:text="${artisan}">Artisan Name</span>
+                                </div>
+                                <span class="text-sm font-bold text-[#c17c5f]" th:text="'BD ' + ${#numbers.formatDecimal(topArtisanRevenues[iterStat.index], 1, 'COMMA', 0, 'POINT')}">BD 0</span>
+                            </div>
+                            <div class="w-full bg-[#e5e0d8] rounded-full h-3">
+                                <div class="bg-[#c17c5f] h-3 rounded-full" th:style="'width:' + ${topArtisanPercentages[iterStat.index]} + '%'"></div>
+                            </div>
+                        </div>
+                        <div th:if="${#lists.isEmpty(topArtisanNames)}" class="text-sm text-[#8b7355] text-center py-8">No artisan revenue data available</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fourth Row: Best Selling Products Table -->
+            <div class="bg-white rounded-xl card-shadow overflow-hidden mb-6">
+                <div class="px-6 py-4 border-b border-[#e5e0d8]">
+                    <h3 class="text-lg font-bold text-[#5c4a3d]">Best Selling Products</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-[#f5ebe0]">
+                            <tr>
+                                <th class="text-left text-sm font-semibold text-[#5c4a3d] px-6 py-4">Rank</th>
+                                <th class="text-left text-sm font-semibold text-[#5c4a3d] px-6 py-4">Product</th>
+                                <th class="text-left text-sm font-semibold text-[#5c4a3d] px-6 py-4">Artisan</th>
+                                <th class="text-left text-sm font-semibold text-[#5c4a3d] px-6 py-4">Category</th>
+                                <th class="text-left text-sm font-semibold text-[#5c4a3d] px-6 py-4">Units Sold</th>
+                                <th class="text-left text-sm font-semibold text-[#5c4a3d] px-6 py-4">Revenue</th>
+                                <th class="text-left text-sm font-semibold text-[#5c4a3d] px-6 py-4">Avg Rating</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bestProductsBody" class="divide-y divide-[#e5e0d8]">
+                            <tr th:each="bp : ${bestProducts}" class="table-row-hover"
+                                th:classappend="${bp.rank == 1 ? 'rank-gold' : (bp.rank == 2 ? 'rank-silver' : (bp.rank == 3 ? 'rank-bronze' : ''))}">
+                                <td class="px-6 py-4">
+                                    <div th:if="${bp.rank == 1}" class="w-8 h-8 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center text-white font-bold text-sm" th:text="${bp.rank}">1</div>
+                                    <div th:if="${bp.rank == 2}" class="w-8 h-8 bg-gradient-to-br from-gray-300 to-gray-500 rounded-full flex items-center justify-center text-white font-bold text-sm" th:text="${bp.rank}">2</div>
+                                    <div th:if="${bp.rank == 3}" class="w-8 h-8 bg-gradient-to-br from-amber-600 to-amber-800 rounded-full flex items-center justify-center text-white font-bold text-sm" th:text="${bp.rank}">3</div>
+                                    <div th:if="${bp.rank > 3}" class="w-8 h-8 bg-[#e5e0d8] rounded-full flex items-center justify-center text-[#5c4a3d] font-bold text-sm" th:text="${bp.rank}">4</div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <img th:src="${bp.imageUrl}" alt="Product" class="w-14 h-14 rounded-lg object-cover" onerror="this.src='/images/Logo.png'"/>
+                                        <div>
+                                            <p class="font-semibold text-[#5c4a3d]" th:text="${bp.title}">Product Name</p>
+                                            <p class="text-xs text-[#8b7355]" th:text="'ID: ' + ${bp.productId}">ID: 0</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="font-medium text-[#5c4a3d]" th:text="${bp.artisanName}">Artisan</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-[#8b7355] text-sm" th:text="${bp.category}">Category</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="font-semibold text-[#5c4a3d]" th:text="${bp.unitsSold}">0</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="font-bold text-green-600" th:text="'BD ' + ${#numbers.formatDecimal(bp.revenue, 1, 'COMMA', 0, 'POINT')}">BD 0</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="star-rating text-sm">
+                                        <i th:each="i : ${#numbers.sequence(1, 5)}"
+                                           th:class="${i <= bp.avgRating ? 'fas fa-star' : (i - 1 < bp.avgRating && i > bp.avgRating ? 'fas fa-star-half-alt' : 'far fa-star')}"></i>
+                                        <span class="text-[#8b7355] ml-1" th:text="'(' + ${bp.avgRating} + ')'"></span>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(bestProducts)}">
+                                <td colspan="7" class="px-6 py-8 text-center text-[#8b7355]">No product sales data available</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Platform Health Section -->
+            <div class="bg-white rounded-xl card-shadow p-6">
+                <h3 class="text-lg font-bold text-[#5c4a3d] mb-4">Platform Health</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Average Response Time -->
+                    <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-bolt text-blue-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm text-blue-700 font-medium">Average Response Time</p>
+                                <p class="text-2xl font-bold text-blue-600">127ms</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 text-xs text-blue-600">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Within SLA target (&lt;200ms)</span>
+                        </div>
+                    </div>
+
+                    <!-- System Uptime -->
+                    <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 border border-green-100">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-server text-green-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm text-green-700 font-medium">System Uptime</p>
+                                <p class="text-2xl font-bold text-green-600">99.9%</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 text-xs text-green-600">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Meets NFR-R1 requirement</span>
+                        </div>
+                    </div>
+
+                    <!-- Last Backup -->
+                    <div class="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl p-6 border border-amber-100">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-database text-amber-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm text-amber-700 font-medium">Last Backup</p>
+                                <p class="text-lg font-bold text-amber-600">Mar 20, 2025</p>
+                                <p class="text-xs text-amber-600">02:30 AM UTC</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 text-xs text-amber-600">
+                            <i class="fas fa-clock"></i>
+                            <span>Daily automated backup</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script th:inline="javascript">
+        window.__INITIAL_REPORT__ = /*[[${report}]]*/ {};
+    </script>
+    <script src="/adminDashboard.js"></script>
+    <script src="/adminReports.js"></script>
+    <script>
+        if (window.initAuthGuard) {
+            initAuthGuard({
+                redirectTo: "/login",
+                message: "Administrator access required. Please login."
+            });
+        }
+    </script>
+</body>
+</html>

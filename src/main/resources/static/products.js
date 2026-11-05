@@ -186,6 +186,33 @@ document.addEventListener('DOMContentLoaded', () => {
     applyFilters();
     updateLoginState();
 
+    document.addEventListener('click', async (event) => {
+        const btn = event.target.closest('.add-to-cart-quick-btn');
+        if (!btn) return;
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (window.requireLoginForAction && !window.requireLoginForAction('Login/Register first to add items to your cart.')) {
+            return;
+        }
+
+        const productId = btn.getAttribute('data-product-id');
+        if (!productId || !window.addProductToCart) return;
+
+        btn.disabled = true;
+        try {
+            await window.addProductToCart(productId, 1);
+            showToast('Added to cart!', 'success');
+
+            updateCartBadge(); 
+
+        } catch (err) {
+            showToast(err.message || 'Could not add to cart', 'error');
+        } finally {
+            btn.disabled = false;
+        }
+    });
+
     // --- 3. View Details Navigation ---
     document.addEventListener('click', function(event) {
         const button = event.target.closest('button');
@@ -326,5 +353,9 @@ function updateCartBadge() {
             if (!badge) return;
             const count = parseInt(sessionStorage.getItem('cartCount') ?? '0', 10);
             badge.textContent = count;
+
+            badge.style.display = count > 0 ? 'flex' : 'none';
         });
 }
+
+

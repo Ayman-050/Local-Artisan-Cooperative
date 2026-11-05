@@ -24,4 +24,3 @@ public class Address {
     private String country;
     private boolean isDefault;
 }
- 

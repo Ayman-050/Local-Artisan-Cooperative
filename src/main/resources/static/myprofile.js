@@ -68,16 +68,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         // Update form inputs
-        const personalInfoSection = document.querySelector('section:first-of-type');
-        if (personalInfoSection) {
-            const nameInput = personalInfoSection.querySelector('input[type="text"]');
-            const emailInput = personalInfoSection.querySelector('input[type="email"]');
-            const phoneInput = personalInfoSection.querySelector('input[type="tel"]');
-            
-            if (nameInput) nameInput.value = userProfile.name || '';
-            if (emailInput) emailInput.value = userProfile.email || '';
-            if (phoneInput) phoneInput.value = userProfile.phone || '';
-        }
+        const nameInput = document.getElementById('fullName');
+        const emailInput = document.getElementById('emailAddress');
+        const phoneInput = document.getElementById('phoneNumber');
+        if (nameInput) nameInput.value = userProfile.name || '';
+        if (emailInput) emailInput.value = userProfile.email || '';
+        if (phoneInput) phoneInput.value = userProfile.phone || '';
         
         // Update shop info if artisan
         if (userRole === 'ARTISAN') {
@@ -90,7 +86,40 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (shopNameInput) shopNameInput.value = userProfile.shopName || '';
                 if (bioTextarea) bioTextarea.value = userProfile.biography || '';
             }
+
+            const customerTabs = document.getElementById('customer-account-tabs');
+            if (customerTabs) {
+                customerTabs.innerHTML = `
+                    <div class="flex flex-wrap gap-2">
+                        <a href="/artisanDashboard?id=${sessionStorage.getItem('userId') || ''}" class="px-4 py-2 bg-[#faf9f6] text-[#8b7355] hover:text-[#c17c5f] rounded-lg font-medium transition-colors">
+                            <i class="fas fa-chart-line mr-2"></i>Artisan Dashboard
+                        </a>
+                        <a href="/profile" class="px-4 py-2 bg-[#c17c5f] text-white rounded-lg font-medium transition-colors">
+                            <i class="fas fa-user mr-2"></i>My Profile
+                        </a>
+                    </div>`;
+            }
+
+            const cartLink = document.getElementById('cart-link');
+            if (cartLink) cartLink.classList.add('hidden');
+
+            const notificationsLink = document.getElementById('notifications-link');
+            if (notificationsLink) notificationsLink.href = '/artisanNotification?id=' + (sessionStorage.getItem('userId') || '');
         }
+
+        const statsSection = document.getElementById('profile-stats-section');
+        const totalOrdersEl = document.getElementById('total-orders');
+        const totalSpentEl = document.getElementById('total-spent');
+        if (userRole === 'CUSTOMER') {
+            statsSection?.classList.remove('hidden');
+            const orders = userProfile.totalOrders ?? 0;
+            const spent = userProfile.totalSpent ?? 0;
+            if (totalOrdersEl) totalOrdersEl.textContent = orders > 0 ? String(orders) : '—';
+            if (totalSpentEl) totalSpentEl.textContent = spent > 0 ? Number(spent).toFixed(3) + ' BD' : '—';
+        } else {
+            statsSection?.classList.add('hidden');
+        }
+
         setRole(userRole.toLowerCase());
     }
 
@@ -210,20 +239,53 @@ window.setRole = function (role) {
 // ============================================================
 
 window.savePersonalInfo = function () {
-    const section = document.querySelector('section:first-of-type');
-    const inputs  = section?.querySelectorAll('input');
-    let   valid   = true;
+    // Collect form data
+    const nameInput = document.getElementById('fullName');
+    const emailInput = document.getElementById('emailAddress');
+    const phoneInput = document.getElementById('phoneNumber');
+    const name = nameInput?.value.trim() || '';
+    const email = emailInput?.value.trim() || sessionStorage.getItem('userEmail') || '';
+    const phone = phoneInput?.value.trim() || '';
 
-    inputs?.forEach(input => {
-        if (!input.value.trim()) { valid = false; }
-    });
-
-    if (!valid) {
-        showToast('Please fill in all required fields.', 'error');
+    if (!name || !email || !phone) {
+        showToast('Please fill in all personal information fields before saving.', 'error');
         return;
     }
 
-    showToast('Personal information saved successfully!', 'success');
+    // Prepare payload
+    const payload = { name, email, phone };
+
+    // Send request to backend
+    console.log('Saving personal info payload:', payload);
+    fetch('/api/user/update-profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    })
+        .then(r => {
+            if (!r.ok) {
+                return r.text().then(txt => Promise.reject(new Error(txt)));
+            }
+            return r.json();
+        })
+        .then(data => {
+            if (data.success) {
+                showToast('Personal information saved successfully!', 'success');
+                if (data.user) {
+                    sessionStorage.setItem('userProfile', JSON.stringify(data.user));
+                    sessionStorage.setItem('userEmail', data.user.email || email);
+                    sessionStorage.setItem('userName', data.user.name || name);
+                    renderProfileData(data.user);
+                }
+            } else {
+                showToast(data.message || 'Failed to save personal information.', 'error');
+            }
+        })
+
+        .catch(err => {
+            console.error('Save personal info error:', err);
+            showToast('Error saving personal information.', 'error');
+        });
 };
 
 // ============================================================
@@ -231,30 +293,47 @@ window.savePersonalInfo = function () {
 // ============================================================
 
 window.updatePassword = function () {
-    const security = document.querySelectorAll('section')[1];
-    const pwds     = security?.querySelectorAll('input[type="password"]');
-    if (!pwds || pwds.length < 3) return;
+    // Collect password fields
+    const currentPwd = document.querySelector('section:nth-of-type(2) input[type="password"]:nth-of-type(1)').value;
+    const newPwd = document.querySelector('section:nth-of-type(2) input[type="password"]:nth-of-type(2)').value;
+    const confirmPwd = document.querySelector('section:nth-of-type(2) input[type="password"]:nth-of-type(3)').value;
 
-    const [current, newPwd, confirm] = pwds;
-
-    if (!current.value) {
+    if (!currentPwd) {
         showToast('Please enter your current password.', 'error');
-        current.focus();
         return;
     }
-    if (newPwd.value.length < 8) {
+    if (newPwd.length < 8) {
         showToast('New password must be at least 8 characters.', 'error');
-        newPwd.focus();
         return;
     }
-    if (newPwd.value !== confirm.value) {
+    if (newPwd !== confirmPwd) {
         showToast('New passwords do not match.', 'error');
-        confirm.focus();
         return;
     }
 
-    showToast('Password updated successfully!', 'success');
-    [current, newPwd, confirm].forEach(i => i.value = '');
+    const payload = {
+        email: sessionStorage.getItem('userEmail'),
+        oldPassword: currentPwd,
+        newPassword: newPwd
+    };
+
+    fetch('/api/auth/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                showToast('Password updated successfully!', 'success');
+                // Clear fields
+                document.querySelectorAll('section:nth-of-type(2) input[type="password"]').forEach(i => i.value = '');
+            } else {
+                showToast(data.message || 'Failed to update password.', 'error');
+            }
+        })
+        .catch(() => showToast('Error updating password.', 'error'));
+
 };
 
 // ============================================================
@@ -309,13 +388,26 @@ window.deleteAccount = function () {
 };
 
 window.logout = function () {
-    sessionStorage.removeItem('loggedIn');
-    sessionStorage.removeItem('isLoggedIn');
-    sessionStorage.removeItem('userEmail');
-    sessionStorage.removeItem('userName');
-    sessionStorage.removeItem('postLoginNext');
-    showToast('You have been logged out.', 'success');
-    setTimeout(() => window.location.href = '/login', 1000);
+    const email = sessionStorage.getItem('userEmail');
+    const doLogout = () => {
+        sessionStorage.removeItem('loggedIn');
+        sessionStorage.removeItem('isLoggedIn');
+        sessionStorage.removeItem('userEmail');
+        sessionStorage.removeItem('userName');
+        sessionStorage.removeItem('cartCount');
+        sessionStorage.removeItem('postLoginNext');
+        showToast('You have been logged out.', 'success');
+        setTimeout(() => window.location.href = '/login', 1000);
+    };
+    if (email) {
+        fetch('/api/auth/logout', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email })
+        }).finally(doLogout);
+    } else {
+        doLogout();
+    }
 };
 
 // ============================================================

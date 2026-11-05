@@ -1,12 +1,14 @@
 package com.example.demo.service;
 
 import com.example.demo.model.Product;
+import com.example.demo.model.WishlistItem;
 import com.example.demo.repository.ProductRepository;
+import com.example.demo.repository.WishlistItemRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import java.time.LocalDate;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class ProductService {
@@ -14,35 +16,76 @@ public class ProductService {
     @Autowired
     private ProductRepository productRepository;
 
-    public List<Product> getAllStandardProducts() {
-        return productRepository.findByIsAuctionItem(false);
-    }
+    @Autowired
+    private WishlistItemRepository wishlistItemRepository;
 
-    public List<Product> getAllAuctionProducts() {
-        return productRepository.findByIsAuctionItem(true);
-    }
+    @Autowired
+    private NotificationService notificationService;
 
-    public List<Product> getAllProducts() {
-        return productRepository.findAll();
-    }
+    @Transactional
+    public Product updateProduct(Long productId, Product updatedDetails) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("Product not found"));
 
-    public Optional<Product> getProductById(Long id) {
-        return productRepository.findById(id);
-    }
+        double oldPrice = product.getPrice();
+        int oldStock = product.getStockQuantity();
+        String oldStatus = product.getStatus();
+        boolean wasAvailable = (oldStock > 0 && !"out of stock".equalsIgnoreCase(oldStatus));
 
-    public List<Product> getProductsByCategory(String category) {
-        return productRepository.findByProductCategory_NameIgnoreCase(category);
-    }
-
-    // Automatically sets addingDate when creating a new product
-    public Product saveProduct(Product product) {
-        if (product.getId() == null) {
-            product.setAddingDate(LocalDate.now());
+        product.setTitle(updatedDetails.getTitle());
+        product.setDescription(updatedDetails.getDescription());
+        product.setPrice(updatedDetails.getPrice());
+        product.setStockQuantity(updatedDetails.getStockQuantity());
+        if (updatedDetails.getStockQuantity() <= 0) {
+            product.setStatus("out of stock");
+        } else if (updatedDetails.getStatus() != null) {
+            product.setStatus(updatedDetails.getStatus());
+        } else {
+            product.setStatus("active");
         }
-        return productRepository.save(product);
+        product.setCategory(updatedDetails.getCategory());
+        product.setImageUrl(updatedDetails.getImageUrl());
+
+        productRepository.save(product);
+
+        boolean isAvailable = (product.getStockQuantity() > 0 && !"out of stock".equalsIgnoreCase(product.getStatus()));
+
+        // Check for discount or restock to notify wishlist users
+        if (product.getPrice() < oldPrice) {
+            notifyWishlistUsers(product, "Price Drop!", "An item in your wishlist, " + product.getTitle() + ", is now cheaper! Only " + product.getPrice() + " BD");
+        }
+        
+        if (!wasAvailable && isAvailable) {
+            notifyWishlistUsers(product, "Back in Stock!", "Good news! " + product.getTitle() + " is back in stock.");
+        }
+
+        // Notify artisan if product became out of stock
+        boolean becameOutOfStock = (wasAvailable && !isAvailable);
+        if (becameOutOfStock && product.getArtisan() != null) {
+            notificationService.sendNotification(
+                product.getArtisan(),
+                "Product Out of Stock",
+                "Your product '" + product.getTitle() + "' has become out of stock.",
+                "OUT_OF_STOCK",
+                "/artisan/products"
+            );
+        }
+
+        return product;
     }
 
-    public void deleteProduct(Long id) {
-        productRepository.deleteById(id);
+    private void notifyWishlistUsers(Product product, String title, String message) {
+        List<WishlistItem> items = wishlistItemRepository.findByProduct(product);
+        for (WishlistItem item : items) {
+            if (item.getWishlist() != null && item.getWishlist().getCustomer() != null) {
+                notificationService.sendNotification(
+                    item.getWishlist().getCustomer(),
+                    title,
+                    message,
+                    "WISHLIST_UPDATE",
+                    "/ProductDetailsStandard?id=" + product.getId()
+                );
+            }
+        }
     }
 }

@@ -47,6 +47,14 @@ A Spring Boot web application for an artisan marketplace called "ArtsyVibe" — 
 
 _Populate as you build_
 
+## Test Credentials (seed data, password: `password123`)
+
+| Role     | Email                  |
+|----------|------------------------|
+| Admin    | alice@artsyvibe.com    |
+| Artisan  | elena@artsyvibe.com    |
+| Customer | john@example.com       |
+
 ## Gotchas
 
 - Template filenames are mixed-case (e.g., `Login.html`, `Forget-Password.html`) — Thymeleaf suffix must remain lowercase `.html`

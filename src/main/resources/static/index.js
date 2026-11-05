@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.key === 'Enter') newsletterBtn?.click();
     });
 
-    // 5. Badges initialization (Login state handled by authguard.js)
+    // 6. Badges initialization (Login state handled by authguard.js)
     // ----------------------------------------------------------
     if (window.updateNotificationBadge) updateNotificationBadge();
     if (window.updateCartBadge) updateCartBadge();

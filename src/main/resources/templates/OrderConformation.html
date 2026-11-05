@@ -103,7 +103,7 @@
             </div>
             
             <div class="flex items-center space-x-4">
-                <div id="login-button-wrapper" class="flex items-center">
+                <div id="login-button-wrapper" class="flex items-center hidden">
                     <a href="/login" class="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-[#c17c5f] to-[#a5664d] text-white text-sm font-semibold shadow-lg shadow-[#c17c5f]/20 transition-all hover:from-[#b06b4f] hover:to-[#8f5d3f]">
                         <i class="fas fa-sign-in-alt"></i>
                         Login
@@ -129,8 +129,8 @@
     </nav>
 
         <!-- Main Content: Order Confirmation -->
-        <main class="flex-1">
-            <div class="max-w-2xl mx-auto">
+        <main class="flex-1" th:with="hasOrder=${order != null}">
+            <div class="max-w-2xl mx-auto" th:if="${hasOrder}">
                 <!-- Success Icon and Header -->
                 <div class="text-center mb-8">
                     <div class="inline-flex items-center justify-center w-24 h-24 bg-success-light rounded-full mb-6">
@@ -150,11 +150,11 @@
                     <div class="grid grid-cols-2 gap-4 mb-6 pb-6 border-b border-[#e5e0d8]">
                         <div>
                             <p class="text-sm text-[#8b7355] mb-1">Order ID</p>
-                            <p class="font-semibold text-[#5c4a3d]">#AC-2024-78542</p>
+                            <p class="font-semibold text-[#5c4a3d]" th:text="'#AC-' + ${order.orderId}">#AC-2024-78542</p>
                         </div>
                         <div>
                             <p class="text-sm text-[#8b7355] mb-1">Order Date</p>
-                            <p class="font-semibold text-[#5c4a3d]">January 15, 2024</p>
+                            <p class="font-semibold text-[#5c4a3d]" th:text="${#temporals.format(order.date, 'MMMM dd, yyyy')}">January 15, 2024</p>
                         </div>
                     </div>
                     
@@ -162,35 +162,15 @@
                     <div class="mb-6 pb-6 border-b border-[#e5e0d8]">
                         <h3 class="text-lg font-semibold text-[#5c4a3d] mb-4">Items Purchased</h3>
                         <div class="space-y-3">
-                            <div class="flex justify-between items-center">
+                            <div th:each="item : ${order.orderItems}" class="flex justify-between items-center">
                                 <div class="flex items-center gap-3">
-                                    <img src="https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=60&amp;h=60&amp;fit=crop" alt="Handmade Ceramic Vase" class="w-14 h-14 object-cover rounded-lg">
+                                    <img th:src="${item.product.imageUrl}" th:alt="${item.product.title}" class="w-14 h-14 object-cover rounded-lg">
                                     <div>
-                                        <p class="font-medium text-[#5c4a3d]">Handmade Ceramic Vase</p>
-                                        <p class="text-sm text-[#8b7355]">Qty: 1</p>
+                                        <p class="font-medium text-[#5c4a3d]" th:text="${item.product.title}">Handmade Ceramic Vase</p>
+                                        <p class="text-sm text-[#8b7355]" th:text="'Qty: ' + ${item.quantity}">Qty: 1</p>
                                     </div>
                                 </div>
-                                <p class="font-semibold text-[#5c4a3d]">85.00 BD</p>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <div class="flex items-center gap-3">
-                                    <img src="https://images.unsplash.com/photo-1733046889345-25938f38c8e7?q=80&amp;w=1180&amp;auto=format&amp;fit=crop&amp;ixlib=rb-4.1.0&amp;ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Artisan Coffee Mug Set" class="w-14 h-14 object-cover rounded-lg">
-                                    <div>
-                                        <p class="font-medium text-[#5c4a3d]">Artisan Coffee Mug Set</p>
-                                        <p class="text-sm text-[#8b7355]">Qty: 2</p>
-                                    </div>
-                                </div>
-                                <p class="font-semibold text-[#5c4a3d]">96.00 BD</p>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <div class="flex items-center gap-3">
-                                    <img src="https://images.unsplash.com/photo-1609803384069-19f3e5a70e75?q=80&amp;w=1035&amp;auto=format&amp;fit=crop&amp;ixlib=rb-4.1.0&amp;ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Handwoven Scarf" class="w-14 h-14 object-cover rounded-lg">
-                                    <div>
-                                        <p class="font-medium text-[#5c4a3d]">Handwoven Scarf</p>
-                                        <p class="text-sm text-[#8b7355]">Qty: 1</p>
-                                    </div>
-                                </div>
-                                <p class="font-semibold text-[#5c4a3d]">78.00 BD</p>
+                                <p class="font-semibold text-[#5c4a3d]" th:text="${#numbers.formatDecimal(item.price * item.quantity, 1, 2)} + ' BD'">85.00 BD</p>
                             </div>
                         </div>
                     </div>
@@ -200,10 +180,9 @@
                         <h3 class="text-lg font-semibold text-[#5c4a3d] mb-3 flex items-center">
                             <i class="fas fa-map-marker-alt terracotta mr-2"></i>Shipping Address
                         </h3>
-                        <p class="text-[#5c4a3d]">John Doe</p>
-                        <p class="text-[#5c4a3d]">123 Main Street, Apt 4B</p>
-                        <p class="text-[#5c4a3d]">New York, NY 10001</p>
-                        <p class="text-[#8b7355] mt-1">United States</p>
+                        <p class="text-[#5c4a3d]" th:text="${order.customer.name}">John Doe</p>
+                        <p class="text-[#5c4a3d]" th:text="${order.shippingAddress}">123 Main Street, Apt 4B</p>
+                        <p class="text-[#8b7355] mt-1" th:text="${order.customer.email}">john@example.com</p>
                     </div>
                     
                     <div class="pb-6 border-b border-[#e5e0d8] mb-6">
@@ -212,13 +191,14 @@
                         </h3>
                         <div class="flex justify-between items-center">
                         <div class="flex items-center gap-3">
-                            <span class="bg-[#ecfdf5] text-[#059669] text-[11px] font-bold px-2 py-1 rounded-full border border-[#6ee7b7]">Shipping</span>
+                            <span class="bg-[#ecfdf5] text-[#059669] text-[11px] font-bold px-2 py-1 rounded-full border border-[#6ee7b7]" 
+                                  th:text="${order.shippingAddress == 'Store pickup' ? 'Pickup' : 'Shipping'}">Shipping</span>
                             <div>
-                            <p class="text-[#5c4a3d]">Home Delivery</p>
-                            <p class="text-xs text-[#8b7355]">Estimated delivery: Jan 20 – Jan 24, 2024</p>
+                            <p class="text-[#5c4a3d]" th:text="${order.shippingAddress == 'Store pickup' ? 'Store Pickup' : 'Home Delivery'}">Home Delivery</p>
+                            <p class="text-xs text-[#8b7355]" th:if="${order.shippingAddress != 'Store pickup'}">Estimated delivery: 3-5 business days</p>
                             </div>
                         </div>
-                        <span class="font-semibold text-[#5c4a3d]">2.00 BD</span>
+                        <span class="font-semibold text-[#5c4a3d]" th:text="${order.shippingAddress == 'Store pickup' ? 'Free' : '2.00 BD'}">2.00 BD</span>
                         </div>
                     </div>
                     
@@ -228,10 +208,12 @@
                             <i class="fas fa-credit-card terracotta mr-2"></i>Payment Method
                         </h3>
                         <div class="flex items-center gap-3">
-                            <i class="fab fa-cc-visa text-3xl text-[#1a1f71]"></i>
+                            <i class="fab fa-cc-visa text-3xl text-[#1a1f71]" th:if="${#strings.containsIgnoreCase(order.payment?.paymentMethod, 'visa')}"></i>
+                            <i class="fab fa-cc-mastercard text-3xl text-[#eb001b]" th:if="${#strings.containsIgnoreCase(order.payment?.paymentMethod, 'master')}"></i>
+                            <i class="fas fa-money-bill-wave text-3xl text-green-600" th:if="${#strings.containsIgnoreCase(order.payment?.paymentMethod, 'cash')}"></i>
                             <div>
-                                <p class="font-medium text-[#5c4a3d]">Visa ending in 4242</p>
-                                <p class="text-sm text-[#8b7355]">Credit Card</p>
+                                <p class="font-medium text-[#5c4a3d]" th:text="${order.payment?.paymentMethod}">Visa ending in 4242</p>
+                                <p class="text-sm text-[#8b7355]">Payment processed successfully</p>
                             </div>
                         </div>
                     </div>
@@ -240,16 +222,16 @@
                     <div class="space-y-2">
                         <div class="flex justify-between text-sm text-[#8b7355]">
                             <span>Subtotal</span>
-                            <span>259.00 BD</span>
+                            <span th:text="${#numbers.formatDecimal(order.totalAmount - (order.shippingAddress == 'Store pickup' ? 0 : 2.0), 1, 2)} + ' BD'">259.00 BD</span>
                         </div>
                         <div class="flex justify-between text-sm text-[#8b7355]">
                             <span>Shipping</span>
-                            <span>2.00 BD</span>
+                            <span th:text="${order.shippingAddress == 'Store pickup' ? 'Free' : '2.00 BD'}">2.00 BD</span>
                         </div>
                             <hr class="border-[#e5e0d8] my-3">
                         <div class="flex justify-between items-center">
                             <span class="text-[17px] font-semibold">Total Paid</span>
-                            <span class="text-3xl font-bold text-[#10b981]">261.00 BD</span>
+                            <span class="text-3xl font-bold text-[#10b981]" th:text="${#numbers.formatDecimal(order.totalAmount, 1, 2)} + ' BD'">261.00 BD</span>
                         </div>
                     </div>
 
@@ -262,6 +244,20 @@
                         <i class="fas fa-arrow-left mr-3"></i>Continue Shopping
                     </a>
                 </div>
+                </div>
+            </div>
+
+            <!-- Order Not Found State -->
+            <div class="max-w-2xl mx-auto py-20 text-center" th:unless="${hasOrder}">
+                <div class="inline-flex items-center justify-center w-24 h-24 bg-red-50 rounded-full mb-6">
+                    <i class="fas fa-exclamation-circle text-6xl text-red-400"></i>
+                </div>
+                <h1 class="text-4xl font-bold text-[#5c4a3d] mb-3">Order Not Found</h1>
+                <p class="text-lg text-[#8b7355] mb-8">We couldn't retrieve the details for this order. Please check your order history.</p>
+                <a href="/myorders" class="inline-block bg-[#c17c5f] hover:bg-[#a5664d] text-white px-8 py-3 rounded-xl font-bold transition-colors shadow-lg">
+                    View My Orders
+                </a>
+            </div>
         </main>
     </div>
 
@@ -279,6 +275,7 @@
     <script src="/authguard.js"></script>
 </body>
 </html>
+
 
 
 

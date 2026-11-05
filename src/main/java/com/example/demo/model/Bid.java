@@ -8,11 +8,9 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "bids")
 public class Bid {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long bidId;
-
     private double bidAmount;
     private LocalDateTime bidTime;
 

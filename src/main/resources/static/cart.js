@@ -1,10 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    // Constants
     const SHIPPING_COST = 2.00;
-    let isShipping = true; // Default state
+    let isShipping = true;
 
-    // Login state elements
     const loginButtonWrapper = document.getElementById('login-button-wrapper');
     const userSection = document.getElementById('user-section');
     const navUserName = document.getElementById('nav-user-name');
@@ -32,7 +30,6 @@ document.addEventListener('DOMContentLoaded', () => {
         updateCartBadge();
     }
 
-    // --- 1. Delivery Toggle (Ship vs Pickup) ---
     window.selectDelivery = function(mode) {
         if (window.requireLoginForAction && !window.requireLoginForAction('Login/Register first to change delivery options.')) return;
         isShipping = (mode === 'ship');
@@ -43,14 +40,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const pickupInfo = document.getElementById('pickup-info');
         const shippingRow = document.getElementById('shipping-cost-row');
 
-        // Visual updates for cards
+        const radioShip   = document.getElementById('radio-ship');
+        const radioPickup = document.getElementById('radio-pickup');
+
+        const activeStyle = 'width:20px;height:20px;border-radius:50%;flex-shrink:0;margin-top:2px;border:2px solid #c17c5f;background-color:#c17c5f;display:flex;align-items:center;justify-content:center;';
+        const inactiveStyle = 'width:20px;height:20px;border-radius:50%;flex-shrink:0;margin-top:2px;border:2px solid #e5e0d8;background-color:transparent;display:block;';
+        const checkIcon = '<i class="fas fa-check" style="color:white;font-size:9px;"></i>';
+
         if (isShipping) {
             shipCard.classList.add('selected');
             pickupCard.classList.remove('selected');
-            // Show shipping form
+            if (radioShip)   { radioShip.setAttribute('style', activeStyle);   radioShip.innerHTML   = checkIcon; }
+            if (radioPickup) { radioPickup.setAttribute('style', inactiveStyle); radioPickup.innerHTML = ''; }
             shippingSection.style.display = 'block';
             pickupInfo.classList.add('hidden');
-            // Update cost row
             if(shippingRow) {
                 document.getElementById('shipping-label').textContent = 'Shipping';
                 document.getElementById('shipping-cost-display').textContent = SHIPPING_COST.toFixed(2) + ' BD';
@@ -58,10 +61,10 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             pickupCard.classList.add('selected');
             shipCard.classList.remove('selected');
-            // Hide shipping form
+            if (radioPickup) { radioPickup.setAttribute('style', activeStyle);   radioPickup.innerHTML = checkIcon; }
+            if (radioShip)   { radioShip.setAttribute('style', inactiveStyle);   radioShip.innerHTML   = ''; }
             shippingSection.style.display = 'none';
             pickupInfo.classList.remove('hidden');
-            // Update cost row
             if(shippingRow) {
                 document.getElementById('shipping-label').textContent = 'Pickup';
                 document.getElementById('shipping-cost-display').textContent = 'Free';
@@ -71,46 +74,92 @@ document.addEventListener('DOMContentLoaded', () => {
         updateCartTotal();
     };
 
-    // --- 2. Quantity Update ---
-    window.updateQuantity = function(button, change) {
+    window.updateQuantity = async function(button, change) {
         if (window.requireLoginForAction && !window.requireLoginForAction('Login/Register first to update item quantities.')) return;
         const cartItem = button.closest('.cart-item');
         const quantitySpan = cartItem.querySelector('.quantity-value');
-        const priceText = cartItem.querySelector('.text-\\[\\#c17c5f\\]').textContent; // Matches the BD price
-        const price = parseFloat(priceText.replace(' BD', ''));
+        const unitPriceEl = cartItem.querySelector('.cart-unit-price');
         const subtotalEl = cartItem.querySelector('.item-subtotal');
+        const orderItemId = cartItem.dataset.orderItemId;
+        const maxQty = parseInt(cartItem.dataset.maxQuantity || '9999', 10);
+        const unit = parseFloat(unitPriceEl.textContent.replace(' BD', ''));
 
-        let qty = parseInt(quantitySpan.textContent) + change;
-        if (qty < 1) qty = 1; // Prevent zero/negative
+        let qty = parseInt(quantitySpan.textContent, 10) + change;
+        if (qty < 1) qty = 1;
+        if (qty > maxQty) qty = maxQty;
 
-        // Update UI
-        quantitySpan.textContent = qty;
-        subtotalEl.textContent = (price * qty).toFixed(2) + ' BD';
+        const email = sessionStorage.getItem('userEmail');
+        if (!email || !orderItemId) return;
 
-        updateCartTotal();
+        try {
+            const res = await fetch(`/api/cart/items/${orderItemId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-User-Email': email
+                },
+                body: JSON.stringify({ quantity: qty })
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                alert(data.message || 'Could not update quantity');
+                return;
+            }
+            if (typeof data.itemCount === 'number') {
+                sessionStorage.setItem('cartCount', String(data.itemCount));
+                updateCartBadge();
+            }
+            quantitySpan.textContent = String(qty);
+            subtotalEl.textContent = (unit * qty).toFixed(2) + ' BD';
+            updateCartTotal();
+        } catch (err) {
+            console.error(err);
+            alert('Could not update quantity');
+        }
     };
 
-    // --- 3. Remove Item ---
-    window.removeItem = function(button) {
+    window.removeItem = async function(button) {
         if (window.requireLoginForAction && !window.requireLoginForAction('Login/Register first to remove items from your cart.')) return;
         const cartItem = button.closest('.cart-item');
+        const orderItemId = cartItem.dataset.orderItemId;
+        const email = sessionStorage.getItem('userEmail');
+        if (!email || !orderItemId) return;
 
-        // Animation
         cartItem.style.opacity = '0';
         cartItem.style.transform = 'translateX(-20px)';
 
-        setTimeout(() => {
-            cartItem.remove();
-            updateCartTotal();
-
-            checkCartEmpty();
-        }, 300);
+        try {
+            const res = await fetch(`/api/cart/items/${orderItemId}`, {
+                method: 'DELETE',
+                headers: { 'X-User-Email': email }
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                alert(data.message || 'Could not remove item');
+                cartItem.style.opacity = '1';
+                cartItem.style.transform = '';
+                return;
+            }
+            if (typeof data.itemCount === 'number') {
+                sessionStorage.setItem('cartCount', String(data.itemCount));
+                updateCartBadge();
+            }
+            setTimeout(() => {
+                cartItem.remove();
+                updateCartTotal();
+                checkCartEmpty();
+            }, 200);
+        } catch (err) {
+            console.error(err);
+            cartItem.style.opacity = '1';
+            cartItem.style.transform = '';
+        }
     };
 
     function checkCartEmpty() {
         const container = document.getElementById('cart-items-container');
         const emptyMsg = document.getElementById('empty-cart-msg');
-        const summary = document.querySelector('.mt-4.pt-4.border-t-2'); // Order summary div
+        const summary = document.querySelector('.mt-4.pt-4.border-t-2');
         const confirmBtn = document.getElementById('confirm-btn');
 
         if (container && !container.querySelectorAll('.cart-item').length) {
@@ -130,7 +179,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- 4. Payment Method Selection ---
     window.selectPayment = function(card) {
         if (window.requireLoginForAction && !window.requireLoginForAction('Login/Register first to change payment method.')) return;
         document.querySelectorAll('.payment-card').forEach(c => {
@@ -154,7 +202,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (radio) radio.checked = true;
     };
 
-    // --- 5. Total Calculation ---
     function updateCartTotal() {
         let itemsTotal = 0;
         document.querySelectorAll('.item-subtotal').forEach(el => {
@@ -164,7 +211,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const shipping = isShipping ? SHIPPING_COST : 0;
         const grandTotal = itemsTotal + shipping;
 
-        // Update DOM elements
         const itemsSubtotalEl = document.getElementById('items-subtotal');
         const cartTotalEl = document.getElementById('cart-total');
         const confirmBtn = document.getElementById('confirm-btn');
@@ -177,11 +223,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- 6. Confirm Button ---
     const confirmBtn = document.getElementById('confirm-btn');
     if (confirmBtn) {
         confirmBtn.addEventListener('click', () => {
-            // Basic validation
             const selectedPayment = document.querySelector('.payment-card.selected input[type="radio"]');
 
             if (!selectedPayment) {
@@ -197,26 +241,133 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            // Simulate checkout process
+            const email = sessionStorage.getItem('userEmail');
+            if (!email) {
+                alert('Please log in to complete your order.');
+                confirmBtn.disabled = false;
+                updateCartTotal();
+                return;
+            }
+
+            const paymentCard = document.querySelector('.payment-card.selected');
+            const paymentMethod = paymentCard?.querySelector('.font-semibold')?.textContent?.trim() || 'Credit Card';
+            const deliveryMode = isShipping ? 'ship' : 'pickup';
+            let addressId = null;
+            if (isShipping) {
+                const selectedAddress = document.querySelector('input[name="selected_address"]:checked');
+                addressId = selectedAddress ? parseInt(selectedAddress.value, 10) : null;
+            }
+
             confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-3"></i>Processing...';
             confirmBtn.disabled = true;
 
-            setTimeout(() => {
-                alert('Order confirmed! Redirecting to confirmation...');
-                // window.location.href = '/OrderConformation';
-            }, 2000);
+            fetch('/api/cart/checkout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-User-Email': email
+                },
+                body: JSON.stringify({ paymentMethod, deliveryMode, addressId })
+            })
+            .then(res => res.json().then(data => ({ res, data })))
+            .then(({ res, data }) => {
+                if (!res.ok || !data.success) {
+                    throw new Error(data.message || 'Checkout failed');
+                }
+                sessionStorage.setItem('cartCount', '0');
+                updateCartBadge();
+                const profile = sessionStorage.getItem('userProfile');
+                if (profile) {
+                    try {
+                        const user = JSON.parse(profile);
+                        user.totalOrders = data.totalOrders;
+                        user.totalSpent = data.totalSpent;
+                        sessionStorage.setItem('userProfile', JSON.stringify(user));
+                    } catch (e) { /* ignore */ }
+                }
+                window.location.href = `/OrderConformation?orderId=${data.orderId}`;
+            })
+            .catch(err => {
+                console.error(err);
+                alert(err.message || 'Could not complete your order. Please try again.');
+                confirmBtn.disabled = false;
+                updateCartTotal();
+            });
         });
     }
 
-    // Load addresses from DB
-    loadCartAddresses();
+    function renderCartLine(item) {
+        const div = document.createElement('div');
+        div.className = 'cart-item flex flex-wrap sm:flex-nowrap gap-4 items-center';
+        div.dataset.orderItemId = String(item.orderItemId);
+        div.dataset.maxQuantity = String(item.maxQuantity);
+        const title = escapeHtml(item.title);
+        const img = escapeHtml(item.imageUrl);
+        const unit = Number(item.unitPrice).toFixed(2);
+        const sub = Number(item.subtotal).toFixed(2);
+        const q = Number(item.quantity);
+        div.innerHTML = `
+            <img src="${img}" alt="${title}" class="cart-item-img">
+            <div class="flex-1 min-w-0">
+                <h3 class="font-semibold text-[#5c4a3d] truncate">${title}</h3>
+                <p class="text-sm text-[#8b7355] mt-1">Unit: <span class="cart-unit-price text-[#c17c5f] font-bold">${unit} BD</span></p>
+                <div class="flex items-center gap-3 mt-3">
+                    <button type="button" class="quantity-btn w-8 h-8 rounded-lg border border-[#e5e0d8] text-[#5c4a3d]" onclick="updateQuantity(this, -1)">−</button>
+                    <span class="quantity-value font-semibold text-[#5c4a3d] w-6 text-center">${q}</span>
+                    <button type="button" class="quantity-btn w-8 h-8 rounded-lg border border-[#e5e0d8] text-[#5c4a3d]" onclick="updateQuantity(this, 1)">+</button>
+                </div>
+            </div>
+            <div class="flex flex-col items-end gap-2 ml-auto">
+                <span class="item-subtotal text-lg font-bold text-[#5c4a3d]">${sub} BD</span>
+                <button type="button" class="text-sm text-red-500 hover:text-red-700" onclick="removeItem(this)">
+                    <i class="fas fa-trash-alt mr-1"></i>Remove
+                </button>
+            </div>`;
+        return div;
+    }
 
-    // Check if empty on load
-    checkCartEmpty();
+    async function loadCartFromApi() {
+        const container = document.getElementById('cart-items-container');
+        if (!container) return;
 
-    // Initialize Calculation on load
-    updateCartTotal();
+        const loggedIn = sessionStorage.getItem('isLoggedIn') === 'true' || sessionStorage.getItem('loggedIn') === 'true';
+        const email = sessionStorage.getItem('userEmail');
+
+        if (!loggedIn || !email) {
+            container.innerHTML = '';
+            sessionStorage.setItem('cartCount', '0');
+            updateCartBadge();
+            checkCartEmpty();
+            updateCartTotal();
+            return;
+        }
+
+        try {
+            const res = await fetch('/api/cart', { headers: { 'X-User-Email': email } });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok || !data.success) {
+                throw new Error(data.message || 'Failed to load cart');
+            }
+            sessionStorage.setItem('cartCount', String(data.itemCount != null ? data.itemCount : 0));
+            updateCartBadge();
+            container.innerHTML = '';
+            (data.items || []).forEach(item => container.appendChild(renderCartLine(item)));
+            checkCartEmpty();
+            updateCartTotal();
+        } catch (e) {
+            console.error('loadCartFromApi', e);
+            container.innerHTML = '';
+            checkCartEmpty();
+            updateCartTotal();
+        }
+    }
+
     updateLoginState();
+    loadCartFromApi().then(() => {
+        loadCartAddresses();
+        checkCartEmpty();
+        updateCartTotal();
+    });
 });
 
 function loadCartAddresses() {
@@ -233,7 +384,6 @@ function loadCartAddresses() {
     fetch(`/api/addresses?email=${encodeURIComponent(email)}`)
         .then(r => r.json())
         .then(addresses => {
-            // Remove old address labels (keep the no-address message)
             grid.querySelectorAll('label.cart-address-item').forEach(el => el.remove());
 
             if (!addresses.length) {
@@ -277,13 +427,6 @@ function escapeHtml(str) {
         ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
-// ============================================================
-// Utility helpers (shared across pages via global scope)
-// ============================================================
-
-/**
- * Read the notification count from sessionStorage and update any badge on the page.
- */
 function updateNotificationBadge() {
     const badge = document.getElementById('notification-badge');
     if (!badge) return;
@@ -292,9 +435,6 @@ function updateNotificationBadge() {
     badge.style.display = count > 0 ? 'flex' : 'none';
 }
 
-/**
- * Read cart item count from sessionStorage and update any cart badge on the page.
- */
 function updateCartBadge() {
     document.querySelectorAll('.fa-shopping-cart')
         .forEach(icon => {
@@ -302,5 +442,6 @@ function updateCartBadge() {
             if (!badge) return;
             const count = parseInt(sessionStorage.getItem('cartCount') ?? '0', 10);
             badge.textContent = count;
+            badge.style.display = count > 0 ? 'flex' : 'none';
         });
 }

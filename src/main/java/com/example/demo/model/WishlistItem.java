@@ -8,7 +8,6 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "wishlist_items")
 public class WishlistItem {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long wishlistItemId;

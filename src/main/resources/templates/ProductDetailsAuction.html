@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,87 +9,94 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&amp;family=Inter:wght@300;400;500;600&amp;display=swap');
-        
+
         body {
             font-family: 'Inter', sans-serif;
             background-color: #faf9f6;
         }
-        
-        h1, h2, h3, h4 {
+
+        h1,
+        h2,
+        h3,
+        h4 {
             font-family: 'Playfair Display', serif;
         }
-        
+
         .terracotta {
             color: #c17c5f;
         }
-        
+
         .bg-terracotta {
             background-color: #c17c5f;
         }
-        
+
         .bg-terracotta-dark {
             background-color: #a5664d;
         }
-        
+
         .hover\:bg-terracotta-dark:hover {
             background-color: #a5664d;
         }
-        
+
         .border-terracotta {
             border-color: #c17c5f;
         }
-        
+
         .text-earth {
             color: #8b7355;
         }
-        
+
         .bg-earth {
             background-color: #8b7355;
         }
-        
+
         .card-shadow {
             box-shadow: 0 4px 6px -1px rgba(139, 115, 85, 0.1), 0 2px 4px -1px rgba(139, 115, 85, 0.06);
         }
-        
+
         .card-shadow:hover {
             box-shadow: 0 10px 15px -3px rgba(139, 115, 85, 0.15), 0 4px 6px -2px rgba(139, 115, 85, 0.1);
         }
-        
+
         .thumbnail {
             transition: all 0.2s ease;
             cursor: pointer;
             opacity: 0.7;
         }
-        
-        .thumbnail:hover, .thumbnail.active {
+
+        .thumbnail:hover,
+        .thumbnail.active {
             opacity: 1;
             transform: scale(1.05);
             border-color: #c17c5f;
         }
-        
+
         .star-filled {
             color: #fbbf24;
         }
-        
+
         .star-empty {
             color: #e5e0d8;
         }
-        
+
         .auction-badge-large {
             animation: pulse 2s infinite;
         }
-        
+
         @keyframes pulse {
-            0%, 100% {
+
+            0%,
+            100% {
                 opacity: 1;
                 transform: scale(1);
             }
+
             50% {
                 opacity: 0.9;
                 transform: scale(1.02);
             }
         }
-        
+
         .countdown-digit {
             background: linear-gradient(135deg, #c17c5f 0%, #a5664d 100%);
         }
@@ -153,59 +161,67 @@
             border-radius: 50%;
             background-color: #c17c5f;
         }
-
-
     </style>
 </head>
+
 <body class="min-h-screen flex flex-col">
     <!-- Navigation Bar -->
     <nav class="bg-[#faf9f6] border-b border-[#e5e0d8] py-4 px-6 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto flex items-center justify-between">
-            
-            <div class="flex items-center">
+        <div class="max-w-7xl mx-auto flex items-center gap-4 lg:gap-6 min-h-[2.75rem]">
+            <!-- Brand -->
+            <div class="flex items-center shrink-0 min-w-0">
                 <a href="/" class="flex items-center gap-3 group">
-                    <!-- Logo -->
-                    <img src="/images/Logo.png" alt="ArtsyVibe Logo"
-                        class="h-10 w-auto object-contain"
+                    <img src="/images/Logo.png" alt="ArtsyVibe Logo" class="h-10 w-auto object-contain shrink-0"
                         style="filter: drop-shadow(0 0 0.5px rgba(193, 124, 95, 1));">
-
-                    <!-- Brand Name -->
-                    <span class="text-2xl font-semibold" 
+                    <span
+                        class="text-xl sm:text-2xl font-semibold whitespace-nowrap truncate max-w-[10rem] sm:max-w-none"
                         style="font-family: 'Playfair Display', serif;">
                         ArtsyVibe
                     </span>
                 </a>
             </div>
-            
-            <!-- Center Links -->
-            <div class="hidden md:flex items-center space-x-8">
-                <a href="/" class="text-[#8b7355] hover:text-[#c17c5f] transition-colors font-medium">Home</a>
-                <a href="/products" class="text-[#8b7355] hover:text-[#c17c5f] transition-colors font-medium">Products</a>
-                <a href="/auctions" class="text-[#c17c5f] font-semibold">Auctions</a>
+
+            <!-- Center links -->
+            <div class="hidden md:flex flex-1 min-w-0 items-center justify-center gap-6 lg:gap-8 px-2">
+                <a href="/"
+                    class="text-[#8b7355] hover:text-[#c17c5f] transition-colors font-medium whitespace-nowrap shrink-0">Home</a>
+                <a href="/products"
+                    class="text-[#8b7355] hover:text-[#c17c5f] transition-colors font-medium whitespace-nowrap shrink-0">Products</a>
+                <a href="/auctions" class="text-[#c17c5f] font-semibold whitespace-nowrap shrink-0">Auctions</a>
             </div>
-            
-            <div class="flex items-center space-x-4">
-                <div id="login-button-wrapper" class="flex items-center">
-                    <a href="/login" class="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-[#c17c5f] to-[#a5664d] text-white text-sm font-semibold shadow-lg shadow-[#c17c5f]/20 transition-all hover:from-[#b06b4f] hover:to-[#8f5d3f]">
+
+            <!-- Actions -->
+            <div class="flex items-center justify-end gap-3 sm:gap-4 shrink-0 ml-auto">
+                <div id="login-button-wrapper" class="flex items-center hidden">
+                    <a href="/login"
+                        class="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-[#c17c5f] to-[#a5664d] text-white text-sm font-semibold shadow-lg shadow-[#c17c5f]/20 transition-all hover:from-[#b06b4f] hover:to-[#8f5d3f]">
                         <i class="fas fa-sign-in-alt"></i>
                         Login
                     </a>
                 </div>
 
                 <div id="user-section" class="hidden flex items-center space-x-4">
-                    <a href="/profile" class="flex flex-col items-center text-[#8b7355] hover:text-[#c17c5f] transition-colors">
+                    <a href="/profile" id="user-menu-button"
+                        class="flex flex-col items-center text-[#8b7355] hover:text-[#c17c5f] transition-colors">
                         <i class="fas fa-user-circle text-2xl"></i>
-                        <p id="nav-user-name" class="hidden md:block text-[10px] font-semibold text-[#5c4a3d] mt-0.5">John Doe</p>
+                        <p id="nav-user-name" class="hidden md:block text-[10px] font-semibold text-[#5c4a3d] mt-0.5">
+                            John Doe</p>
                     </a>
-                    <a id="notifications-link" href="/notifications" class="text-[#8b7355] hover:text-[#c17c5f] transition-colors relative">
+
+                    <a id="notifications-link" href="/notifications"
+                        class="text-[#8b7355] hover:text-[#c17c5f] transition-colors relative">
                         <i class="fas fa-bell text-xl"></i>
-                        <span id="notification-badge" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">4</span>
+                        <span id="notification-badge"
+                            class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">4</span>
                     </a>
                 </div>
 
-                <a id="cart-link" href="/cart" class="text-[#8b7355] hover:text-[#c17c5f] transition-colors relative">
+                <a id="cart-link" href="/cart"
+                    class="text-[#8b7355] hover:text-[#c17c5f] transition-colors relative shrink-0">
                     <i class="fas fa-shopping-cart text-xl"></i>
-                    <span class="absolute -top-2 -right-2 bg-[#c17c5f] text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">3</span>
+                    <span id="cart-badge"
+                        class="absolute -top-2 -right-2 bg-[#c17c5f] text-white text-xs rounded-full w-5 h-5 items-center justify-center"
+                        style="display: none;">0</span>
                 </a>
             </div>
         </div>
@@ -221,359 +237,209 @@
                 <ol class="flex items-center space-x-2 text-[#8b7355]">
                     <li><a href="/" class="hover:text-[#c17c5f] transition-colors">Home</a></li>
                     <li><span>/</span></li>
-                    <li><a href="/products" class="hover:text-[#c17c5f] transition-colors">Products</a></li>
+                    <li><a href="/auctions" class="hover:text-[#c17c5f] transition-colors">Auctions</a></li>
                     <li><span>/</span></li>
-                    <li><a href="/products" class="hover:text-[#c17c5f] transition-colors">Jewelry</a></li>
+                    <li><a href="/auctions" class="hover:text-[#c17c5f] transition-colors"
+                            th:text="${auction.product.productCategory != null ? auction.product.productCategory.name : auction.product.category}">Jewelry</a>
+                    </li>
                     <li><span>/</span></li>
-                    <li class="text-[#5c4a3d] font-medium">Silver Moonstone Necklace</li>
+                    <li class="text-[#5c4a3d] font-medium" th:text="${auction.product.title}">Silver Moonstone Necklace
+                    </li>
                 </ol>
             </nav>
 
             <!-- Product Detail Section -->
-            <div class="bg-white rounded-xl p-6 md:p-8 card-shadow mb-8">
+            <div class="bg-white rounded-xl p-6 md:p-8 card-shadow mb-8" th:if="${auction != null}">
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     <!-- Left: Product Images -->
                     <div>
                         <!-- Main Image with Auction Badge -->
                         <div class="mb-4 relative">
-                            <img id="mainImage" src="https://images.unsplash.com/photo-1573408301185-9146fe634ad0?w=600&amp;h=500&amp;fit=crop" alt="Silver Moonstone Necklace" class="w-full h-96 object-cover rounded-xl">
-                            <div class="absolute top-4 left-4 auction-badge-large bg-[#c17c5f] text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg">
-                                <i class="fas fa-gavel mr-2"></i>Live Auction
+                            <img id="mainImage" th:src="${auction.product.imageUrl}" th:alt="${auction.product.title}"
+                                class="w-full h-96 object-cover rounded-xl">
+                            <div
+                                class="absolute top-4 left-4 auction-badge-large bg-[#c17c5f] text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg">
+                                <i class="fas fa-gavel mr-2"></i><span
+                                    th:text="${displayStatus == 'LIVE' ? 'Live Auction' : (displayStatus == 'UPCOMING' ? 'Upcoming' : 'Ended')}">Live
+                                    Auction</span>
                             </div>
                         </div>
-                        
-                        <!-- Thumbnails -->
+
+                        <!-- Thumbnails (Using same image for now as placeholder for dynamic thumbnails) -->
                         <div class="flex gap-3">
-                            <img src="https://images.unsplash.com/photo-1573408301185-9146fe634ad0?w=150&amp;h=150&amp;fit=crop" alt="Thumbnail 1" class="thumbnail w-20 h-20 object-cover rounded-lg border-2 border-[#e5e0d8] active" onclick="changeImage(this)">
-                            <img src="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=150&amp;h=150&amp;fit=crop" alt="Thumbnail 2" class="thumbnail w-20 h-20 object-cover rounded-lg border-2 border-[#e5e0d8]" onclick="changeImage(this)">
-                            <img src="https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=150&amp;h=150&amp;fit=crop" alt="Thumbnail 3" class="thumbnail w-20 h-20 object-cover rounded-lg border-2 border-[#e5e0d8]" onclick="changeImage(this)">
-                            <img src="https://images.unsplash.com/photo-1602173574767-37ac01994b2a?w=150&amp;h=150&amp;fit=crop" alt="Thumbnail 4" class="thumbnail w-20 h-20 object-cover rounded-lg border-2 border-[#e5e0d8]" onclick="changeImage(this)">
+                            <img th:src="${auction.product.imageUrl}" alt="Main Thumbnail"
+                                class="thumbnail w-20 h-20 object-cover rounded-lg border-2 border-[#e5e0d8] active"
+                                onclick="changeImage(this)">
                         </div>
                     </div>
-                    
-                    <!-- Right: Product Info &amp; Bid Panel -->
+
+                    <!-- Right: Product Info & Bid Panel -->
                     <div>
                         <!-- Category Badge -->
-                        <span class="inline-block bg-[#f5ebe0] text-[#c17c5f] px-3 py-1 rounded-full text-sm font-medium mb-4">
+                        <span
+                            class="inline-block bg-[#f5ebe0] text-[#c17c5f] px-3 py-1 rounded-full text-sm font-medium mb-4"
+                            th:text="${auction.product.productCategory != null ? auction.product.productCategory.name : auction.product.category}">
                             Jewelry
                         </span>
-                        
+
                         <!-- Product Name -->
-                        <h1 class="text-3xl md:text-4xl font-bold text-[#5c4a3d] mb-2">Silver Moonstone Necklace</h1>
-                        
+                        <h1 class="text-3xl md:text-4xl font-bold text-[#5c4a3d] mb-2"
+                            th:text="${auction.product.title}">Silver Moonstone Necklace</h1>
+
                         <!-- Artisan Name -->
-                        <a href="#" class="text-[#8b7355] hover:text-[#c17c5f] transition-colors mb-4 block">
+                        <a href="#" class="text-[#8b7355] hover:text-[#c17c5f] transition-colors mb-4 block"
+                            th:text="'by ' + ${auction.product.artisanName}">
                             by Marcus Chen
                         </a>
-                        
-                        <!-- Star Rating -->
-                        <div class="flex items-center mb-6">
-                            <div class="flex mr-3">
-                                <i class="fas fa-star star-filled"></i>
-                                <i class="fas fa-star star-filled"></i>
-                                <i class="fas fa-star star-filled"></i>
-                                <i class="fas fa-star star-filled"></i>
-                                <i class="fas fa-star star-filled"></i>
-                            </div>
-                            <span class="text-[#5c4a3d] font-medium">5.0</span>
-                            <span class="text-[#8b7355] ml-2">(18 reviews)</span>
-                        </div>
-                        
+
                         <!-- Description -->
                         <div class="mb-6">
                             <h3 class="text-lg font-semibold text-[#5c4a3d] mb-2">Description</h3>
-                            <p class="text-[#8b7355] leading-relaxed">
-                                Exquisite handcrafted silver necklace featuring a luminous moonstone pendant. This unique piece showcases masterful silversmithing with intricate detailing around the natural moonstone cabochon. The chain is made from sterling silver with a secure lobster clasp.
-                            </p>
-                            <p class="text-[#8b7355] leading-relaxed mt-3">
-                                Chain length: 18 inches. Pendant size: 1.2" × 0.8". Comes with a certificate of authenticity and elegant gift box.
+                            <p class="text-[#8b7355] leading-relaxed" th:text="${auction.product.description}">
+                                Exquisite handcrafted silver necklace featuring a luminous moonstone pendant.
                             </p>
                         </div>
-                        
+
                         <!-- Place a Bid Panel -->
-                        <div class="bg-gradient-to-br from-[#f5ebe0] to-[#ede3d5] rounded-xl p-6 border-2 border-[#c17c5f]">
+                        <div
+                            class="bg-gradient-to-br from-[#f5ebe0] to-[#ede3d5] rounded-xl p-6 border-2 border-[#c17c5f]">
                             <div class="flex items-center mb-4">
                                 <i class="fas fa-gavel text-2xl text-[#c17c5f] mr-3"></i>
                                 <h3 class="text-xl font-bold text-[#5c4a3d]">Place a Bid</h3>
                             </div>
-                            
+
                             <!-- Current Bid Info -->
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                                 <div class="bg-white rounded-lg p-4 min-w-0 overflow-hidden">
                                     <p class="text-sm text-[#8b7355] mb-1">Current Bid</p>
-                                    <p class="text-2xl md:text-3xl font-bold text-[#c17c5f] break-words break-all max-w-full" id="current-bid-display">120.00 BD</p>
+                                    <p class="text-2xl md:text-3xl font-bold text-[#c17c5f] break-words break-all max-w-full"
+                                        id="current-bid-display"
+                                        th:text="${#numbers.formatDecimal(auction.currentHighestBid, 0, 0)} + ' BD'">
+                                        120.00 BD</p>
                                 </div>
                                 <div class="bg-white rounded-lg p-4 min-w-0 overflow-hidden">
                                     <p class="text-sm text-[#8b7355] mb-1 whitespace-nowrap">Highest Bidder</p>
-                                    <p class="text-lg font-semibold text-[#5c4a3d] truncate" id="highest-bidder-name">Jennifer M.</p>
+                                    <p class="text-lg font-semibold text-[#5c4a3d] truncate" id="highest-bidder-name"
+                                        th:text="${auction.highestBidderName != null ? auction.highestBidderName : 'No bids yet'}">
+                                        Jennifer M.</p>
                                 </div>
                             </div>
-                            
+
                             <!-- Countdown Timer -->
-                            <div class="bg-white rounded-lg p-4 mb-6">
+                            <div class="bg-white rounded-lg p-4 mb-6" th:if="${displayStatus == 'LIVE'}">
                                 <p class="text-sm text-[#8b7355] mb-3">Auction Ends In</p>
-                                <div class="flex gap-3" id="countdown">
+                                <div class="flex gap-3" id="countdown" th:attr="data-end-time=${auction.endTime}">
                                     <div class="countdown-digit text-white rounded-lg p-3 text-center flex-1">
-                                        <span class="text-2xl font-bold" id="hours">02</span>
+                                        <span class="text-2xl font-bold" id="hours">--</span>
                                         <span class="text-xs block">Hours</span>
                                     </div>
                                     <div class="countdown-digit text-white rounded-lg p-3 text-center flex-1">
-                                        <span class="text-2xl font-bold" id="minutes">45</span>
+                                        <span class="text-2xl font-bold" id="minutes">--</span>
                                         <span class="text-xs block">Minutes</span>
                                     </div>
                                     <div class="countdown-digit text-white rounded-lg p-3 text-center flex-1">
-                                        <span class="text-2xl font-bold" id="seconds">32</span>
+                                        <span class="text-2xl font-bold" id="seconds">--</span>
                                         <span class="text-xs block">Seconds</span>
                                     </div>
                                 </div>
-                                <p class="text-xs text-[#8b7355] mt-2 text-center">Ends: March 25, 2024 at 8:00 PM EST</p>
+                                <p class="text-xs text-[#8b7355] mt-2 text-center"
+                                    th:text="'Ends: ' + ${#temporals.format(auction.endTime, 'MMMM dd, yyyy HH:mm')}">
+                                    Ends: March 25, 2024 at 8:00 PM EST</p>
                             </div>
-                            
+
+                            <!-- Upcoming Info -->
+                            <div class="bg-white rounded-lg p-4 mb-6" th:if="${displayStatus == 'UPCOMING'}">
+                                <p class="text-sm text-[#8b7355] mb-1">Starts In</p>
+                                <p class="text-lg font-bold text-blue-600"
+                                    th:text="${T(java.time.Duration).between(T(java.time.LocalDateTime).now(), auction.startTime).toDays()} + ' days'">
+                                </p>
+                                <p class="text-xs text-[#8b7355] mt-2 text-center"
+                                    th:text="'Starts: ' + ${#temporals.format(auction.startTime, 'MMMM dd, yyyy HH:mm')}">
+                                    Starts soon</p>
+                            </div>
+
+                            <!-- Ended Info -->
+                            <div class="bg-white rounded-lg p-4 mb-6" th:if="${displayStatus == 'ENDED'}">
+                                <p class="text-lg font-bold text-gray-500 text-center">AUCTION ENDED</p>
+                                <p class="text-xs text-[#8b7355] mt-2 text-center"
+                                    th:text="'Ended: ' + ${#temporals.format(auction.endTime, 'MMMM dd, yyyy HH:mm')}">
+                                    Ended</p>
+                            </div>
+
                             <!-- Bid Form -->
-                            <form class="space-y-4">
+                            <form class="space-y-4" th:if="${displayStatus == 'LIVE'}">
+                                <input type="hidden" id="auction-id-field" th:value="${auction.id}">
                                 <div>
                                     <label class="block text-sm font-medium text-[#5c4a3d] mb-2">Your Bid (BD)</label>
                                     <div class="relative">
-                                        <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#8b7355]"></span>
-                                        <input 
-                                            type="number" 
-                                            min="121" 
-                                            step="1" 
-                                            placeholder="Min: 121 BD" 
+                                        <span
+                                            class="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#8b7355]"></span>
+                                        <input type="number" th:min="${@auctionService.computeMinNextBid(auction)}"
+                                            step="1" placeholder="Min bid (whole BD)"
                                             class="w-full pl-4 pr-12 py-3 rounded-lg border border-[#e5e0d8] focus:border-[#c17c5f] focus:outline-none text-[#5c4a3d] font-semibold"
-                                            id="bidAmount"
-                                        />
-                                        <span class="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#8b7355] font-medium pointer-events-none">BD</span>
+                                            id="bidAmount" />
+                                        <span
+                                            class="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#8b7355] font-medium pointer-events-none">BD</span>
                                     </div>
                                 </div>
-                                
+
                                 <div>
                                     <label class="block text-sm font-medium text-[#5c4a3d] mb-2">Your Name</label>
-                                    <input 
-                                        type="text" 
-                                        placeholder="Enter your name" 
+                                    <input type="text" placeholder="Enter your name"
                                         class="w-full px-4 py-3 rounded-lg border border-[#e5e0d8] focus:border-[#c17c5f] focus:outline-none text-[#5c4a3d]"
-                                        id="bidderName"
-                                    />
+                                        id="bidderName" />
                                 </div>
-                                
-                                <button type="submit" id="bid-submit-btn" class="w-full bg-[#c17c5f] hover:bg-[#a5664d] text-white px-6 py-3 rounded-lg font-semibold transition-colors shadow-lg flex items-center justify-center">
+
+                                <button type="submit" id="bid-submit-btn"
+                                    class="w-full bg-[#c17c5f] hover:bg-[#a5664d] text-white px-6 py-3 rounded-lg font-semibold transition-colors shadow-lg flex items-center justify-center">
                                     <i class="fas fa-gavel mr-2"></i>Place Bid
                                 </button>
-                                
+
                                 <p class="text-xs text-[#8b7355] text-center">
-                                    <i class="fas fa-info-circle mr-1"></i>Bids must be whole BD amounts and at least 1 BD above the current bid. No fils allowed.
+                                    <i class="fas fa-info-circle mr-1"></i>Bids must be whole BD amounts and at least 1
+                                    BD above the current bid. No fils allowed.
                                 </p>
 
-                                <button type="button" id="back-to-auctions" class="w-full mt-2 border-2 border-[#c17c5f] text-[#c17c5f] hover:bg-[#c17c5f] hover:text-white px-6 py-2.5 rounded-lg font-semibold transition-colors flex items-center justify-center">
+                                <button type="button" id="back-to-auctions"
+                                    class="w-full mt-2 border-2 border-[#c17c5f] text-[#c17c5f] hover:bg-[#c17c5f] hover:text-white px-6 py-2.5 rounded-lg font-semibold transition-colors flex items-center justify-center"
+                                    onclick="window.location.href='/auctions'">
                                     <i class="fas fa-arrow-left mr-2"></i>Back to Auctions
                                 </button>
                             </form>
+                            <div th:if="${displayStatus != 'LIVE'}" class="space-y-4">
+                                <button type="button"
+                                    class="w-full bg-gray-200 text-gray-500 px-6 py-3 rounded-lg font-semibold cursor-not-allowed"
+                                    disabled>
+                                    Bidding Closed
+                                </button>
+                                <button type="button" id="back-to-auctions-2"
+                                    class="w-full mt-2 border-2 border-[#c17c5f] text-[#c17c5f] hover:bg-[#c17c5f] hover:text-white px-6 py-2.5 rounded-lg font-semibold transition-colors flex items-center justify-center"
+                                    onclick="window.location.href='/auctions'">
+                                    <i class="fas fa-arrow-left mr-2"></i>Back to Auctions
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Customer Reviews Section -->
-            <div class="bg-white rounded-xl p-6 md:p-8 card-shadow">
-                <h2 class="text-2xl font-bold text-[#5c4a3d] mb-6">Customer Reviews</h2>
-                
-                <!-- Review 1 -->
-                <div class="border-b border-[#e5e0d8] pb-6 mb-6">
-                    <div class="flex items-center justify-between mb-3">
-                        <div class="flex items-center">
-                            <div class="w-10 h-10 bg-[#f5ebe0] rounded-full flex items-center justify-center mr-3">
-                                <span class="text-[#c17c5f] font-semibold">LW</span>
-                            </div>
-                            <div>
-                                <h4 class="font-semibold text-[#5c4a3d]">Lisa Wong</h4>
-                                <div class="flex text-sm">
-                                    <i class="fas fa-star star-filled"></i>
-                                    <i class="fas fa-star star-filled"></i>
-                                    <i class="fas fa-star star-filled"></i>
-                                    <i class="fas fa-star star-filled"></i>
-                                    <i class="fas fa-star star-filled"></i>
-                                </div>
-                            </div>
-                        </div>
-                        <span class="text-[#8b7355] text-sm">February 20, 2024</span>
-                    </div>
-                    <p class="text-[#8b7355] leading-relaxed">
-                        I won this necklace in a previous auction and it's absolutely breathtaking! The craftsmanship is incredible and the moonstone has such a beautiful glow. Marcus is a true artist. Don't miss out on this auction!
-                    </p>
-                </div>
-                
-                <!-- Review 2 -->
-                <div class="border-b border-[#e5e0d8] pb-6 mb-6">
-                    <div class="flex items-center justify-between mb-3">
-                        <div class="flex items-center">
-                            <div class="w-10 h-10 bg-[#f5ebe0] rounded-full flex items-center justify-center mr-3">
-                                <span class="text-[#c17c5f] font-semibold">RP</span>
-                            </div>
-                            <div>
-                                <h4 class="font-semibold text-[#5c4a3d]">Robert Peterson</h4>
-                                <div class="flex text-sm">
-                                    <i class="fas fa-star star-filled"></i>
-                                    <i class="fas fa-star star-filled"></i>
-                                    <i class="fas fa-star star-filled"></i>
-                                    <i class="fas fa-star star-filled"></i>
-                                    <i class="fas fa-star star-filled"></i>
-                                </div>
-                            </div>
-                        </div>
-                        <span class="text-[#8b7355] text-sm">January 15, 2024</span>
-                    </div>
-                    <p class="text-[#8b7355] leading-relaxed">
-                        Bought this as an anniversary gift for my wife. She absolutely loves it! The quality is outstanding and it arrived beautifully packaged. Worth every penny. Marcus's work is exceptional.
-                    </p>
-                </div>
-                
-                <!-- Review 3 -->
-                <div>
-                    <div class="flex items-center justify-between mb-3">
-                        <div class="flex items-center">
-                            <div class="w-10 h-10 bg-[#f5ebe0] rounded-full flex items-center justify-center mr-3">
-                                <span class="text-[#c17c5f] font-semibold">EK</span>
-                            </div>
-                            <div>
-                                <h4 class="font-semibold text-[#5c4a3d]">Emma Kowalski</h4>
-                                <div class="flex text-sm">
-                                    <i class="fas fa-star star-filled"></i>
-                                    <i class="fas fa-star star-filled"></i>
-                                    <i class="fas fa-star star-filled"></i>
-                                    <i class="fas fa-star star-filled"></i>
-                                    <i class="far fa-star star-empty"></i>
-                                </div>
-                            </div>
-                        </div>
-                        <span class="text-[#8b7355] text-sm">December 8, 2023</span>
-                    </div>
-                    <p class="text-[#8b7355] leading-relaxed">
-                        Beautiful necklace with great attention to detail. The moonstone is genuine and has lovely iridescence. Only giving 4 stars because the chain is a bit shorter than I prefer, but overall a stunning piece.
-                    </p>
-                </div>
-                
-                <!-- Write Review Button -->
-                <div class="mt-8 text-center">
-                    <button class="bg-white hover:bg-[#f5ebe0] text-[#c17c5f] border-2 border-[#c17c5f] px-6 py-2 rounded-lg font-medium transition-colors">
-                        Write a Review
-                    </button>
-                </div>
-            </div>
+
         </main>
     </div>
 
     <script src="/authguard.js"></script>
-    <script src="/ProductDetailsAuction.js"></script>
-    
-    <script>
-        // Change main image when clicking thumbnail
-        function changeImage(thumbnail) {
-            const mainImage = document.getElementById('mainImage');
-            if (!mainImage) return;
-            mainImage.src = thumbnail.src
-                .replace(/([?&])w=\d+(&|$)/, '$1w=600$2')
-                .replace(/([?&])h=\d+(&|$)/, '$1h=500$2');
-            
-            // Update active state
-            document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
-            thumbnail.classList.add('active');
-        }
-        
-        // Price range slider functionality
-        const priceRange = document.getElementById('priceRange');
-        const priceValue = document.getElementById('priceValue');
-        
-        if (priceRange && priceValue) {
-            priceRange.addEventListener('input', function() {
-                priceValue.textContent = this.value + ' BD';
-            });
-        }
-
-        const detailSearchInput = document.querySelector('aside input[type="text"][placeholder="Search..."]');
-        if (detailSearchInput) {
-            detailSearchInput.addEventListener('keydown', (e) => {
-                if (e.key !== 'Enter') return;
-                const query = detailSearchInput.value.trim();
-                if (!query) return;
-                window.location.href = `/products?search=${encodeURIComponent(query)}`;
-            });
-        }
-        
-
-        // Countdown timer
-        function updateCountdown() {
-            const now = new Date();
-            const endDate = new Date();
-            endDate.setHours(20, 0, 0, 0); // 8:00 PM today
-            
-            if (now > endDate) {
-                endDate.setDate(endDate.getDate() + 1); // Set to tomorrow if already past
-            }
-            
-            const diff = endDate - now;
-            
-            const hours = Math.floor(diff / (1000 * 60 * 60));
-            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-            
-            document.getElementById('hours').textContent = String(hours).padStart(2, '0');
-            document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
-            document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
-        }
-        
-        updateCountdown();
-        setInterval(updateCountdown, 1000);
-        
-        // Bid form validation
-        const bidForm = document.querySelector('form');
-        if (bidForm) {
-            bidForm.addEventListener('submit', function(e) {
-                if (!(window.requireLoginForAction ? window.requireLoginForAction('Login/Register first to place a bid.') : true)) {
-                    e.preventDefault();
-                    return;
-                }
-
-                e.preventDefault();
-                const bidAmount = parseFloat(document.getElementById('bidAmount').value);
-                const bidderName = document.getElementById('bidderName').value.trim();
-                const currentBid = 120.00;
-                
-                if (!bidAmount || bidAmount <= currentBid) {
-                    alert('Your bid must be higher than the current bid of $120.00');
-                    return;
-                }
-                
-                if (!bidderName) {
-                    alert('Please enter your name');
-                    return;
-                }
-                
-                alert(`Thank you, ${bidderName}! Your bid of $${bidAmount.toFixed(2)} has been placed.`);
-                this.reset();
-            });
-        }
-    </script>
+    <script src="/ProductDetailsAuction.js?v=3"></script>
 
     <script>
         if (!window.isUserAuthenticated?.()) {
             const banner = document.createElement('div');
             banner.className = 'bg-[#fff4e5] border border-[#f1d2b7] text-[#8b7355] px-6 py-4 text-center';
-            banner.textContent = 'Login/Register first to place bids or write reviews. You can still browse this auction.';
+            banner.textContent = 'Login/Register first to place bids. You can still browse this auction.';
             document.body.insertBefore(banner, document.body.firstChild);
         }
 
-        document.addEventListener('click', function(event) {
-            const button = event.target.closest('button');
-            if (!button) return;
-            const text = button.innerText.trim();
-            if (/Write a Review/i.test(text)) {
-                if (!(window.requireLoginForAction ? window.requireLoginForAction('Login/Register first to write a review.') : true)) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                }
-            }
-        });
+
     </script>
 </body>
+
 </html>

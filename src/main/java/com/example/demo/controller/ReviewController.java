@@ -1,65 +1,152 @@
 package com.example.demo.controller;
 
 import com.example.demo.model.Customer;
+import com.example.demo.model.Product;
 import com.example.demo.model.Review;
+import com.example.demo.model.User;
+import com.example.demo.repository.CustomerRepository;
+import com.example.demo.repository.ProductRepository;
+import com.example.demo.repository.ReviewRepository;
 import com.example.demo.repository.UserRepository;
-import com.example.demo.service.ReviewService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.example.demo.repository.OrderRepository;
+import com.example.demo.repository.OrderItemRepository;
+import com.example.demo.model.Order;
+import com.example.demo.model.OrderItem;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/reviews")
 public class ReviewController {
 
-    @Autowired private ReviewService reviewService;
-    @Autowired private UserRepository userRepository;
+    @Autowired
+    private ReviewRepository reviewRepository;
 
-    // GET /api/reviews?productId=5
-    @GetMapping
-    public ResponseEntity<List<Review>> getReviews(@RequestParam Long productId) {
-        return ResponseEntity.ok(reviewService.getReviewsForProduct(productId));
+    @Autowired
+    private ProductRepository productRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private CustomerRepository customerRepository;
+
+    @Autowired
+    private OrderRepository orderRepository;
+
+    @Autowired
+    private OrderItemRepository orderItemRepository;
+
+    @Autowired
+    private com.example.demo.service.NotificationService notificationService;
+
+    @GetMapping("/product/{productId}")
+    public ResponseEntity<?> getReviewsForProduct(@PathVariable Long productId) {
+        List<Review> reviews = reviewRepository.findActiveByProductIdOrderByDateDesc(productId);
+        Double avg = reviewRepository.findAverageRatingByProductId(productId);
+        long count = reviewRepository.countByProductId(productId);
+
+        return ResponseEntity.ok(Map.of(
+                "reviews", reviews,
+                "averageRating", avg != null ? Math.round(avg * 10.0) / 10.0 : 0.0,
+                "reviewCount", count));
     }
 
-    // POST /api/reviews
-    // Body: { "customerId": 3, "productId": 5, "rating": 4, "comment": "Love it!" }
-    @PostMapping
-    public ResponseEntity<?> addReview(@RequestBody Map<String, Object> payload) {
-        try {
-            Long   customerId = Long.valueOf(payload.get("customerId").toString());
-            Long   productId  = Long.valueOf(payload.get("productId").toString());
-            int    rating     = Integer.parseInt(payload.get("rating").toString());
-            String comment    = payload.get("comment").toString();
+    @PostMapping("/product/{productId}")
+    public ResponseEntity<?> submitReview(
+            @PathVariable Long productId,
+            @RequestBody Map<String, Object> payload) {
 
-            Customer customer = resolveCustomer(customerId);
-            if (customer == null) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(Map.of("message", "Customer not found or user is not a customer."));
-            }
+        String email = (String) payload.get("email");
+        int rating = Integer.parseInt(payload.get("rating").toString());
+        String comment = (String) payload.get("comment");
 
-            Review review = reviewService.addReview(customer, productId, rating, comment);
-            return ResponseEntity.status(HttpStatus.CREATED).body(review);
-
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        if (rating < 1 || rating > 5) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("success", false, "message", "Rating must be between 1 and 5"));
         }
-    }
+        if (comment == null || comment.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Comment cannot be empty"));
+        }
 
-    // DELETE /api/reviews/1
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteReview(@PathVariable Long id) {
-        reviewService.deleteReview(id);
-        return ResponseEntity.ok(Map.of("message", "Review deleted."));
-    }
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(401).body(Map.of("success", false, "message", "User not found"));
+        }
+        if (!(userOpt.get() instanceof Customer)) {
+            return ResponseEntity.status(403)
+                    .body(Map.of("success", false, "message", "Only customers can leave reviews"));
+        }
 
-    private Customer resolveCustomer(Long customerId) {
-        return userRepository.findById(customerId)
-                .filter(u -> u instanceof Customer)
-                .map(u -> (Customer) u)
-                .orElse(null);
+        Optional<Product> productOpt = productRepository.findById(productId);
+        if (productOpt.isEmpty()) {
+            return ResponseEntity.status(404).body(Map.of("success", false, "message", "Product not found"));
+        }
+
+        Optional<Review> existingReview = reviewRepository.findByProductIdAndCustomerEmail(productId, email);
+        if (existingReview.isPresent()) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("success", false, "message", "You have already reviewed this product."));
+        }
+
+        // Verify the customer actually purchased and received (delivered) this product
+        Customer customer = (Customer) userOpt.get();
+        List<Order> pastOrders = orderRepository.findByCustomerAndStatusNotIgnoreCaseOrderByDateDesc(customer, "cart");
+        boolean eligibleToReview = false;
+        for (Order o : pastOrders) {
+            if (o.getStatus() != null && "delivered".equalsIgnoreCase(o.getStatus())) {
+                if (o.getOrderItems() != null) {
+                    for (OrderItem oi : o.getOrderItems()) {
+                        if (oi.getProduct() != null && oi.getProduct().getId().equals(productId)) {
+                            eligibleToReview = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            if (eligibleToReview)
+                break;
+        }
+        if (!eligibleToReview) {
+            return ResponseEntity.status(403).body(
+                    Map.of("success", false, "message", "You can only review products you purchased and received."));
+        }
+
+        Review review = new Review();
+        review.setRating(rating);
+        review.setComment(comment.trim());
+        review.setDate(LocalDate.now());
+        review.setCustomer((Customer) userOpt.get());
+        review.setProduct(productOpt.get());
+
+        reviewRepository.save(review);
+
+        // Notify the product's artisan about the new review
+        Product product = productOpt.get();
+        if (product.getArtisan() != null) {
+            String title = "New Customer Review";
+            String msg = "A customer wrote a " + rating + "-star review on your product \"" + product.getTitle() + "\"";
+            notificationService.sendNotification(
+                    product.getArtisan(),
+                    title,
+                    msg,
+                    "REVIEW",
+                    "/artisanAnalytics?id=" + product.getArtisan().getUserId());
+        }
+
+        Double newAvg = reviewRepository.findAverageRatingByProductId(productId);
+        long newCount = reviewRepository.countByProductId(productId);
+
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "Review submitted successfully",
+                "averageRating", newAvg != null ? Math.round(newAvg * 10.0) / 10.0 : 0.0,
+                "reviewCount", newCount));
     }
 }

@@ -1,22 +1,15 @@
 plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.3.5'
-	id 'io.spring.dependency-management' version '1.1.7'
+	id 'io.spring.dependency-management' version '1.1.6'
 }
 
 group = 'com.example'
 version = '0.0.1-SNAPSHOT'
 
 java {
-	toolchain {
-		languageVersion = JavaLanguageVersion.of(19)
-	}
-}
-
-configurations {
-	compileOnly {
-		extendsFrom annotationProcessor
-	}
+	sourceCompatibility = JavaVersion.VERSION_17
+	targetCompatibility = JavaVersion.VERSION_17
 }
 
 repositories {
@@ -24,15 +17,25 @@ repositories {
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
-	implementation 'org.springframework.boot:spring-boot-starter-web'
+	// Explicit versions so Replit always downloads jars onto compileClasspath
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa:3.3.5'
+	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf:3.3.5'
+	implementation 'org.springframework.boot:spring-boot-starter-web:3.3.5'
 	implementation 'org.mindrot:jbcrypt:0.4'
-	runtimeOnly 'org.postgresql:postgresql'
-	compileOnly 'org.projectlombok:lombok'
-	annotationProcessor 'org.projectlombok:lombok'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+	runtimeOnly 'org.postgresql:postgresql:42.7.4'
+
+	compileOnly 'org.projectlombok:lombok:1.18.46'
+	annotationProcessor 'org.projectlombok:lombok:1.18.46'
+
+	developmentOnly 'org.springframework.boot:spring-boot-devtools:3.3.5'
+
+	testImplementation 'org.springframework.boot:spring-boot-starter-test:3.3.5'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.withType(JavaCompile).configureEach {
+	options.encoding = 'UTF-8'
 }
 
 tasks.named('test') {

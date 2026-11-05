@@ -139,6 +139,11 @@ document.addEventListener('DOMContentLoaded', () => {
     //    — clicking either navigates to the product detail page
     // ----------------------------------------------------------
     document.getElementById('auction-grid')?.addEventListener('click', (e) => {
+        const link = e.target.closest('a');
+        if (link && link.textContent.trim() === 'View Details') {
+            return;
+        }
+
         const btn = e.target.closest('button');
         if (!btn) return;
 
@@ -212,7 +217,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const isTitle = e.target.closest('h3');
 
         if (isImage || isTitle) {
-            navigateToProductPage(card.querySelector('button'));
+            const auctionId = card.getAttribute('data-auction-id');
+            if (auctionId) {
+                window.location.href = `/ProductDetailsAuction?id=${encodeURIComponent(auctionId)}`;
+            }
         }
     });
 
@@ -238,6 +246,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initial render — apply default filters
     applyFilters();
+
+    document.querySelectorAll('.auction-card').forEach(card => {
+        syncWonAuctionToCart(card).catch(() => {});
+    });
 });
 
 // Badge updates are handled globally by authguard.js
@@ -253,7 +265,13 @@ function navigateToProductPage(placeBidBtn) {
     const card = placeBidBtn.closest('.auction-card');
     if (!card) return;
 
-    // Extract all data from the card
+    const auctionId = card.getAttribute('data-auction-id');
+    if (auctionId) {
+        window.location.href = `/ProductDetailsAuction?id=${encodeURIComponent(auctionId)}`;
+        return;
+    }
+
+    // Fallback: legacy query-param navigation
     const productId   = card.getAttribute('data-product-id') ?? '';
     const name        = card.querySelector('h3')?.textContent.trim() ?? '';
     const artist      = card.querySelector('p.text-sm')?.textContent.trim() ?? '';
@@ -295,12 +313,15 @@ function startCountdowns() {
 
 function tickCountdowns() {
     document.querySelectorAll('.countdown').forEach(el => {
+        const card = el.closest('.auction-card');
+        if (card && card.classList.contains('refreshing')) return;
+
         let hours   = parseInt(el.dataset.hours,   10);
         let minutes = parseInt(el.dataset.minutes, 10);
         let seconds = parseInt(el.dataset.seconds, 10);
 
-        if (hours === 0 && minutes === 0 && seconds === 0) {
-            markAuctionEnded(el);
+        if (hours <= 0 && minutes <= 0 && seconds <= 0) {
+            if (card) refreshAuctionCard(card);
             return;
         }
 
@@ -328,10 +349,6 @@ function tickCountdowns() {
             parent.classList.remove('bg-[#f5ebe0]', 'text-[#c17c5f]');
         }
 
-        // Anti-sniping notice
-        if (hours === 0 && minutes === 0 && seconds === 30) {
-            showToast('⏰ Anti-snipe: bid placed in last 30 s — auction extended 2 min!', 'info');
-        }
     });
 }
 
@@ -340,6 +357,7 @@ function markAuctionEnded(countdownEl) {
     if (!card || card.classList.contains('ended')) return;
 
     card.classList.add('ended');
+    card.setAttribute('data-auction-status', 'ENDED');
     const badge = card.querySelector('.live-badge');
     if (badge) {
         badge.className = 'absolute top-3 left-3 bg-gray-500 text-white text-xs font-bold px-3 py-1 rounded-full';
@@ -351,6 +369,40 @@ function markAuctionEnded(countdownEl) {
         btn.className   = 'w-full py-2.5 bg-gray-300 text-gray-500 rounded-lg font-semibold cursor-not-allowed';
         btn.disabled    = true;
     }
+    syncWonAuctionToCart(card).catch(() => {});
+}
+
+function refreshAuctionCard(card) {
+    const auctionId = card.getAttribute('data-auction-id');
+    if (!auctionId) return;
+
+    card.classList.add('refreshing');
+    
+    fetch(window.location.pathname + '?_t=' + new Date().getTime())
+        .then(res => res.text())
+        .then(html => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const newCard = doc.querySelector(`.auction-card[data-auction-id="${auctionId}"]`);
+            if (newCard) {
+                card.innerHTML = newCard.innerHTML;
+                card.setAttribute('data-auction-status', newCard.getAttribute('data-auction-status'));
+                card.className = newCard.className;
+            } else {
+                // If it wasn't found in the response, fallback to manual marking
+                markAuctionEnded(card.querySelector('.countdown') || card);
+            }
+        })
+        .catch(err => {
+            console.error("Failed to refresh card", err);
+            // Fallback
+            markAuctionEnded(card.querySelector('.countdown') || card);
+        })
+        .finally(() => {
+            card.classList.remove('refreshing');
+            if (typeof applyFilters === 'function') applyFilters();
+            syncWonAuctionToCart(card);
+        });
 }
 
 // ============================================================
@@ -380,7 +432,7 @@ function applyFilters() {
         const matchesCat = _activeCategory === 'all' || cardCat === _activeCategory;
 
         // Price match
-        const bidText  = card.querySelector('.text-xl.font-bold')?.textContent ?? '0';
+        const bidText  = card.querySelector('.auction-bid-amount')?.textContent ?? '0';
         const bidValue = parseFloat(bidText.replace(/[^0-9.]/g, '')) || 0;
         const matchesPrice = bidValue <= priceMax;
 
@@ -423,14 +475,39 @@ function applyFilters() {
     }
 }
 
+function getCardStatus(card) {
+    return (card.getAttribute('data-auction-status') || '').toUpperCase();
+}
 function isLiveCard(card) {
-    return card.querySelector('.live-badge') !== null && !card.classList.contains('ended');
+    return getCardStatus(card) === 'LIVE' && !card.classList.contains('ended');
 }
 function isUpcomingCard(card) {
-    return card.querySelector('.bg-blue-500') !== null;
+    return getCardStatus(card) === 'UPCOMING';
 }
 function isEndedCard(card) {
-    return card.classList.contains('ended') || card.querySelector('.bg-gray-500') !== null;
+    return getCardStatus(card) === 'ENDED' || card.classList.contains('ended');
+}
+
+function isCurrentUserWinner(card) {
+    const winnerId = card.getAttribute('data-auction-winner-id') ?? '';
+    const currentUserId = sessionStorage.getItem('userId') ?? '';
+    return winnerId && currentUserId && winnerId === currentUserId;
+}
+
+async function syncWonAuctionToCart(card) {
+    if (!card || card.dataset.auctionWinnerSynced === 'true') return;
+    if (!isEndedCard(card) || !isCurrentUserWinner(card)) return;
+
+    const productId = card.getAttribute('data-product-id');
+    if (!productId || typeof window.addProductToCart !== 'function') return;
+
+    card.dataset.auctionWinnerSynced = 'true';
+    try {
+        await window.addProductToCart(productId, 1);
+        showToast('Congratulations! Your won auction item was added to your cart.', 'success');
+    } catch (err) {
+        console.warn('Auction winner cart sync failed', err);
+    }
 }
 
 function sortAuctions(criteria) {
@@ -461,7 +538,7 @@ function totalSeconds(card) {
 }
 
 function getBidValue(card) {
-    const text = card.querySelector('.text-xl.font-bold')?.textContent ?? '0';
+    const text = card.querySelector('.auction-bid-amount')?.textContent ?? '0';
     return parseFloat(text.replace(/[^0-9.]/g, '')) || 0;
 }
 

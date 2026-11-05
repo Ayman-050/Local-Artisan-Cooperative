@@ -8,7 +8,6 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "auctions")
 public class Auction {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -20,6 +19,9 @@ public class Auction {
     private double startingBid;
     private double currentHighestBid;
     private String highestBidderName;
+    @ManyToOne
+    @JoinColumn(name = "highest_bidder_id")
+    private Customer highestBidder;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
     private String status;
@@ -27,4 +29,7 @@ public class Auction {
     @ManyToOne
     @JoinColumn(name = "admin_id")
     private Admin admin;
+
+    private Boolean flagged = false;
+    private String flagReason;
 }

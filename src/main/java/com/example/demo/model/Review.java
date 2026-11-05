@@ -8,14 +8,18 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "reviews")
 public class Review {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long reviewId;
 
     private int rating;
+    @Column(columnDefinition = "TEXT")
     private String comment;
     private LocalDate date;
+
+    private String status;
+    private Boolean autoFlagged;
+    private String rejectionReason;
 
     @ManyToOne
     @JoinColumn(name = "customer_id")
