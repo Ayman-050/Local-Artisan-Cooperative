@@ -1,84 +1,176 @@
-# Local Artisan Cooperative ("ArtsyVibe")
+# ArtsyVibe — Local Artisan Cooperative
 
-A marketplace where local artisans sell handmade products and run auctions. Built with Spring Boot 3.3,
-Thymeleaf, Spring Security, Spring Data JPA, Flyway and PostgreSQL.
+An online marketplace where local artisans sell handmade products and run live auctions, customers buy and bid,
+and administrators moderate the whole platform.
 
-Three kinds of accounts:
+Built with **Java 17 · Spring Boot 3 · Spring Security · Spring Data JPA · PostgreSQL · Flyway · Thymeleaf**.
+Started as a university team project and later hardened for production use (security, data integrity, testing).
 
-- **Customers** browse, buy, bid on auctions, review delivered purchases and request refunds.
-- **Artisans** (approved by an admin) list products, run auctions, fulfil orders and answer refund requests.
-- **Admins** approve artisans, moderate products and reviews, monitor auctions, and make the final call on refunds.
+<!-- Screenshots: add images of the shop, cart, artisan dashboard and admin dashboard here, e.g.
+![Shop](docs/screenshots/shop.png) -->
+
+---
+
+## Features
+
+### Customers
+- Browse and search products by category and price range (min/max slider or exact values)
+- Cart and checkout with saved addresses, delivery or store pickup
+- Live auctions with countdowns, minimum-increment bidding and anti-sniping (a late bid extends the auction)
+- Order history with per-item delivery status, refund requests with photos, and reviews of delivered items
+- Wishlist, notifications (outbid, shipped, price drop, back in stock) and profile management
+
+### Artisans
+- Apply to sell (an administrator approves the account)
+- Manage products and create auctions
+- Fulfil orders: each artisan ships **only their own items**, even when an order contains items from several shops
+- Answer refund requests (accept, decline with a reason, or escalate to an administrator)
+- Analytics: revenue over time, best sellers, rating breakdown
+
+### Administrators
+- Dashboard with platform KPIs and recent activity
+- Approve, reject or suspend artisans; manage users
+- Moderate products (hide or publish, in bulk) and reviews
+- Monitor live auctions (bid history, extend, cancel, flag)
+- Final decision on refunds; orders and reports with date ranges
+- Server-side search, filtering and pagination for users, products, reviews, orders and refunds
+
+---
+
+## How it works
+
+```mermaid
+flowchart LR
+    Browser["Browser<br/>Thymeleaf pages + JavaScript"] -->|"HTML pages<br/>JSON /api/**"| Security
+    subgraph App["Spring Boot application"]
+        Security["Spring Security<br/>session, roles, CSRF"] --> Controllers
+        Controllers["Controllers<br/>pages + REST API"] --> Services["Services<br/>cart, auctions, products,<br/>accounts, statistics"]
+        Services --> Repos["Spring Data JPA repositories"]
+        Scheduler["Scheduler<br/>auction start / end"] --> Services
+    end
+    Repos --> DB[("PostgreSQL<br/>schema managed by Flyway")]
+```
+
+Pages are rendered on the server with Thymeleaf. Interactive parts (cart, bidding, notifications, dashboards) call a
+JSON API under `/api/**`.
+
+### Security
+- **Session-based authentication.** Logging in creates a server-side session (HttpOnly cookie). The server always
+  takes the user's identity from that session; it never trusts an e-mail address or id sent by the browser.
+- **Authorisation in two layers.** URL rules per role (customer, artisan, admin) in `SecurityConfig`, plus ownership
+  checks in the code ("is this *your* order / product / address").
+- **CSRF protection** with a token cookie and header, added automatically to every request by `static/app-core.js`.
+- **Passwords** are hashed with BCrypt and never included in any response. Suspended accounts lose their session
+  on the next request.
+- User-generated text is escaped before it is inserted into the page (XSS protection), and image uploads are validated.
+
+### Data integrity
+- **No overselling.** Checkout locks the product rows (`SELECT … FOR UPDATE`, in a fixed order to avoid deadlocks)
+  before checking and decrementing stock, so two buyers cannot both get the last item.
+- **No lost bids.** Bidding locks the auction row, so simultaneous bids are applied one after another.
+- **Exact money.** Prices and totals are `BigDecimal` / `numeric(12,3)` (the Bahraini dinar has three decimals).
+- **Per-item fulfilment.** Every order line has its own status; the order's status is derived from its lines
+  (it is only "shipped" when every artisan has shipped).
+- **History is preserved.** Closing an account anonymises it, and products that were sold are hidden rather than
+  deleted, so past orders, reviews and refunds stay consistent.
+
+### Database migrations
+The schema is versioned with **Flyway** (`src/main/resources/db/migration`); Hibernate only validates that the schema
+matches the entities. Databases created by earlier versions of the app are upgraded automatically on start-up.
+
+### Auctions
+A scheduler moves auctions from *upcoming* → *live* → *ended* and sends the notifications (auction started, outbid,
+won). The winner can then add the item to the cart at the winning price.
+
+---
 
 ## Running locally
 
-Requirements: JDK 17+ and a PostgreSQL database.
+**Requirements:** JDK 17 or newer, and a PostgreSQL database.
 
 ```bash
 export PGHOST=localhost PGPORT=5432 PGDATABASE=artisan PGUSER=postgres PGPASSWORD=postgres
-./gradlew bootRun          # http://localhost:5000
+./gradlew bootRun
 ```
 
-On startup Flyway creates or upgrades the schema (`src/main/resources/db/migration`). To get demo
-accounts and products on an **empty** database, start the app once, then run `db/demo-data.sql`
-(`psql -f db/demo-data.sql`). Every demo account uses the password `password123`:
+Open <http://localhost:5000>. Flyway creates the tables on the first start.
 
-| Role     | Email                 |
-|----------|-----------------------|
-| Admin    | alice@artsyvibe.com   |
-| Artisan  | elena@artsyvibe.com   |
-| Customer | john@example.com      |
+**Demo data (optional).** On an empty database, start the app once, then load the sample accounts and products:
 
-Run the tests with `./gradlew test`. They use an in-memory H2 database in PostgreSQL mode, apply the real
-Flyway migrations, and check that every page renders for every role.
+```bash
+psql "postgresql://$PGUSER:$PGPASSWORD@$PGHOST:$PGPORT/$PGDATABASE" -f db/demo-data.sql
+```
+
+| Role     | E-mail               | Password      |
+|----------|----------------------|---------------|
+| Admin    | alice@artsyvibe.com  | password123   |
+| Artisan  | elena@artsyvibe.com  | password123   |
+| Customer | john@example.com     | password123   |
 
 ### Configuration
 
-| Setting | Default | Notes |
+| Variable | Default | Purpose |
 |---|---|---|
-| `PGHOST`, `PGPORT`, `PGDATABASE`, `PGUSER`, `PGPASSWORD` | — | Database connection (Replit provides these). |
-| `SESSION_COOKIE_SECURE` | `false` | Set to `true` when the site is served over HTTPS. |
-| `DEMO_REFRESH_STALE_AUCTIONS` | `false` | Demo only: re-opens ended LIVE auctions on startup. Never enable on real data. |
+| `PGHOST`, `PGPORT`, `PGDATABASE`, `PGUSER`, `PGPASSWORD` | — | Database connection |
+| `SESSION_COOKIE_SECURE` | `false` | Set to `true` when the site is served over HTTPS |
+| `DEMO_REFRESH_STALE_AUCTIONS` | `false` | Demo only: re-opens ended auctions on start-up |
 
-## How it is put together
+---
 
-- `controller/`: page controllers (Thymeleaf) and the JSON API under `/api/**`.
-- `service/`: business rules (cart and checkout, auctions, products, accounts, dashboards).
-- `security/`: Spring Security setup. `CurrentUser` is the only way code finds out who is calling.
-- `model/`: JPA entities, plus the constants for roles and statuses (`Roles`, `UserStatus`, `OrderStatus`...).
-- `src/main/resources/static/app-core.js`: loaded first on every page. It adds the CSRF header to `fetch`,
-  handles expired sessions, and provides `escapeHtml` / `safeUrl`.
+## Tests
 
-### Security model
+```bash
+./gradlew test
+```
 
-- Logging in (`POST /api/auth/login`) creates a server-side session (HttpOnly `JSESSIONID` cookie).
-  **Identity always comes from that session.** E-mails and ids sent by the browser
-  (`X-User-Email`, `?email=`, `bidderId`, `artisanEmail`...) are ignored.
-- Role rules per URL live in `SecurityConfig`. Ownership rules ("is this *your* order, product, address")
-  live in the controllers and services.
-- CSRF protection uses the `XSRF-TOKEN` cookie and `X-XSRF-TOKEN` header (`app-core.js` does this automatically).
-- Passwords are BCrypt hashes and are never serialized to JSON. Any legacy plain-text passwords are hashed
-  automatically at startup.
-- A suspended or deleted account loses its session on its next request.
+The suite (40 tests) runs against an in-memory H2 database in PostgreSQL mode, using the real Flyway migrations.
+It covers, among other things:
 
-### Money
+- **Security:** spoofed identities are ignored, role and ownership rules, CSRF, password handling, suspended
+  accounts losing their session
+- **Concurrency:** several buyers racing for the last item, simultaneous bids on the same auction
+- **Business rules:** exact money totals, winning-bid pricing, per-artisan fulfilment, refund eligibility
+- **Every page renders** for every role, and admin search and paging work
+- **Upgrading a database** created by an older version of the app
 
-All amounts are `BigDecimal` / `numeric(12,3)` (the Bahraini dinar has 3 decimal places). Checkout locks
-product rows, so two buyers cannot both get the last unit. Bids lock the auction row.
+---
+
+## Project structure
+
+```
+src/main/java/com/example/demo/
+├── config/        start-up tasks and the auction scheduler
+├── controller/    page controllers and the JSON API (/api/**)
+├── dto/           validated request bodies
+├── model/         JPA entities and role/status constants
+├── repository/    Spring Data JPA repositories (queries, row locks)
+├── security/      Spring Security configuration, CurrentUser
+├── service/       business logic: cart & checkout, auctions, products, accounts, statistics
+└── web/           error handling, paging, input validation helpers
+src/main/resources/
+├── db/migration/  Flyway migrations
+├── templates/     Thymeleaf pages (customer, artisan, admin)
+└── static/        JavaScript, images
+db/demo-data.sql   optional sample data
+```
+
+The database design (ER diagram) is in
+[`attached_assets/389_Project_-_ER.drawio_1778252832232.png`](attached_assets/389_Project_-_ER.drawio_1778252832232.png).
+
+---
+
+## Deployment
+
+The project runs on [Replit](https://replit.com) (`.replit`): the app listens on port 5000 and uses Replit's
+PostgreSQL. For production, use a single always-on instance (sessions are kept in memory) and set
+`SESSION_COOKIE_SECURE=true`.
+
+---
 
 ## Known limitations
 
-- **Payments are simulated.** Checkout records a "completed" payment without charging anyone
-  (`transaction_details = 'SIMULATED ...'`).
-- **Images are stored in the database** as base64 data URLs, capped at about 2 MB each. Move them to file or object storage.
-- Admin tables load every row and filter in the browser. There is no server-side pagination yet.
-- "Forgot password" is UI only. No e-mail is sent.
-- Reviews have an "auto-flagged" field, but nothing sets it yet (there is no content filter).
-- An order has a single status even when it contains items from several artisans.
-- Orders cannot be cancelled. A cancellation would need to restock items and refund the payment.
-
-## Troubleshooting
-
-- **App refuses to start with "Schema-validation: ..."**: the database schema differs from the entities.
-  Usually it means an old database had manual changes. Fix the column the message names, or start once with
-  `SPRING_JPA_HIBERNATE_DDL_AUTO=none` and add a Flyway migration.
-- **Every POST returns 403**: the page is missing `<script src="/app-core.js"></script>` (CSRF header).
+- **Payments are simulated.** Checkout records a completed payment without charging anyone.
+- **Images are stored in the database** (up to about 2 MB each); a file or object store would scale better.
+- **Sessions are kept in memory**, so the app runs as a single instance.
+- **"Forgot password" has no e-mail delivery yet.**
+- **Orders cannot be cancelled** once placed (this would need restocking and refunding).
