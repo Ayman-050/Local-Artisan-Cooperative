@@ -12,6 +12,7 @@ import com.example.demo.repository.CustomerRepository;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.repository.WishlistRepository;
 import com.example.demo.security.AuthenticatedUser;
+import com.example.demo.web.Phones;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -196,7 +197,7 @@ public class AuthService {
     }
 
     private static String normalizePhone(String phone) {
-        return phone.replaceAll("\\s+", "");
+        return Phones.normalize(phone);
     }
 
     private String dummyHash() {

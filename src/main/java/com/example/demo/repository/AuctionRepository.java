@@ -22,6 +22,8 @@ public interface AuctionRepository extends JpaRepository<Auction, Long> {
 
     Optional<Auction> findByProduct_Id(Long productId);
 
+    List<Auction> findByProduct_IdIn(java.util.Collection<Long> productIds);
+
     long countByProductArtisanUserId(Long artisanId);
 
     long countByProductArtisanUserIdAndStatus(Long artisanId, String status);

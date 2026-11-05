@@ -1,6 +1,5 @@
 package com.example.demo.controller;
 
-import com.example.demo.dto.AuthRequests;
 import com.example.demo.model.Artisan;
 import com.example.demo.model.User;
 import com.example.demo.repository.AddressRepository;
@@ -8,6 +7,7 @@ import com.example.demo.repository.UserRepository;
 import com.example.demo.security.CurrentUser;
 import com.example.demo.service.AuthService;
 import com.example.demo.web.ImageUrls;
+import com.example.demo.web.Phones;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -112,11 +112,7 @@ public class UserController {
     }
 
     private static String validPhone(String raw) {
-        String phone = raw.trim();
-        if (!phone.matches(AuthRequests.PHONE_RULE)) {
-            throw new IllegalArgumentException("Please enter a valid phone number.");
-        }
-        return phone.replaceAll("\\s+", "");
+        return Phones.normalize(raw);
     }
 
     private static String limit(String value, int max, String label) {

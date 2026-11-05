@@ -38,6 +38,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.math.BigDecimal;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.Comparator;
@@ -207,6 +208,14 @@ public class AdminController {
                 PageView.filter(status), PageView.filter(artisan),
                 PageView.request(page, Sort.by(Sort.Direction.DESC, "id")));
         model.addAttribute("productsList", products.getContent());
+        // Auction lots have no list price; show their current bid instead.
+        Map<Long, BigDecimal> auctionBids = new HashMap<>();
+        List<Long> pageIds = products.getContent().stream().map(Product::getId).toList();
+        if (!pageIds.isEmpty()) {
+            auctionRepository.findByProduct_IdIn(pageIds)
+                    .forEach(a -> auctionBids.put(a.getProduct().getId(), a.getCurrentHighestBid()));
+        }
+        model.addAttribute("auctionBids", auctionBids);
         model.addAttribute("pager", PageView.of(products));
         model.addAttribute("categoriesList", new TreeSet<>(productRepository.findDistinctCategories()));
         model.addAttribute("artisansList", productRepository.findDistinctArtisanNames());

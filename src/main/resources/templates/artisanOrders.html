@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <script src="/app-core.js"></script>
+    <script src="/client-pager.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Orders - Artisan Co-op</title>
@@ -266,7 +267,7 @@
 <body class="min-h-screen flex flex-col">
     <!-- Top Navigation Bar -->
     <nav class="bg-[#faf9f6] border-b border-[#e5e0d8] py-4 px-6 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto flex items-center justify-between">
+        <div class="w-full flex items-center justify-between">
             <div class="flex items-center">
                 <a href="/artisanDashboard" class="flex items-center gap-3 group">
                     <!-- Logo -->
@@ -474,20 +475,7 @@
                 </div>
 
                 <!-- Pagination -->
-                <div class="flex items-center justify-between px-6 py-4 border-t border-[#e5e0d8]">
-                    <p class="text-sm text-[#8b7355]">Showing 1-8 of 24 orders</p>
-                    <div class="flex items-center gap-2">
-                        <button class="px-4 py-2 border border-[#e5e0d8] rounded-lg text-[#8b7355] hover:border-[#c17c5f] hover:text-[#c17c5f] transition-colors" disabled>
-                            Previous
-                        </button>
-                        <button class="px-4 py-2 bg-[#c17c5f] text-white rounded-lg font-medium">1</button>
-                        <button class="px-4 py-2 border border-[#e5e0d8] rounded-lg text-[#8b7355] hover:border-[#c17c5f] hover:text-[#c17c5f] transition-colors">2</button>
-                        <button class="px-4 py-2 border border-[#e5e0d8] rounded-lg text-[#8b7355] hover:border-[#c17c5f] hover:text-[#c17c5f] transition-colors">3</button>
-                        <button class="px-4 py-2 border border-[#e5e0d8] rounded-lg text-[#8b7355] hover:border-[#c17c5f] hover:text-[#c17c5f] transition-colors">
-                            Next
-                        </button>
-                    </div>
-                </div>
+                <div id="clientPagerFooter" class="flex items-center justify-between px-6 py-4 border-t border-[#e5e0d8]"></div>
             </div>
         </main>
     </div>
@@ -510,6 +498,14 @@
         const searchInput = document.getElementById('search-input');
         const statusFilter = document.getElementById('status-filter');
         const dateFilter = document.getElementById('date-filter');
+
+        // Real paging over the rows the filters leave visible (10 per page).
+        const ordersPager = ClientPager({
+            rows: () => Array.from(document.querySelectorAll('tbody .table-row'))
+                .filter(r => !r.querySelector('td[colspan]') && !r.classList.contains('no-matches-row')),
+            footer: document.getElementById('clientPagerFooter'),
+            noun: 'orders'
+        });
 
         function filterOrders() {
             const query = (searchInput?.value || '').toLowerCase().trim();
@@ -601,8 +597,10 @@
                 if (defaultPlaceholder) defaultPlaceholder.style.setProperty('display', 'none', 'important');
                 if (noMatchesPlaceholder) noMatchesPlaceholder.style.setProperty('display', 'none', 'important');
             }
+            ordersPager.refresh(true);
         }
 
+        filterOrders();
         searchInput?.addEventListener('input', filterOrders);
         statusFilter?.addEventListener('change', filterOrders);
         dateFilter?.addEventListener('change', filterOrders);

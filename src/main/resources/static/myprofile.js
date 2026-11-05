@@ -143,6 +143,11 @@ document.addEventListener('DOMContentLoaded', () => {
     cameraBtn?.querySelector('input[type="file"]')?.addEventListener('change', function () {
         if (!this.files.length) return;
         const file = this.files[0];
+        if (file.size > 2 * 1024 * 1024) {
+            showToast('Profile picture must be 2MB or smaller.', 'error');
+            this.value = '';
+            return;
+        }
         const reader = new FileReader();
         reader.onload = (e) => {
             const imageUrl = e.target.result;
@@ -157,9 +162,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email: userEmail, imageUrl: imageUrl })
                 })
-                .then(r => r.json())
+                .then(r => r.json().catch(() => ({})))
                 .then(data => {
-                    if (data.success) {
+                    if (!data.success) {
+                        showToast(data.message || 'Failed to save profile picture.', 'error');
+                        return;
+                    }
+                    {
                         showToast('Profile picture updated permanently!', 'success');
                         // Update session storage and UI
                         sessionStorage.setItem('userProfile', JSON.stringify(data.user));
@@ -174,6 +183,30 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
         reader.readAsDataURL(file);
+    });
+
+    // Remove photo: the server falls back to the default avatar when imageUrl is empty.
+    document.getElementById('remove-profile-picture')?.addEventListener('click', () => {
+        if (!confirm('Remove your profile photo?')) return;
+        fetch('/api/user/update-profile-picture', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ imageUrl: '' })
+        })
+            .then(r => r.json().catch(() => ({})))
+            .then(data => {
+                if (!data.success) {
+                    showToast(data.message || 'Could not remove the photo.', 'error');
+                    return;
+                }
+                showToast('Profile photo removed.', 'success');
+                sessionStorage.setItem('userProfile', JSON.stringify(data.user));
+                renderProfileData(data.user);
+                const img = document.querySelector('.w-40.h-40.rounded-full');
+                if (img) img.src = data.user.profilePicture;
+                if (window.updateNavAuthState) window.updateNavAuthState();
+            })
+            .catch(() => showToast('Could not remove the photo.', 'error'));
     });
 
     // ----------------------------------------------------------
@@ -262,12 +295,7 @@ window.savePersonalInfo = function () {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
     })
-        .then(r => {
-            if (!r.ok) {
-                return r.text().then(txt => Promise.reject(new Error(txt)));
-            }
-            return r.json();
-        })
+        .then(r => r.json().catch(() => ({ success: false })))
         .then(data => {
             if (data.success) {
                 showToast('Personal information saved successfully!', 'success');
@@ -284,7 +312,7 @@ window.savePersonalInfo = function () {
 
         .catch(err => {
             console.error('Save personal info error:', err);
-            showToast('Error saving personal information.', 'error');
+            showToast('Could not reach the server. Please try again.', 'error');
         });
 };
 

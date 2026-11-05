@@ -121,6 +121,16 @@
             border-color: #c17c5f;
         }
 
+        /* Custom radio: the real input is visually hidden; style the circle next to it. */
+        .custom-radio:checked + div {
+            border-color: #c17c5f;
+            background: radial-gradient(circle, #c17c5f 0 40%, #fff 45%);
+        }
+        .custom-radio:focus-visible + div {
+            outline: 2px solid #c17c5f;
+            outline-offset: 2px;
+        }
+
         .custom-radio:checked {
             border-color: #c17c5f;
         }
@@ -269,14 +279,7 @@
                 <!-- Price Range Slider -->
                 <div class="mb-6">
                     <h3 class="text-lg font-semibold text-[#5c4a3d] mb-3">Price Range</h3>
-                    <div class="px-2">
-                        <input type="range" min="0" max="1000" value="500" class="w-full" id="priceRange">
-                        <div class="flex justify-between mt-2 text-sm text-[#8b7355]">
-                            <span>0 BD</span>
-                            <span class="font-semibold text-[#c17c5f]" id="priceValue">500 BD</span>
-                            <span>1000 BD</span>
-                        </div>
-                    </div>
+                    <div class="px-2" id="priceRangeControl"></div>
                 </div>
             </div>
         </aside>
@@ -342,17 +345,10 @@
     </div>
 
     <script src="/authguard.js"></script>
+    <script src="/price-range.js"></script>
     <script src="/products.js"></script>
     
     <script>
-        // Price range slider functionality
-        const priceRange = document.getElementById('priceRange');
-        const priceValue = document.getElementById('priceValue');
-
-        priceRange.addEventListener('input', function() {
-            priceValue.textContent = this.value + ' BD';
-        });
-
         // Custom checkbox functionality
         const checkboxes = document.querySelectorAll('.custom-checkbox');
         checkboxes.forEach(checkbox => {

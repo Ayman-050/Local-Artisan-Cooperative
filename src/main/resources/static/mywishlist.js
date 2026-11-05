@@ -150,7 +150,32 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    const CATEGORY_ICONS = {
+        ceramics: 'fa-mug-hot', jewelry: 'fa-gem', textiles: 'fa-tshirt', paintings: 'fa-palette',
+        woodwork: 'fa-tree', glasswork: 'fa-wine-glass'
+    };
+
+    /** One filter pill per category present in the wishlist, so every item can be filtered. */
+    function buildCategoryPills(products) {
+        const container = document.getElementById('wishlist-category-pills');
+        if (!container) return;
+        container.querySelectorAll('[data-dynamic-pill]').forEach(p => p.remove());
+        const categories = [...new Set(products.map(p => (p.category || '').trim().toLowerCase()).filter(Boolean))].sort();
+        categories.forEach(category => {
+            const button = document.createElement('button');
+            button.className = 'filter-pill px-5 py-2 rounded-full border-2 font-medium';
+            button.setAttribute('data-dynamic-pill', '');
+            const icon = document.createElement('i');
+            icon.className = 'fas ' + (CATEGORY_ICONS[category] || 'fa-tag') + ' mr-2';
+            button.appendChild(icon);
+            button.appendChild(document.createTextNode(category.charAt(0).toUpperCase() + category.slice(1)));
+            button.addEventListener('click', () => window.filterWishlist(category, button));
+            container.appendChild(button);
+        });
+    }
+
     function renderWishlist(products) {
+        buildCategoryPills(products || []);
         const tbody = document.querySelector('tbody');
         if (!tbody) return;
 

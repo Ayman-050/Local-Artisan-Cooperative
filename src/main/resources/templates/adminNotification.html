@@ -204,7 +204,7 @@
 <body class="min-h-screen flex flex-col">
     <!-- Top Navigation Bar -->
     <nav class="bg-[#faf9f6] border-b border-[#e5e0d8] py-4 px-6 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto flex items-center justify-between">
+        <div class="w-full flex items-center justify-between">
             <div class="flex items-center">
                 <a href="/adminDashboard" class="flex items-center gap-3 group">
                     <!-- Logo -->
@@ -360,27 +360,27 @@
                 <div class="flex items-center gap-2 overflow-x-auto">
                     <button class="tab-button active px-5 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap flex items-center gap-2" onclick="switchTab(event, 'all')">
                         All
-                        <span class="bg-[#c17c5f] text-white text-xs px-2 py-0.5 rounded-full">12</span>
+                        <span data-tab-count="all" class="bg-[#c17c5f] text-white text-xs px-2 py-0.5 rounded-full">0</span>
                     </button>
                     <button class="tab-button px-5 py-2.5 rounded-lg text-sm font-medium text-[#8b7355] whitespace-nowrap flex items-center gap-2" onclick="switchTab(event, 'urgent')">
                         Urgent
-                        <span class="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">3</span>
+                        <span data-tab-count="urgent" class="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">0</span>
                     </button>
                     <button class="tab-button px-5 py-2.5 rounded-lg text-sm font-medium text-[#8b7355] whitespace-nowrap flex items-center gap-2" onclick="switchTab(event, 'refunds')">
                         Refunds
-                        <span class="bg-purple-500 text-white text-xs px-2 py-0.5 rounded-full">2</span>
+                        <span data-tab-count="refunds" class="bg-purple-500 text-white text-xs px-2 py-0.5 rounded-full">0</span>
                     </button>
                     <button class="tab-button px-5 py-2.5 rounded-lg text-sm font-medium text-[#8b7355] whitespace-nowrap flex items-center gap-2" onclick="switchTab(event, 'approvals')">
                         Approvals
-                        <span class="bg-green-500 text-white text-xs px-2 py-0.5 rounded-full">4</span>
+                        <span data-tab-count="approvals" class="bg-green-500 text-white text-xs px-2 py-0.5 rounded-full">0</span>
                     </button>
                     <button class="tab-button px-5 py-2.5 rounded-lg text-sm font-medium text-[#8b7355] whitespace-nowrap flex items-center gap-2" onclick="switchTab(event, 'reports')">
                         Reports
-                        <span class="bg-blue-500 text-white text-xs px-2 py-0.5 rounded-full">2</span>
+                        <span data-tab-count="reports" class="bg-blue-500 text-white text-xs px-2 py-0.5 rounded-full">0</span>
                     </button>
                     <button class="tab-button px-5 py-2.5 rounded-lg text-sm font-medium text-[#8b7355] whitespace-nowrap flex items-center gap-2" onclick="switchTab(event, 'system')">
                         System
-                        <span class="bg-gray-500 text-white text-xs px-2 py-0.5 rounded-full">1</span>
+                        <span data-tab-count="system" class="bg-gray-500 text-white text-xs px-2 py-0.5 rounded-full">0</span>
                     </button>
                 </div>
             </div>
@@ -419,8 +419,8 @@
             const notifications = document.querySelectorAll('.notification-card');
             let visibleCount = 0;
             notifications.forEach(notification => {
-                const types = notification.getAttribute('data-type') || '';
-                const matches = tab === 'all' || types.includes(tab);
+                const categories = (notification.getAttribute('data-categories') || '').split(' ');
+                const matches = tab === 'all' || categories.includes(tab);
                 notification.style.display = matches ? 'flex' : 'none';
                 if (matches) visibleCount++;
             });
@@ -490,7 +490,28 @@
             }
         }
 
+        /** Which tabs a notification type belongs to (a type can be in several, e.g. urgent + refunds). */
+        function categoriesFor(type) {
+            const t = (type || '').toUpperCase();
+            const categories = [];
+            if (t.startsWith('REFUND')) categories.push('refunds');
+            if (t === 'ARTISAN_APPROVAL' || t === 'PRODUCT_VERIFICATION') categories.push('approvals');
+            if (t === 'REVIEW_FLAGGED' || t.startsWith('REPORT')) categories.push('reports');
+            if (t === 'REFUND_ESCALATED' || t === 'REFUND_ADMIN_REVIEW' || t === 'REVIEW_FLAGGED') categories.push('urgent');
+            if (categories.length === 0) categories.push('system');
+            return categories;
+        }
+
+        function updateTabCounts(notifications) {
+            const counts = { all: notifications.length, urgent: 0, refunds: 0, approvals: 0, reports: 0, system: 0 };
+            notifications.forEach(n => categoriesFor(n.type).forEach(c => { counts[c] = (counts[c] || 0) + 1; }));
+            document.querySelectorAll('[data-tab-count]').forEach(el => {
+                el.textContent = counts[el.getAttribute('data-tab-count')] || 0;
+            });
+        }
+
         function renderNotifications(notifications) {
+            updateTabCounts(notifications || []);
             const notificationsList = document.getElementById('notifications-list');
             const emptyState = document.getElementById('empty-state');
             if (!notificationsList) return;
@@ -513,7 +534,7 @@
 
                 return `
                     <div class="notification-card ${read ? 'read' : 'unread'} rounded-xl p-5 flex items-start gap-4" 
-                         data-type="${type.toLowerCase()}" 
+                         data-type="${escapeHtml(type.toLowerCase())}" data-categories="${categoriesFor(type).join(' ')}" 
                          data-id="${notification.id}" 
                          data-link="${link}" 
                          data-read="${read}">

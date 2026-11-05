@@ -189,7 +189,7 @@
 <body class="min-h-screen flex flex-col">
     <!-- Top Navigation Bar -->
     <nav class="bg-[#faf9f6] border-b border-[#e5e0d8] py-4 px-6 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto flex items-center justify-between">
+        <div class="w-full flex items-center justify-between">
             <div class="flex items-center">
                 <a href="/artisanDashboard" class="flex items-center gap-3 group">
                     <!-- Logo -->
@@ -330,7 +330,7 @@
                     </div>
                     <h3 class="text-[#8b7355] text-sm font-medium mb-1">Total Revenue</h3>
                     <p class="text-3xl font-bold text-[#5c4a3d]">BD <span th:text="${#numbers.formatDecimal(totalRevenue, 1, 2)}">0.00</span></p>
-                    <p class="text-xs text-[#8b7355] mt-2">This month</p>
+                    <p class="text-xs text-[#8b7355] mt-2" title="The percentage compares this month with last month">All time (% vs last month)</p>
                 </div>
 
                 <!-- Total Orders -->
@@ -346,7 +346,7 @@
                     </div>
                     <h3 class="text-[#8b7355] text-sm font-medium mb-1">Total Orders</h3>
                     <p class="text-3xl font-bold text-[#5c4a3d]" th:text="${ordersCount}">0</p>
-                    <p class="text-xs text-[#8b7355] mt-2">This month</p>
+                    <p class="text-xs text-[#8b7355] mt-2" title="The percentage compares this month with last month">All time (% vs last month)</p>
                 </div>
 
                 <!-- Top Product -->
@@ -710,6 +710,18 @@
 
     <script th:inline="javascript">
         /*<![CDATA[*/
+        /** Real dates for the chart axis: the server sends the last 8 weeks / 6 months, oldest first. */
+        function axisLabel(timeframe, idx, count) {
+            const now = new Date();
+            if (timeframe === 'weekly') {
+                const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7));
+                monday.setDate(monday.getDate() - 7 * (count - 1 - idx));
+                return monday.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+            }
+            const month = new Date(now.getFullYear(), now.getMonth() - (count - 1 - idx), 1);
+            return month.toLocaleDateString('en-GB', { month: 'short', year: '2-digit' });
+        }
+
         const weeklyRevenueData = /*[[${weeklyRevenue}]]*/ [0,0,0,0,0,0,0,0];
         const monthlyRevenueData = /*[[${monthlyRevenue}]]*/ [0,0,0,0,0,0];
         /*]]>*/
@@ -776,7 +788,7 @@
                 xAxisContainer.innerHTML = '';
                 points.forEach((pt, idx) => {
                     const span = document.createElement('span');
-                    span.textContent = timeframe === 'weekly' ? `Week ${idx + 1}` : `Month ${idx + 1}`;
+                    span.textContent = axisLabel(timeframe, idx, data.length);
                     xAxisContainer.appendChild(span);
                 });
             }

@@ -195,21 +195,10 @@
 
             <!-- Category Filter Pills -->
             <div class="bg-white rounded-xl p-4 card-shadow mb-6">
-                <div class="flex flex-wrap gap-3">
+                <!-- "All Items" plus one pill per category in the wishlist (built by mywishlist.js). -->
+                <div id="wishlist-category-pills" class="flex flex-wrap gap-3">
                     <button class="filter-pill active px-5 py-2 rounded-full border-2 font-medium" onclick="filterWishlist('all', this)">
                         All Items
-                    </button>
-                    <button class="filter-pill px-5 py-2 rounded-full border-2 font-medium" onclick="filterWishlist('ceramics', this)">
-                        <i class="fas fa-mug-hot mr-2"></i>Ceramics
-                    </button>
-                    <button class="filter-pill px-5 py-2 rounded-full border-2 font-medium" onclick="filterWishlist('jewelry', this)">
-                        <i class="fas fa-gem mr-2"></i>Jewelry
-                    </button>
-                    <button class="filter-pill px-5 py-2 rounded-full border-2 font-medium" onclick="filterWishlist('textiles', this)">
-                        <i class="fas fa-tshirt mr-2"></i>Textiles
-                    </button>
-                    <button class="filter-pill px-5 py-2 rounded-full border-2 font-medium" onclick="filterWishlist('art', this)">
-                        <i class="fas fa-palette mr-2"></i>Art
                     </button>
                 </div>
             </div>

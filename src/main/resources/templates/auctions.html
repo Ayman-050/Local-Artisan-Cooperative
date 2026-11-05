@@ -186,6 +186,12 @@
             border-color: #c17c5f;
         }
 
+        /* Custom radio: the real input is visually hidden; style the circle next to it. */
+        .custom-radio:checked + div {
+            border-color: #c17c5f;
+            background: radial-gradient(circle, #c17c5f 0 40%, #fff 45%);
+        }
+
         .custom-radio:checked {
             border-color: #c17c5f;
         }
@@ -285,14 +291,7 @@
                 <!-- Price Range Slider -->
                 <div class="mb-6">
                     <h3 class="text-lg font-semibold text-[#5c4a3d] mb-3">Bid Range</h3>
-                    <div class="px-2">
-                        <input type="range" min="0" max="1000" value="1000" class="w-full" id="priceRange">
-                        <div class="flex justify-between mt-2 text-sm text-[#8b7355]">
-                            <span>0 BD</span>
-                            <span class="font-semibold text-[#c17c5f]" id="priceValue">1000 BD</span>
-                            <span>1000 BD</span>
-                        </div>
-                    </div>
+                    <div class="px-2" id="priceRangeControl"></div>
                 </div>
         </aside>
 
@@ -496,7 +495,8 @@
     <script src="/authguard.js"></script>
 
     <!-- All JS logic is handled by auctions.js -->
-    <script src="/auctions.js?v=4"></script>
+    <script src="/price-range.js"></script>
+    <script src="/auctions.js?v=5"></script>
 </body>
 
 </html>

@@ -2,6 +2,7 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <script src="/app-core.js"></script>
+    <script src="/client-pager.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Products - Artisan Co-op</title>
@@ -186,7 +187,7 @@
 <body class="min-h-screen flex flex-col">
     <!-- Top Navigation Bar -->
     <nav class="bg-[#faf9f6] border-b border-[#e5e0d8] py-4 px-6 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto flex items-center justify-between">
+        <div class="w-full flex items-center justify-between">
             <div class="flex items-center">
                 <a href="/artisanDashboard" class="flex items-center gap-3 group">
                     <!-- Logo -->
@@ -403,20 +404,7 @@
                 </div>
 
                 <!-- Pagination -->
-                <div class="flex items-center justify-between px-6 py-4 border-t border-[#e5e0d8]">
-                    <p class="text-sm text-[#8b7355]" th:text="${productsCount != null and productsCount > 0 ? 'Showing ' + productsCount + ' product(s)' : 'No products'}">No products</p>
-                    <div class="flex items-center gap-2">
-                        <button class="px-4 py-2 border border-[#e5e0d8] rounded-lg text-[#8b7355] hover:border-[#c17c5f] hover:text-[#c17c5f] transition-colors" disabled>
-                            Previous
-                        </button>
-                        <button class="px-4 py-2 bg-[#c17c5f] text-white rounded-lg">1</button>
-                        <button class="px-4 py-2 border border-[#e5e0d8] rounded-lg text-[#8b7355] hover:border-[#c17c5f] hover:text-[#c17c5f] transition-colors">2</button>
-                        <button class="px-4 py-2 border border-[#e5e0d8] rounded-lg text-[#8b7355] hover:border-[#c17c5f] hover:text-[#c17c5f] transition-colors">3</button>
-                        <button class="px-4 py-2 border border-[#e5e0d8] rounded-lg text-[#8b7355] hover:border-[#c17c5f] hover:text-[#c17c5f] transition-colors">
-                            Next
-                        </button>
-                    </div>
-                </div>
+                <div id="clientPagerFooter" class="flex items-center justify-between px-6 py-4 border-t border-[#e5e0d8]"></div>
             </div>
         </main>
     </div>
@@ -803,12 +791,16 @@
                 }
             });
 
-            // Update the footer count
-            const countEl = document.querySelector('[th\\:text]') || document.querySelector('.flex.items-center.justify-between.px-6.py-4 p');
-            if (countEl) {
-                countEl.textContent = visibleCount > 0 ? `Showing ${visibleCount} product(s)` : 'No products match your filter';
-            }
+            productsPager.refresh(true);
         }
+
+        // Real paging over the rows the filters leave visible (10 per page).
+        const productsPager = ClientPager({
+            rows: () => Array.from(document.querySelectorAll('.product-row')),
+            footer: document.getElementById('clientPagerFooter'),
+            noun: 'products'
+        });
+        productsPager.refresh(true);
 
         // Filter pill functionality
         document.querySelectorAll('.filter-pill').forEach(pill => {

@@ -24,10 +24,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Removed redundant updateLoginState - handled globally by authguard.js
 
-    priceRange?.addEventListener('input', function () {
-        priceValue.textContent = this.value + ' BD';
-        applyFilters();
-    });
+    // Min/max bid filter; the upper bound covers the highest current bid shown.
+    const bidValues = [...document.querySelectorAll('.auction-card .auction-bid-amount')]
+        .map(el => parseFloat(el.textContent.replace(/[^0-9.]/g, '')) || 0);
+    const priceControlEl = document.getElementById('priceRangeControl');
+    if (priceControlEl && window.PriceRange) {
+        window.auctionPriceRange = PriceRange.create(priceControlEl, {
+            max: Math.ceil(Math.max(0, ...bidValues) / 10) * 10 || 1000,
+            onChange: () => applyFilters()
+        });
+    }
 
     const requireLoginToAct = (message) => window.requireLoginForAction ? window.requireLoginForAction(message) : true;
 
@@ -414,7 +420,7 @@ function applyFilters() {
     if (!grid) return;
 
     const cards        = grid.querySelectorAll('.auction-card');
-    const priceMax     = parseFloat(document.getElementById('priceRange')?.value ?? 1000);
+    const priceBounds  = window.auctionPriceRange ? window.auctionPriceRange.get() : { min: 0, max: Infinity };
     const searchTerm   = (document.querySelector('aside input[type="text"]')?.value ?? '').toLowerCase().trim();
     const checkedBoxes = [...document.querySelectorAll('.custom-checkbox:checked')]
                             .map(cb => cb.closest('label')?.textContent.trim().toLowerCase() ?? '');
@@ -434,7 +440,7 @@ function applyFilters() {
         // Price match
         const bidText  = card.querySelector('.auction-bid-amount')?.textContent ?? '0';
         const bidValue = parseFloat(bidText.replace(/[^0-9.]/g, '')) || 0;
-        const matchesPrice = bidValue <= priceMax;
+        const matchesPrice = bidValue >= priceBounds.min && bidValue <= priceBounds.max;
 
         // Tab match
         let matchesTab = true;

@@ -12,7 +12,8 @@ public final class AuthRequests {
     public static final String PASSWORD_RULE = "^(?=.*[A-Z])(?=.*\\d).{8,72}$";
     public static final String PASSWORD_RULE_MESSAGE =
             "Password must be 8-72 characters and include an uppercase letter and a number.";
-    public static final String PHONE_RULE = "^\\+?[0-9 ]{7,20}$";
+    /** Loose input check; the number is then normalised by Phones.normalize (spaces, dashes etc. removed). */
+    public static final String PHONE_RULE = "^\\+?[0-9 ()\\-.]{7,25}$";
 
     private AuthRequests() {
     }

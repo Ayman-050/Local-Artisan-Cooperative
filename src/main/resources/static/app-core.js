@@ -133,6 +133,15 @@
     }
   }
 
+  // Any image that fails to load (dead link, missing file) shows a neutral placeholder instead of a broken icon.
+  document.addEventListener('error', function (e) {
+    var img = e.target;
+    if (img && img.tagName === 'IMG' && !img.dataset.fallbackApplied) {
+      img.dataset.fallbackApplied = '1';
+      img.src = '/images/placeholder.svg';
+    }
+  }, true);
+
   window.AppCore = {
     escapeHtml: escapeHtml,
     safeUrl: safeUrl,
