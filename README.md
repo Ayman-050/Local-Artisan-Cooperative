@@ -150,7 +150,7 @@ It covers, among other things:
 ## Project structure
 
 ```
-src/main/java/com/example/demo/
+src/main/java/com/artsyvibe/
 ├── config/        start-up tasks and the auction scheduler
 ├── controller/    page controllers and the JSON API (/api/**)
 ├── dto/           validated request bodies
@@ -164,10 +164,12 @@ src/main/resources/
 ├── templates/     Thymeleaf pages (customer, artisan, admin)
 └── static/        JavaScript, images
 db/demo-data.sql   optional sample data
+docs/              ER diagram and screenshots
 ```
 
-The database design (ER diagram) is in
-[`attached_assets/389_Project_-_ER.drawio_1778252832232.png`](attached_assets/389_Project_-_ER.drawio_1778252832232.png).
+### Database design
+
+![ER diagram](docs/er-diagram.png)
 
 ---
 

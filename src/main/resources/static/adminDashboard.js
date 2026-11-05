@@ -273,7 +273,7 @@
         viewLink.href = '/adminRefund';
         viewLink.title = 'Go to Refund Management';
       } else if (text.includes('order')) {
-        viewLink.href = '/adminOrderManagment';
+        viewLink.href = '/adminOrderManagement';
         viewLink.title = 'Go to Orders';
       } else if (text.includes('auction')) {
         viewLink.href = '/adminAuction';
@@ -393,6 +393,27 @@
   // ─────────────────────────────────────────────
   // SECTION 9: Update Chart Visuals
   // ─────────────────────────────────────────────
+  /** Axis label: plain BD below 1,000, then 1.5K / 12K style. */
+  function formatBdAxis(value) {
+    if (value >= 1000) {
+      return (value >= 10000 ? Math.round(value / 1000) : (value / 1000).toFixed(1)) + 'K BD';
+    }
+    return Math.round(value) + ' BD';
+  }
+
+  /** Overlays a short message on a chart that has nothing to show. */
+  function showEmptyChart(svg, message) {
+    const box = svg && svg.parentElement;
+    if (!box || box.querySelector('[data-chart-empty]')) return;
+    if (getComputedStyle(box).position === 'static') box.style.position = 'relative';
+    const note = document.createElement('div');
+    note.setAttribute('data-chart-empty', '');
+    note.className = 'absolute inset-0 flex items-center justify-center text-sm text-[#8b7355] pointer-events-none';
+    note.innerHTML = '<span class="bg-white/90 px-3 py-1.5 rounded-lg"></span>';
+    note.firstChild.textContent = message;
+    box.appendChild(note);
+  }
+
   function updateChartsVisuals() {
     if (!window.chartData) return;
 
@@ -401,6 +422,7 @@
     if (lineSvg && window.chartData.ordersPerWeek) {
         const orders = window.chartData.ordersPerWeek;
         const maxOrder = Math.max(...orders, 10);
+        if (orders.every(v => !v)) showEmptyChart(lineSvg, 'No orders in the last 6 weeks');
         const getCY = val => 200 - (val / maxOrder) * 160;
 
         const cxValues = [0, 75, 225, 375, 525, 600];
@@ -449,15 +471,16 @@
     const svgs = qsa('.bg-white svg');
     const revSvg = svgs[1];
     if (revSvg && window.chartData.revenuePerMonth) {
-        const revenues = window.chartData.revenuePerMonth;
-        const maxRev = Math.max(...revenues, 10);
+        const revenues = window.chartData.revenuePerMonth.map(Number);
+        const maxRev = Math.max(...revenues, 100);
+        if (revenues.every(v => !v)) showEmptyChart(revSvg, 'No sales in the last 6 months');
         
         const yAxisTexts = revSvg.querySelectorAll('text');
         if (yAxisTexts.length >= 4) {
-            yAxisTexts[0].textContent = Math.round(maxRev / 1000) + 'K BD';
-            yAxisTexts[1].textContent = Math.round((maxRev * 0.66) / 1000) + 'K BD';
-            yAxisTexts[2].textContent = Math.round((maxRev * 0.33) / 1000) + 'K BD';
-            yAxisTexts[3].textContent = '0K BD';
+            yAxisTexts[0].textContent = formatBdAxis(maxRev);
+            yAxisTexts[1].textContent = formatBdAxis(maxRev * 0.66);
+            yAxisTexts[2].textContent = formatBdAxis(maxRev * 0.33);
+            yAxisTexts[3].textContent = '0 BD';
         }
 
         const bars = revSvg.querySelectorAll('rect');
@@ -600,9 +623,9 @@
     const cardNavMap = [
       { label: 'Total Users',      url: '/adminUsersManagement'  },
       { label: 'Total Artisans',   url: '/adminArtisanApproval'  },
-      { label: 'Active Products',  url: '/adminProducts'         },
-      { label: 'Open Auctions',    url: '/adminAuction'          },
-      { label: 'Pending Reviews',  url: '/adminReview'           },
+      { label: 'Products',         url: '/adminProducts'         },
+      { label: 'Auctions',         url: '/adminAuction'          },
+      { label: 'Reviews',          url: '/adminReview'           },
       { label: 'Pending Refunds',  url: '/adminRefund'           },
     ];
 
