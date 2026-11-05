@@ -1,4 +1,4 @@
-modules = ["web", "nodejs-20", "java-graalvm22.3"]
+modules = ["web", "nodejs-20", "java-graalvm22.3", "python-base-3.13", "postgresql-16"]
 [agent]
 expertMode = true
 stack = "BEST_EFFORT_FALLBACK"
@@ -28,7 +28,7 @@ outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "./gradlew --no-daemon bootRun"
+args = "./gradlew bootRun"
 waitForPort = 5000
 
 [[ports]]
@@ -38,4 +38,4 @@ externalPort = 80
 [deployment]
 deploymentTarget = "autoscale"
 run = ["java", "-jar", "build/libs/demo-0.0.1-SNAPSHOT.jar", "--server.port=5000"]
-build = ["./gradlew", "--no-daemon", "build", "-x", "test"]
+build = ["./gradlew", "build", "-x", "test"]
