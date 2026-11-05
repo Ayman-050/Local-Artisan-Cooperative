@@ -285,7 +285,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         sessionStorage.setItem('userProfile', JSON.stringify(user));
                     } catch (e) { /* ignore */ }
                 }
-                window.location.href = `/OrderConformation?orderId=${data.orderId}`;
+                window.location.href = `/orderConfirmation?orderId=${data.orderId}`;
             })
             .catch(err => {
                 console.error(err);

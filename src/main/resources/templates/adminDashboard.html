@@ -259,7 +259,7 @@
                         </a>
                     </li>
                     <li>
-                        <a href="/adminOrderManagment" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                        <a href="/adminOrderManagement" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
                             <i class="fas fa-shopping-bag w-5"></i>
                             <span>Orders</span>
                         </a>
@@ -322,7 +322,7 @@
                     </div>
                     <h3 class="text-[#8b7355] text-xs font-medium mb-1">Total Users</h3>
                     <p class="text-2xl font-bold text-[#5c4a3d]" th:text="${totalUsers}">3,847</p>
-                    <p class="text-xs text-[#8b7355] mt-2">This month</p>
+                    <p class="text-xs text-[#8b7355] mt-2">All time<span class="block">% = new sign-ups vs last month</span></p>
                 </div>
 
                 <!-- Total Artisans -->
@@ -338,7 +338,7 @@
                     </div>
                     <h3 class="text-[#8b7355] text-xs font-medium mb-1">Total Artisans</h3>
                     <p class="text-2xl font-bold text-[#5c4a3d]" th:text="${totalArtisans}">428</p>
-                    <p class="text-xs text-[#8b7355] mt-2">This month</p>
+                    <p class="text-xs text-[#8b7355] mt-2">All time<span class="block">% = new artisans vs last month</span></p>
                 </div>
 
                 <!-- Active Products -->
@@ -354,7 +354,7 @@
                     </div>
                     <h3 class="text-[#8b7355] text-xs font-medium mb-1">Products Added</h3>
                     <p class="text-2xl font-bold text-[#5c4a3d]" th:text="${activeProducts}">2,156</p>
-                    <p class="text-xs text-[#8b7355] mt-2">This month</p>
+                    <p class="text-xs text-[#8b7355] mt-2">This month (vs last month)</p>
                 </div>
 
                 <!-- Open Auctions -->
@@ -368,9 +368,9 @@
                             <span th:text="${#numbers.formatDecimal(T(java.lang.Math).abs(auctionGrowth), 1, 1)} + '%'">2.1%</span>
                         </span>
                     </div>
-                    <h3 class="text-[#8b7355] text-xs font-medium mb-1">Open Auctions</h3>
+                    <h3 class="text-[#8b7355] text-xs font-medium mb-1">Auctions Started</h3>
                     <p class="text-2xl font-bold text-[#5c4a3d]" th:text="${openAuctions}">87</p>
-                    <p class="text-xs text-[#8b7355] mt-2">This month</p>
+                    <p class="text-xs text-[#8b7355] mt-2">This month (vs last month)</p>
                 </div>
 
                 <!-- Total Reviews -->
@@ -384,9 +384,9 @@
                             <span th:text="${#numbers.formatDecimal(T(java.lang.Math).abs(reviewGrowth), 1, 1)} + '%'">23</span>
                         </span>
                     </div>
-                    <h3 class="text-[#8b7355] text-xs font-medium mb-1">Total Reviews</h3>
+                    <h3 class="text-[#8b7355] text-xs font-medium mb-1">New Reviews</h3>
                     <p class="text-2xl font-bold text-[#5c4a3d]" th:text="${totalReviews}">156</p>
-                    <p class="text-xs text-[#8b7355] mt-2">This month</p>
+                    <p class="text-xs text-[#8b7355] mt-2">This month (vs last month)</p>
                 </div>
 
                 <!-- Pending Refunds -->
@@ -402,7 +402,7 @@
                     </div>
                     <h3 class="text-[#8b7355] text-xs font-medium mb-1">Pending Refunds</h3>
                     <p class="text-2xl font-bold text-[#5c4a3d]" th:text="${pendingRefundsCount}">34</p>
-                    <p class="text-xs text-[#8b7355] mt-2">This month</p>
+                    <p class="text-xs text-[#8b7355] mt-2">Awaiting your decision</p>
                 </div>
             </div>
 
