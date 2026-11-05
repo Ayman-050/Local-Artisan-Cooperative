@@ -1,5 +1,5 @@
 /*
- * admin-paging.js — server-side search, filters and paging for admin list pages.
+ * admin-paging.js: server-side search, filters and paging for admin list pages.
  *
  * - Elements with data-filter-param="name" become filters: changing a select, or pressing Enter /
  *   leaving a text box, reloads the page with ?name=value (and back to page 1).

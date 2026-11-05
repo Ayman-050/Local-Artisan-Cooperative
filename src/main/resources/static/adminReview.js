@@ -1,6 +1,6 @@
 // =============================================================
-//  adminReview.js — Review Moderation Page Interactivity
-//  ArtsyVibe — Artisan Co-op Platform
+//  adminReview.js: Review Moderation Page Interactivity
+//  ArtsyVibe: Artisan Co-op Platform
 // =============================================================
 //  Works alongside adminDashboard.js (sidebar, dropdown, logout)
 //  and the existing inline script (approveReview, rejectReview,
@@ -12,26 +12,26 @@
 //   2.  Search filter        (product name + reviewer name)
 //   3.  Category filter      (dropdown)
 //   4.  Rating filter        (dropdown)
-//   5.  Flag Threshold toggle — highlight / isolate flagged rows
-//   6.  Combined filter engine — all filters applied together
+//   5.  Flag Threshold toggle: highlight / isolate flagged rows
+//   6.  Combined filter engine: all filters applied together
 //   7.  "Read More / Show Less" toggle on review text
-//   8.  "View" eye-button — opens a Read-Only Review Detail modal
-//   9.  Approve All Pending — count badge kept in sync
-//  10.  Pending count badge  — auto-updates after every action
-//  11.  Pagination           — simulated page navigation
-//  12.  Page-load animations — staggered row fade-in
+//   8.  "View" eye-button: opens a Read-Only Review Detail modal
+//   9.  Approve All Pending: count badge kept in sync
+//  10.  Pending count badge : auto-updates after every action
+//  11.  Pagination          : simulated page navigation
+//  12.  Page-load animations: staggered row fade-in
 //  13.  Keyboard: Escape closes any open modal or dropdown
 // =============================================================
 
 (() => {
   // ─────────────────────────────────────────────
-  // SECTION 0 — Utilities
+  // SECTION 0: Utilities
   // ─────────────────────────────────────────────
   const qs  = (sel, ctx = document) => ctx.querySelector(sel);
   const qsa = (sel, ctx = document) => Array.from(ctx.querySelectorAll(sel));
 
   // ─────────────────────────────────────────────
-  // SECTION 1 — Status Filter Pills
+  // SECTION 1: Status Filter Pills
   // ─────────────────────────────────────────────
   // Clicking All / Pending / Approved / Rejected filters
   // the table rows by their status badge text content.
@@ -77,7 +77,7 @@
   }
 
   // ─────────────────────────────────────────────
-  // SECTION 2 — Search Filter
+  // SECTION 2: Search Filter
   // ─────────────────────────────────────────────
   // Filters rows whose product name OR reviewer name
   // contains the typed string (case-insensitive).
@@ -89,7 +89,7 @@
   }
 
   // ─────────────────────────────────────────────
-  // SECTION 3 & 4 — Category & Rating Filters
+  // SECTION 3 & 4: Category & Rating Filters
   // ─────────────────────────────────────────────
   function initDropdownFilters() {
     qs('#categoryFilter')?.addEventListener('change', applyFilters);
@@ -101,7 +101,7 @@
   }
 
   // ─────────────────────────────────────────────
-  // SECTION 6 — Combined Filter Engine
+  // SECTION 6: Combined Filter Engine
   // ─────────────────────────────────────────────
   // Reads all active filter values and shows/hides
   // each <tr> accordingly. Updates the result count label.
@@ -154,7 +154,7 @@
   }
 
   // ─────────────────────────────────────────────
-  // SECTION 5 — Flag Threshold Toggle
+  // SECTION 5: Flag Threshold Toggle
   // ─────────────────────────────────────────────
   // Overrides the inline toggleFlagThreshold() to also
   // re-run the combined filter and use window.showToast.
@@ -167,8 +167,8 @@
     applyFilters();
 
     const msg = isChecked
-      ? 'Flag Threshold ON — showing auto-flagged reviews only'
-      : 'Flag Threshold OFF — showing all reviews';
+      ? 'Flag Threshold ON: showing auto-flagged reviews only'
+      : 'Flag Threshold OFF: showing all reviews';
     const type = isChecked ? 'warning' : 'info';
 
     if (window.showToast) {
@@ -177,7 +177,7 @@
   };
 
   // ─────────────────────────────────────────────
-  // SECTION 7 — "Read More / Show Less" Toggle
+  // SECTION 7: "Read More / Show Less" Toggle
   // ─────────────────────────────────────────────
   // Overrides the inline toggleReview() to also update
   // the button label between "Read More" and "Show Less".
@@ -192,7 +192,7 @@
   };
 
   // ─────────────────────────────────────────────
-  // SECTION 8 — "View" Eye Button → Detail Modal
+  // SECTION 8: "View" Eye Button → Detail Modal
   // ─────────────────────────────────────────────
   // Dynamically builds a read-only Review Detail modal
   // when the eye icon is clicked on Approved or Rejected rows.
@@ -209,21 +209,21 @@
 
   function openReviewDetailModal(row) {
     // Gather data from the row
-    const productName   = escapeHtml(qs('td:nth-child(1) p.font-semibold', row)?.textContent?.trim() || '—');
-    const productSku    = escapeHtml(qs('td:nth-child(1) p.text-xs',        row)?.textContent?.trim() || '—');
+    const productName   = escapeHtml(qs('td:nth-child(1) p.font-semibold', row)?.textContent?.trim() || '-');
+    const productSku    = escapeHtml(qs('td:nth-child(1) p.text-xs',        row)?.textContent?.trim() || '-');
     const productImg    = safeUrl(qs('td:nth-child(1) img',              row)?.src  || '');
-    const artisanName   = escapeHtml(qs('td:nth-child(2) span.font-medium', row)?.textContent?.trim() || '—');
+    const artisanName   = escapeHtml(qs('td:nth-child(2) span.font-medium', row)?.textContent?.trim() || '-');
     const artisanImg    = safeUrl(qs('td:nth-child(2) img',              row)?.src  || '');
-    const reviewerName  = escapeHtml(qs('td:nth-child(3) span.font-medium', row)?.textContent?.trim() || '—');
+    const reviewerName  = escapeHtml(qs('td:nth-child(3) span.font-medium', row)?.textContent?.trim() || '-');
     const reviewerImg   = safeUrl(qs('td:nth-child(3) img',              row)?.src  || '');
     const fullStars     = qsa('td:nth-child(4) .fas.fa-star',    row).length;
     const halfStar      = qs('td:nth-child(4) .fa-star-half-alt', row) ? 0.5 : 0;
     const ratingNum     = fullStars + halfStar;
-    const reviewText    = escapeHtml(qs('td:nth-child(5) p',                row)?.textContent?.trim() || '—');
-    const submitted     = escapeHtml(qs('td:nth-child(6) span',             row)?.textContent?.trim() || '—');
+    const reviewText    = escapeHtml(qs('td:nth-child(5) p',                row)?.textContent?.trim() || '-');
+    const submitted     = escapeHtml(qs('td:nth-child(6) span',             row)?.textContent?.trim() || '-');
     const isAutoFlagged = qs('.fa-robot',                        row) !== null;
     const statusBadge   = qs('.status-badge',                    row);
-    const statusText    = escapeHtml(statusBadge?.textContent?.trim() || '—');
+    const statusText    = escapeHtml(statusBadge?.textContent?.trim() || '-');
     const rejectionReason = escapeHtml(qs('p.text-red-600',                 row)?.textContent?.replace('Reason:', '').trim() || null);
 
     // Build star HTML
@@ -353,7 +353,7 @@
   }
 
   // ─────────────────────────────────────────────
-  // SECTION 9 & 10 — Pending Count Badge Sync
+  // SECTION 9 & 10: Pending Count Badge Sync
   // ─────────────────────────────────────────────
   // Patches the existing approveReview, rejectReview,
   // and executeApproveAll to also call updatePendingCount()
@@ -407,9 +407,9 @@
   };
 
   // ─────────────────────────────────────────────
-  // SECTION 11 — Pagination
+  // SECTION 11: Pagination
   // ─────────────────────────────────────────────
-  // Simulated pagination — dynamically calculates pages based on review count,
+  // Simulated pagination: dynamically calculates pages based on review count,
   // generates page buttons, highlights active page, and updates the label.
   function initPagination() {
     let currentPage = 1;
@@ -537,7 +537,7 @@
   }
 
   // ─────────────────────────────────────────────
-  // SECTION 12 — Page Load Row Animations
+  // SECTION 12: Page Load Row Animations
   // ─────────────────────────────────────────────
   function initRowAnimations() {
     qsa('tbody tr').forEach((row, i) => {
@@ -553,7 +553,7 @@
   }
 
   // ─────────────────────────────────────────────
-  // SECTION 13 — Keyboard: Escape closes modals
+  // SECTION 13: Keyboard: Escape closes modals
   // ─────────────────────────────────────────────
   function initKeyboardShortcuts() {
     document.addEventListener('keydown', e => {

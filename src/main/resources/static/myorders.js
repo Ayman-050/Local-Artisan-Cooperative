@@ -1,5 +1,5 @@
 // ============================================================
-// my-orders.js — ArtsyVibe My Orders Page
+// my-orders.js: ArtsyVibe My Orders Page
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // ----------------------------------------------------------
-    // 2. "View Details" buttons — open order detail modal
+    // 2. "View Details" buttons: open order detail modal
     // ----------------------------------------------------------
     document.querySelector('tbody')?.addEventListener('click', (e) => {
         const btn = e.target.closest('button');
@@ -178,7 +178,7 @@ function updateVisibleCount(status) {
         heading.nextElementSibling.textContent =
             status === 'all'
                 ? `Track and manage your purchases.`
-                : `Showing ${visible} of ${total} orders — filtered by "${capitalise(status)}".`;
+                : `Showing ${visible} of ${total} orders, filtered by "${capitalise(status)}".`;
     }
 }
 

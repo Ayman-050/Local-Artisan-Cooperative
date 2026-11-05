@@ -140,7 +140,7 @@
 
                         <!-- Price -->
                         <div class="text-3xl font-bold text-[#c17c5f] mb-3"
-                             th:text="${product != null ? #numbers.formatDecimal(product.price, 1, 2) + ' BD' : '—'}">85.00 BD</div>
+                             th:text="${product != null ? #numbers.formatDecimal(product.price, 1, 2) + ' BD' : '-'}">85.00 BD</div>
 
                         <!-- Stock -->
                         <p th:if="${product != null and (product.stockQuantity <= 0 or product.status == 'out of stock')}" class="text-red-500 font-bold mb-4 flex items-center">

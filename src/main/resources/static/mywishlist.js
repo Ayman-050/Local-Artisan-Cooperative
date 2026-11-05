@@ -1,5 +1,5 @@
 // ============================================================
-// my-wishlist.js — ArtsyVibe My Wishlist Page
+// my-wishlist.js: ArtsyVibe My Wishlist Page
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', () => {

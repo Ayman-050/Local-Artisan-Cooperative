@@ -1,6 +1,6 @@
 // =============================================================
-//  adminUsersManagement.js — Admin User Management Interactivity
-//  ArtsyVibe — Artisan Co-op Platform
+//  adminUsersManagement.js: Admin User Management Interactivity
+//  ArtsyVibe: Artisan Co-op Platform
 // =============================================================
 // Loaded AFTER adminDashboard.js. Does NOT duplicate sidebar,
 // dropdown, or logout logic.
@@ -107,7 +107,7 @@
     }
 
     // ─────────────────────────────────────────────
-    // SECTION 1 — Search Filter & Pagination Application
+    // SECTION 1: Search Filter & Pagination Application
     // ─────────────────────────────────────────────
     function applyAllFilters(resetPage = true) {
       // Search, filters and paging are done by the server (admin-paging.js); nothing to do here.
@@ -171,13 +171,13 @@
     if (searchInput) searchInput.addEventListener('input', applyAllFilters);
 
     // ─────────────────────────────────────────────
-    // SECTION 2 — Role & Status Filters
+    // SECTION 2: Role & Status Filters
     // ─────────────────────────────────────────────
     if (roleSelect) roleSelect.addEventListener('change', applyAllFilters);
     if (statusSelect) statusSelect.addEventListener('change', applyAllFilters);
 
     // ─────────────────────────────────────────────
-    // SECTION 3 — Column Sorting
+    // SECTION 3: Column Sorting
     // ─────────────────────────────────────────────
     const sortableThs = qsa('th', qs('thead'));
     const nameTh     = sortableThs[1];
@@ -230,7 +230,7 @@
     });
 
     // ─────────────────────────────────────────────
-    // SECTION 4 — Suspend / Activate Toggle
+    // SECTION 4: Suspend / Activate Toggle
     // ─────────────────────────────────────────────
     function toggleSuspend(row) {
       const userId = row.dataset.userId;
@@ -345,7 +345,7 @@
     wireRejectButtons();
 
     // ─────────────────────────────────────────────
-    // SECTION 5 — Edit Button (Inline Editing)
+    // SECTION 5: Edit Button (Inline Editing)
     // ─────────────────────────────────────────────
     function wireEditButtons() {
       getRows().forEach(row => {
@@ -485,7 +485,7 @@
     wireEditButtons();
 
     // ─────────────────────────────────────────────
-    // SECTION 6 — View Button → Side Panel Population
+    // SECTION 6: View Button → Side Panel Population
     // ─────────────────────────────────────────────
     const panel = qs('#userPanel');
 
@@ -574,7 +574,7 @@
     wireViewButtons();
 
     // ─────────────────────────────────────────────
-    // SECTION 7 — Side Panel Quick Actions
+    // SECTION 7: Side Panel Quick Actions
     // ─────────────────────────────────────────────
     const quickActionBtns = qsa('.side-panel .space-y-3 button', panel);
     const suspendBtn   = quickActionBtns[0];
@@ -647,7 +647,7 @@
     }
 
     // ─────────────────────────────────────────────
-    // SECTION 8 — Bulk Actions
+    // SECTION 8: Bulk Actions
     // ─────────────────────────────────────────────
     const bulkBtns = qsa('#bulkActionBar .flex.items-center.gap-3 button');
     const bulkSuspendBtn = bulkBtns[0];
@@ -714,7 +714,7 @@
     }
 
     // ─────────────────────────────────────────────
-    // SECTION 9 — Export Button
+    // SECTION 9: Export Button
     // ─────────────────────────────────────────────
     const exportBtn = qs('button.bg-\\[\\#c17c5f\\]');
     if (exportBtn && exportBtn.textContent.trim().includes('Export')) {
@@ -744,7 +744,7 @@
     }
 
     // ─────────────────────────────────────────────
-    // SECTION 10 — Pagination Initializer
+    // SECTION 10: Pagination Initializer
     // ─────────────────────────────────────────────
     applyAllFilters(true);
 

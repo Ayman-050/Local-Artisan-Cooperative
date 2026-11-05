@@ -1,5 +1,5 @@
 /*
- * app-core.js — load FIRST on every page (in <head>, before any other script).
+ * app-core.js: load FIRST on every page (in <head>, before any other script).
  *
  * 1. CSRF: Spring Security sets an XSRF-TOKEN cookie; every same-origin state-changing fetch()
  *    must echo it in the X-XSRF-TOKEN header. This wraps window.fetch so existing code needs no changes.

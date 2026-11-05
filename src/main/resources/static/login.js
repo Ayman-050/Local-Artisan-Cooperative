@@ -1,5 +1,5 @@
 // ============================================================
-// login.js — ArtsyVibe Login / Register Page
+// login.js: ArtsyVibe Login / Register Page
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (targetId) updatePasswordCriteria(input, targetId);
     });
 
-    // Navigation from the login page is unrestricted —
+    // Navigation from the login page is unrestricted:
     // protected pages redirect to login themselves via initAuthGuard.
 
     // ----------------------------------------------------------

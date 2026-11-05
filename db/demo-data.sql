@@ -132,7 +132,7 @@ INSERT INTO reviews (review_id, rating, comment, date, customer_id, product_id) 
   (3, 4, 'The tapestry is even more beautiful in person. Delivery was quick.',                         '2025-04-02', 5, 3),
   (4, 5, 'My new favourite serving board. The grain is beautiful and it wipes clean easily.',          '2025-04-25', 7, 10),
   (5, 4, 'Great mug set, the smoke glaze is really unique. One mug had a tiny chip on the base.',     '2025-04-10', 6, 6),
-  (6, 5, 'The linen runner is exactly what I wanted — natural, elegant, and good quality.',            '2025-05-03', 6, 9);
+  (6, 5, 'The linen runner is exactly what I wanted: natural, elegant, and good quality.',            '2025-05-03', 6, 9);
 
 -- ── 14. Wishlists ─────────────────────────────────────────────
 INSERT INTO wishlists (wishlist_id, date_created, customer_id) OVERRIDING SYSTEM VALUE VALUES

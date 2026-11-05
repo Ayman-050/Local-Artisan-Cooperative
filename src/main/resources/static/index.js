@@ -1,5 +1,5 @@
 // ============================================================
-// index.js — ArtsyVibe Home Page
+// index.js: ArtsyVibe Home Page
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ----------------------------------------------------------
-    // 2. Category cards — navigate to products page filtered by category
+    // 2. Category cards: navigate to products page filtered by category
     // ----------------------------------------------------------
     const categoryCards = document.querySelectorAll('.category-card');
     categoryCards.forEach(card => {

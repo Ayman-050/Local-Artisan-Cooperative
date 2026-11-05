@@ -1,4 +1,4 @@
-// adminAuction.js — Admin Auctions Management (DB-backed)
+// adminAuction.js: Admin Auctions Management (DB-backed)
 
 (() => {
   const PER_PAGE = 10;
@@ -142,16 +142,16 @@
       img.src = data.productImageUrl || '/images/Logo.png';
     }
     const title = document.getElementById('monitorProductTitle');
-    if (title) title.textContent = data.productTitle || '—';
+    if (title) title.textContent = data.productTitle || '-';
     const sku = document.getElementById('monitorProductSku');
-    if (sku) sku.textContent = 'SKU: ' + (data.productSku || '—');
+    if (sku) sku.textContent = 'SKU: ' + (data.productSku || '-');
     const desc = document.getElementById('monitorProductDesc');
-    if (desc) desc.textContent = data.productDescription || '—';
+    if (desc) desc.textContent = data.productDescription || '-';
 
     const artisanImg = document.getElementById('monitorArtisanImage');
     if (artisanImg) artisanImg.src = data.artisanProfilePicture || '/images/Logo.png';
     const artisanName = document.getElementById('monitorArtisanName');
-    if (artisanName) artisanName.textContent = data.artisanName || '—';
+    if (artisanName) artisanName.textContent = data.artisanName || '-';
     const artisanCat = document.getElementById('monitorArtisanCategory');
     if (artisanCat) artisanCat.textContent = data.productCategory ? data.productCategory + ' artisan' : 'Artisan';
 
@@ -167,7 +167,7 @@
 
     const currentBid = document.getElementById('currentBid');
     if (currentBid) {
-      currentBid.textContent = data.currentHighestBid > 0 ? formatBd(data.currentHighestBid) : '—';
+      currentBid.textContent = data.currentHighestBid > 0 ? formatBd(data.currentHighestBid) : '-';
     }
     const bidDelta = document.getElementById('monitorBidDelta');
     if (bidDelta) {
@@ -180,7 +180,7 @@
     }
 
     const endLabel = document.getElementById('monitorEndLabel');
-    if (endLabel) endLabel.textContent = data.endTimeLabel || '—';
+    if (endLabel) endLabel.textContent = data.endTimeLabel || '-';
 
     const starting = document.getElementById('monitorStartingBid');
     if (starting) starting.textContent = formatBd(data.startingBid);
@@ -321,9 +321,9 @@
 
   function populateEndedModal(data) {
     const title = document.querySelector('#endedModal h3.text-xl');
-    if (title) title.textContent = data.productTitle || '—';
+    if (title) title.textContent = data.productTitle || '-';
     const winning = document.querySelector('#endedModal .text-4xl.font-bold.text-green-600');
-    if (winning) winning.textContent = data.currentHighestBid > 0 ? formatBd(data.currentHighestBid) : '—';
+    if (winning) winning.textContent = data.currentHighestBid > 0 ? formatBd(data.currentHighestBid) : '-';
   }
 
   window.closeEndedModal = function () {

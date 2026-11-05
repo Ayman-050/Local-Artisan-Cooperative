@@ -1,5 +1,5 @@
 // ============================================================
-// my-profile.js — ArtsyVibe My Profile Page
+// my-profile.js: ArtsyVibe My Profile Page
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ----------------------------------------------------------
-    // 1. Role — toggle artisan section
+    // 1. Role: toggle artisan section
     // ----------------------------------------------------------
     const userProfileStr = sessionStorage.getItem('userProfile');
     const userEmail = sessionStorage.getItem('userEmail');
@@ -114,8 +114,8 @@ document.addEventListener('DOMContentLoaded', () => {
             statsSection?.classList.remove('hidden');
             const orders = userProfile.totalOrders ?? 0;
             const spent = userProfile.totalSpent ?? 0;
-            if (totalOrdersEl) totalOrdersEl.textContent = orders > 0 ? String(orders) : '—';
-            if (totalSpentEl) totalSpentEl.textContent = spent > 0 ? Number(spent).toFixed(3) + ' BD' : '—';
+            if (totalOrdersEl) totalOrdersEl.textContent = orders > 0 ? String(orders) : '-';
+            if (totalSpentEl) totalSpentEl.textContent = spent > 0 ? Number(spent).toFixed(3) + ' BD' : '-';
         } else {
             statsSection?.classList.add('hidden');
         }
@@ -469,7 +469,7 @@ window.logout = function () {
 };
 
 // ============================================================
-// Address Management — DB-backed
+// Address Management: DB-backed
 // ============================================================
 
 function getUserEmail() {

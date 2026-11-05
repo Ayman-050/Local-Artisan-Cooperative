@@ -1,6 +1,6 @@
 # Local Artisan Cooperative
 
-A Spring Boot web application for an artisan marketplace called "ArtsyVibe" — lets users browse handcrafted products, view auctions, manage a shopping cart, and access their profile.
+A Spring Boot web application for an artisan marketplace called "ArtsyVibe": lets users browse handcrafted products, view auctions, manage a shopping cart, and access their profile.
 
 ## Run & Operate
 
@@ -22,11 +22,11 @@ A Spring Boot web application for an artisan marketplace called "ArtsyVibe" — 
 
 ## Where things live
 
-- `src/main/java/com/example/demo/` — Java source (controllers, entities)
-- `src/main/resources/templates/` — Thymeleaf HTML templates
-- `src/main/resources/static/` — Static assets (Logo.png, Benifitpay.png, etc.)
-- `src/main/resources/application.properties` — Server port, DB config, JPA settings
-- `build.gradle` — Dependencies and build config
+- `src/main/java/com/example/demo/`: Java source (controllers, entities)
+- `src/main/resources/templates/`: Thymeleaf HTML templates
+- `src/main/resources/static/`: Static assets (Logo.png, Benifitpay.png, etc.)
+- `src/main/resources/application.properties`: Server port, DB config, JPA settings
+- `build.gradle`: Dependencies and build config
 
 ## Architecture decisions
 
@@ -60,8 +60,8 @@ _Populate as you build_
 
 ## Gotchas
 
-- Template filenames are mixed-case (e.g., `Login.html`, `Forget-Password.html`) — Thymeleaf suffix must remain lowercase `.html`
-- The Gradle wrapper (`gradlew`) must have LF line endings — re-run `sed -i 's/\r//' gradlew` if it gets reset to CRLF
+- Template filenames are mixed-case (e.g., `Login.html`, `Forget-Password.html`): Thymeleaf suffix must remain lowercase `.html`
+- The Gradle wrapper (`gradlew`) must have LF line endings: re-run `sed -i 's/\r//' gradlew` if it gets reset to CRLF
 
 ## Pointers
 

@@ -1,5 +1,5 @@
 /*
- * client-pager.js — paging for small lists that are filtered in the browser (an artisan's own orders/products).
+ * client-pager.js: paging for small lists that are filtered in the browser (an artisan's own orders/products).
  *
  *   const pager = ClientPager({ rows: () => [...tr elements], footer: element, noun: 'orders', pageSize: 10 });
  *   pager.refresh(true);   // call after the page's filter has set each row's display (resets to page 1)

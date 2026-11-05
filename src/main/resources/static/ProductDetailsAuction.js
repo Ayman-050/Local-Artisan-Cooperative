@@ -230,7 +230,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         if (parseFloat(rawBid) !== bidAmount) {
-            showToast('Bids must be whole BD amounts only (e.g. 211, 212 — no decimals).', 'error');
+            showToast('Bids must be whole BD amounts only (e.g. 211 or 212, no decimals).', 'error');
             bidInput?.focus();
             return;
         }

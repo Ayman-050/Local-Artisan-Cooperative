@@ -1,8 +1,8 @@
 // ============================================================
-// auctions.js — ArtsyVibe Auctions Page
+// auctions.js: ArtsyVibe Auctions Page
 // ============================================================
 
-// Shared filter state — single source of truth
+// Shared filter state: single source of truth
 let _activeTab      = 'all';   // Default: show all auctions
 let _activeCategory = 'all';
 
@@ -142,7 +142,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ----------------------------------------------------------
     // 9. "Place Bid" and "View Details" buttons
-    //    — clicking either navigates to the product detail page
+    //   : clicking either navigates to the product detail page
     // ----------------------------------------------------------
     document.getElementById('auction-grid')?.addEventListener('click', (e) => {
         const link = e.target.closest('a');
@@ -250,7 +250,7 @@ document.addEventListener('DOMContentLoaded', () => {
         card.style.display = '';
     });
 
-    // Initial render — apply default filters
+    // Initial render: apply default filters
     applyFilters();
 
     document.querySelectorAll('.auction-card').forEach(card => {
@@ -314,7 +314,7 @@ function navigateToProductPage(placeBidBtn) {
 // ============================================================
 
 function startCountdowns() {
-    // Already initialised from data attributes in HTML — nothing extra needed.
+    // Already initialised from data attributes in HTML: nothing extra needed.
 }
 
 function tickCountdowns() {

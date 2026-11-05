@@ -1,5 +1,5 @@
 // ============================================================
-// artisan-common.js — session, URL id, nav sync for artisan pages
+// artisan-common.js: session, URL id, nav sync for artisan pages
 // ============================================================
 
 (function () {

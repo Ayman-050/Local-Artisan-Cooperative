@@ -1,4 +1,4 @@
-// adminReports.js — Reports & Analytics (database-backed via /api/admin/reports)
+// adminReports.js: Reports & Analytics (database-backed via /api/admin/reports)
 
 (() => {
   const qs = (sel, ctx = document) => ctx.querySelector(sel);

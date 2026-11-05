@@ -1,5 +1,5 @@
 // ============================================================
-// artisanDashboard.js — ArtsyVibe Artisan Dashboard
+// artisanDashboard.js: ArtsyVibe Artisan Dashboard
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ----------------------------------------------------------
-    // 2. Sidebar Navigation — active state only, never block real hrefs
+    // 2. Sidebar Navigation: active state only, never block real hrefs
     // ----------------------------------------------------------
     const sidebarLinks = document.querySelectorAll('.sidebar-link');
 
@@ -90,7 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ----------------------------------------------------------
-    // 3. Notification Bell — badge dismiss on click
+    // 3. Notification Bell: badge dismiss on click
     // ----------------------------------------------------------
     const notifButton = document.querySelector('button .fa-bell')?.closest('button');
     const notifBadge  = notifButton?.querySelector('span');
@@ -103,7 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ----------------------------------------------------------
-    // 4. Recent Orders — "View" buttons → /artisanOrderDetail?id=
+    // 4. Recent Orders: "View" buttons → /artisanOrderDetail?id=
     // ----------------------------------------------------------
     document.querySelectorAll('tbody .table-row').forEach(row => {
         const viewBtn = row.querySelector('button');
@@ -134,7 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ----------------------------------------------------------
-    // 7. Quick Action Cards — routes match ArtisanController
+    // 7. Quick Action Cards: routes match ArtisanController
     // ----------------------------------------------------------
     const quickActions = document.querySelectorAll('.mt-8 a');
 
@@ -154,7 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ----------------------------------------------------------
-    // 8. Download Report — simulated export
+    // 8. Download Report: simulated export
     // ----------------------------------------------------------
     function handleDownloadReport(card) {
         const icon = card.querySelector('i');
@@ -194,7 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ----------------------------------------------------------
-    // 9. Table row — highlight on click (selected state)
+    // 9. Table row: highlight on click (selected state)
     // ----------------------------------------------------------
     document.querySelectorAll('.table-row').forEach(row => {
         row.addEventListener('click', function (e) {

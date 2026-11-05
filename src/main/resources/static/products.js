@@ -138,7 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (criteria === 'price-low')  return priceA - priceB;
             if (criteria === 'price-high') return priceB - priceA;
             if (criteria === 'name')       return nameA.localeCompare(nameB);
-            return 0; // 'featured' / 'newest' — keep original order
+            return 0; // 'featured' / 'newest': keep original order
         });
 
         // Re-append in sorted order; hidden cards go to the end

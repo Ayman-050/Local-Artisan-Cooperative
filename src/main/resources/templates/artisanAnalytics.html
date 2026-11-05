@@ -374,7 +374,7 @@
                     </div>
                     <h3 class="text-[#8b7355] text-sm font-medium mb-1">Average Rating</h3>
                     <div class="flex items-center gap-2">
-                        <p class="text-3xl font-bold text-[#5c4a3d]" th:text="${totalReviewsCount > 0 ? #numbers.formatDecimal(averageRating, 1, 1) : '—'}">—</p>
+                        <p class="text-3xl font-bold text-[#5c4a3d]" th:text="${totalReviewsCount > 0 ? #numbers.formatDecimal(averageRating, 1, 1) : '-'}">-</p>
                         <div class="flex star-rating"><i th:each="star : ${#numbers.sequence(1, 5)}" th:class="${averageRating >= star ? 'fas fa-star' : (averageRating >= star - 0.5 ? 'fas fa-star-half-alt' : 'far fa-star')}"></i><!--
                             <i class="fas fa-star"></i>
                             <i class="fas fa-star"></i>
@@ -884,7 +884,7 @@
     <script src="/artisan-common.js"></script>
 
     <script>
-        // Dynamic sidebar active state — highlights the link matching the current page URL
+        // Dynamic sidebar active state: highlights the link matching the current page URL
         (function() {
             var path = window.location.pathname.toLowerCase();
             document.querySelectorAll('.sidebar-link').forEach(function(link) {

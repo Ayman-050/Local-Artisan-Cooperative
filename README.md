@@ -1,4 +1,4 @@
-# ArtsyVibe — Local Artisan Cooperative
+# ArtsyVibe: Local Artisan Cooperative
 
 An online marketplace where local artisans sell handmade products and run live auctions, customers buy and bid,
 and administrators moderate the whole platform.
@@ -111,7 +111,7 @@ psql "postgresql://$PGUSER:$PGPASSWORD@$PGHOST:$PGPORT/$PGDATABASE" -f db/demo-d
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `PGHOST`, `PGPORT`, `PGDATABASE`, `PGUSER`, `PGPASSWORD` | — | Database connection |
+| `PGHOST`, `PGPORT`, `PGDATABASE`, `PGUSER`, `PGPASSWORD` | (none) | Database connection |
 | `SESSION_COOKIE_SECURE` | `false` | Set to `true` when the site is served over HTTPS |
 | `DEMO_REFRESH_STALE_AUCTIONS` | `false` | Demo only: re-opens ended auctions on start-up |
 

@@ -1,16 +1,16 @@
 // =============================================================
-//  adminDashboard.js — Admin Dashboard Interactivity
-//  ArtsyVibe — Artisan Co-op Platform
+//  adminDashboard.js: Admin Dashboard Interactivity
+//  ArtsyVibe: Artisan Co-op Platform
 // =============================================================
 //  Features:
 //   1. Sidebar active link detection based on current URL
 //   2. User profile dropdown (hover + click + outside close)
 //   3. Logout with confirmation, session cleanup, and redirect
-//   4. KPI stat cards — animated count-up on page load
-//   5. Quick Action buttons — navigate to correct admin pages
-//   6. Recent Activity "View" links — navigate to correct pages
-//   7. Orders per Week chart — live tooltip on data point hover
-//   8. Revenue bar chart — hover highlight + tooltip
+//   4. KPI stat cards: animated count-up on page load
+//   5. Quick Action buttons: navigate to correct admin pages
+//   6. Recent Activity "View" links: navigate to correct pages
+//   7. Orders per Week chart: live tooltip on data point hover
+//   8. Revenue bar chart: hover highlight + tooltip
 //   9. Toast notification system for user feedback
 //  10. Real-time clock in navbar (optional utility)
 //  11. API fetch utilities for live KPI stats (ready to enable)
@@ -19,13 +19,13 @@
 
 (() => {
   // ─────────────────────────────────────────────
-  // SECTION 0 — Utility Helpers
+  // SECTION 0: Utility Helpers
   // ─────────────────────────────────────────────
   const qs  = (sel, ctx = document) => ctx.querySelector(sel);
   const qsa = (sel, ctx = document) => Array.from(ctx.querySelectorAll(sel));
 
   // ─────────────────────────────────────────────
-  // SECTION 1 — Sidebar Active Link
+  // SECTION 1: Sidebar Active Link
   // ─────────────────────────────────────────────
   // Compares the current URL path to each sidebar link's href
   // and applies the .active class + correct colour to the match.
@@ -57,7 +57,7 @@
   }
 
   // ─────────────────────────────────────────────
-  // SECTION 2 — User Profile Dropdown
+  // SECTION 2: User Profile Dropdown
   // ─────────────────────────────────────────────
   // Supports both hover (desktop) and click (mobile/touch).
   // Closes automatically when the user clicks outside
@@ -119,7 +119,7 @@
   }
 
   // ─────────────────────────────────────────────
-  // SECTION 3 — Logout
+  // SECTION 3: Logout
   // ─────────────────────────────────────────────
   // Shows a confirmation dialog, clears the session,
   // then uses replace() so the back button can't return
@@ -158,7 +158,7 @@
   }
 
   // ─────────────────────────────────────────────
-  // SECTION 4 — KPI Stat Card Count-Up Animation
+  // SECTION 4: KPI Stat Card Count-Up Animation
   // ─────────────────────────────────────────────
   // Animates the numeric values in the KPI cards from 0
   // up to their final value when the page first loads.
@@ -168,7 +168,7 @@
     const statNumbers = qsa('.stat-card p.text-2xl');
 
     const animateCount = (el) => {
-      // Parse the raw text — strip commas and convert to number
+      // Parse the raw text: strip commas and convert to number
       const raw    = el.textContent.replace(/,/g, '').trim();
       const target = parseFloat(raw);
       if (isNaN(target)) return;
@@ -212,7 +212,7 @@
   }
 
   // ─────────────────────────────────────────────
-  // SECTION 5 — Quick Action Button Navigation
+  // SECTION 5: Quick Action Button Navigation
   // ─────────────────────────────────────────────
   // Wires the three Quick Action "Review Now" / "Moderate Now"
   // buttons to their correct admin pages.
@@ -251,7 +251,7 @@
   }
 
   // ─────────────────────────────────────────────
-  // SECTION 6 — Recent Activity "View" Links
+  // SECTION 6: Recent Activity "View" Links
   // ─────────────────────────────────────────────
   // Maps each activity item to its relevant admin page
   // based on the type of event described in the text.
@@ -288,7 +288,7 @@
   }
 
   // ─────────────────────────────────────────────
-  // SECTION 7 — Orders per Week Chart Tooltips
+  // SECTION 7: Orders per Week Chart Tooltips
   // ─────────────────────────────────────────────
   // Adds interactive hover tooltips to each data point
   // circle in the SVG line chart.
@@ -340,7 +340,7 @@
   }
 
   // ─────────────────────────────────────────────
-  // SECTION 8 — Revenue Bar Chart Hover
+  // SECTION 8: Revenue Bar Chart Hover
   // ─────────────────────────────────────────────
   // Adds hover highlight and tooltip to each revenue bar.
   function initRevenueChartTooltips() {
@@ -390,7 +390,7 @@
   }
 
   // ─────────────────────────────────────────────
-  // SECTION 9 — Update Chart Visuals
+  // SECTION 9: Update Chart Visuals
   // ─────────────────────────────────────────────
   function updateChartsVisuals() {
     if (!window.chartData) return;
@@ -472,7 +472,7 @@
   }
 
   // ─────────────────────────────────────────────
-  // SECTION 10 — Tooltip Helpers
+  // SECTION 10: Tooltip Helpers
   // ─────────────────────────────────────────────
   function createTooltip() {
     const tip = document.createElement('div');
@@ -512,7 +512,7 @@
   }
 
   // ─────────────────────────────────────────────
-  // SECTION 10 — Toast Notification System
+  // SECTION 10: Toast Notification System
   // ─────────────────────────────────────────────
   // Lightweight in-page toast for user feedback.
   // Types: 'success' | 'error' | 'warning' | 'info'
@@ -592,7 +592,7 @@
   }
 
   // ─────────────────────────────────────────────
-  // SECTION 11 — Stat Card Click Navigation
+  // SECTION 11: Stat Card Click Navigation
   // ─────────────────────────────────────────────
   // Clicking a KPI card navigates to its relevant admin page.
   function initStatCardNavigation() {
@@ -630,7 +630,7 @@
   }
 
   // ─────────────────────────────────────────────
-  // SECTION 14 — Page Load Animation
+  // SECTION 14: Page Load Animation
   // ─────────────────────────────────────────────
   // Staggered fade-in for the stat cards and activity items.
   function initPageAnimations() {
@@ -656,7 +656,7 @@
   }
 
   // ─────────────────────────────────────────────
-  // INIT — Run everything on DOMContentLoaded
+  // INIT: Run everything on DOMContentLoaded
   // ─────────────────────────────────────────────
   document.addEventListener('DOMContentLoaded', () => {
 

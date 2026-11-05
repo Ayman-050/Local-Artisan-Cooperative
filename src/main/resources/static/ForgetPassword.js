@@ -1,6 +1,6 @@
 // ============================================================
 //
-// forget-password.js — ArtsyVibe Forgot Password Page
+// forget-password.js: ArtsyVibe Forgot Password Page
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Show loading state
         showButtonLoading(submitBtn, 'Sending…');
 
-        // Simulate API call — replace with real backend request
+        // Simulate API call: replace with real backend request
         setTimeout(() => {
             resetButtonLoading(submitBtn, 'Send Recovery Email');
             showSuccessState(email);
@@ -42,12 +42,12 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // ----------------------------------------------------------
-    // 2. Email input — clear error on change
+    // 2. Email input: clear error on change
     // ----------------------------------------------------------
     emailInput?.addEventListener('input', () => clearFormErrors(form));
 
     // ----------------------------------------------------------
-    // 3. Back to login link — preserve any email pre-fill from URL
+    // 3. Back to login link: preserve any email pre-fill from URL
     // ----------------------------------------------------------
     const params = new URLSearchParams(window.location.search);
     const prefill = params.get('email');

@@ -1,5 +1,5 @@
 /*
- * price-range.js — a min/max price filter: two draggable handles on one track plus Min/Max boxes for exact values.
+ * price-range.js: a min/max price filter: two draggable handles on one track plus Min/Max boxes for exact values.
  * The handles and boxes stay in sync.
  *
  *   const range = PriceRange.create(containerElement, { max: 1000, step: 5, onChange: ({min, max}) => ... });

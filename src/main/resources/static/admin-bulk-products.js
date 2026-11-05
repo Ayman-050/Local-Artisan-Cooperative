@@ -1,5 +1,5 @@
 /*
- * admin-bulk-products.js — "select all" and bulk hide / make visible on the admin Products page.
+ * admin-bulk-products.js: "select all" and bulk hide / make visible on the admin Products page.
  * Uses PUT /api/products/{id}/status?status=hidden|active (admin only).
  */
 (function () {

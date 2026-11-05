@@ -384,13 +384,13 @@
                                 <td class="px-6 py-4 text-sm font-semibold text-[#5c4a3d]" th:text="${auction.product != null ? auction.product.title : 'Product'}">Product</td>
                                 <td class="px-6 py-4 text-sm text-[#8b7355]"><span th:text="${#numbers.formatDecimal(auction.startingBid, 1, 2)} + ' BD'">0 BD</span></td>
                                 <td class="px-6 py-4 text-sm text-[#8b7355]"><span th:text="${#numbers.formatDecimal(auction.currentHighestBid, 1, 2)} + ' BD'">0 BD</span></td>
-                                <td class="px-6 py-4 text-sm text-[#8b7355]" th:text="${auction.endTime != null ? #temporals.format(auction.endTime, 'yyyy-MM-dd HH:mm') : '—'}">End</td>
+                                <td class="px-6 py-4 text-sm text-[#8b7355]" th:text="${auction.endTime != null ? #temporals.format(auction.endTime, 'yyyy-MM-dd HH:mm') : '-'}">End</td>
                                 <td class="px-6 py-4">
                                     <span class="status-badge"
                                           th:classappend="${auction.status != null and auction.status.equalsIgnoreCase('LIVE') ? ' status-active' : (auction.status != null and auction.status.equalsIgnoreCase('UPCOMING') ? ' status-upcoming' : ' status-ended')}"
                                           th:text="${auction.status}">Status</span>
                                 </td>
-                                <td class="px-6 py-4 text-sm text-[#8b7355]" th:text="${auction.highestBidderName != null ? auction.highestBidderName : '—'}">—</td>
+                                <td class="px-6 py-4 text-sm text-[#8b7355]" th:text="${auction.highestBidderName != null ? auction.highestBidderName : '-'}">-</td>
                             </tr>
                         </tbody>
                     </table>
@@ -765,7 +765,7 @@
     <script src="/artisan-common.js" defer></script>
 
     <script>
-        // Dynamic sidebar active state — highlights the link matching the current page URL
+        // Dynamic sidebar active state: highlights the link matching the current page URL
         (function() {
             var path = window.location.pathname.toLowerCase();
             document.querySelectorAll('.sidebar-link').forEach(function(link) {

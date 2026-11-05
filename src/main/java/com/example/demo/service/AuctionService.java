@@ -191,7 +191,7 @@ public class AuctionService {
 
         result.put("success", true);
         result.put("message", extended
-                ? "Bid placed! Anti-snipe rule applied — auction extended by 2 minutes."
+                ? "Bid placed! Anti-snipe rule applied: the auction was extended by 2 minutes."
                 : "Bid placed successfully!");
         result.put("extended", extended);
         result.put("auction", toDetailMap(auction));
@@ -371,14 +371,14 @@ public class AuctionService {
 
     private String formatEndTimeLabel(LocalDateTime endTime) {
         if (endTime == null) {
-            return "—";
+            return "-";
         }
         return "Ends " + endTime.format(DateTimeFormatter.ofPattern("MMM dd, yyyy 'at' h:mm a"));
     }
 
     private String formatTimeAgo(LocalDateTime bidTime, LocalDateTime now) {
         if (bidTime == null) {
-            return "—";
+            return "-";
         }
         long minutes = ChronoUnit.MINUTES.between(bidTime, now);
         if (minutes < 1) {
