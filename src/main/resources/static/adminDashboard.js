@@ -48,7 +48,8 @@
 
     // Always highlight Dashboard when on the root admin page
     if (path === '/admindashboard' || path === '/admin' || path === '/') {
-      const dashLink = qs('a[href="/adminDashboard"]');
+      // Only the sidebar item: the header logo also links to /adminDashboard and must keep its colour.
+      const dashLink = qs('.sidebar-link[href="/adminDashboard"]');
       if (dashLink) {
         dashLink.classList.add('active', 'text-white');
         dashLink.classList.remove('text-[#d4c5b5]');

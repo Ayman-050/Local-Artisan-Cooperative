@@ -15,8 +15,9 @@ Started as a university team project and later hardened for production use (secu
 | Artisan  | elena@artsyvibe.com  | password123   |
 | Customer | john@example.com     | password123   |
 
-<!-- Screenshots: add images of the shop, cart, artisan dashboard and admin dashboard here, e.g.
-![Shop](docs/screenshots/shop.png) -->
+| Shop | Checkout | Artisan dashboard |
+|---|---|---|
+| ![Shop](docs/screenshots/shop.png) | ![Checkout](docs/screenshots/checkout.png) | ![Artisan dashboard](docs/screenshots/artisan-dashboard.png) |
 
 ---
 
