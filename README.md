@@ -6,6 +6,15 @@ and administrators moderate the whole platform.
 Built with **Java 17 · Spring Boot 3 · Spring Security · Spring Data JPA · PostgreSQL · Flyway · Thymeleaf**.
 Started as a university team project and later hardened for production use (security, data integrity, testing).
 
+**Live demo:** <https://local-artisan-cooperative--aymanbouh05.replit.app>
+(the server sleeps when idle, so the first visit can take up to half a minute)
+
+| Role     | E-mail               | Password      |
+|----------|----------------------|---------------|
+| Admin    | alice@artsyvibe.com  | password123   |
+| Artisan  | elena@artsyvibe.com  | password123   |
+| Customer | john@example.com     | password123   |
+
 <!-- Screenshots: add images of the shop, cart, artisan dashboard and admin dashboard here, e.g.
 ![Shop](docs/screenshots/shop.png) -->
 
