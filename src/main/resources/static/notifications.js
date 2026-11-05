@@ -59,21 +59,21 @@ document.addEventListener('DOMContentLoaded', () => {
         emptyState?.classList.add('hidden');
         notificationsList.innerHTML = notifications.map(n => `
             <div class="notification-card ${n.read ? 'read' : 'unread'} p-4 rounded-xl border border-gray-100 bg-white shadow-sm transition-all hover:shadow-md cursor-pointer group"
-                 data-id="${n.id}" data-type="${n.type}" data-read="${n.read}" onclick="handleNotificationClick(this)">
+                 data-id="${Number(n.id)}" data-type="${escapeHtml(n.type)}" data-read="${n.read}" onclick="handleNotificationClick(this)">
                 <div class="flex items-start gap-4">
                     ${!n.read ? '<div class="unread-dot mt-1.5"></div>' : '<div class="w-2 mt-1.5"></div>'}
                     <div class="flex-1">
                         <div class="flex justify-between items-start mb-1">
-                            <h3 class="font-semibold text-[#2d3436] group-hover:text-[#c17c5f] transition-colors">${n.title}</h3>
+                            <h3 class="font-semibold text-[#2d3436] group-hover:text-[#c17c5f] transition-colors">${escapeHtml(n.title)}</h3>
                             <span class="text-xs text-gray-400">${new Date(n.timestamp).toLocaleString()}</span>
                         </div>
-                        <p class="text-sm text-gray-600 line-clamp-2">${n.message}</p>
+                        <p class="text-sm text-gray-600 line-clamp-2">${escapeHtml(n.message)}</p>
                         <div class="mt-2 flex items-center gap-3">
-                            <span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 text-gray-500 uppercase tracking-wider">${n.type.replace('_', ' ')}</span>
-                            ${n.link ? `<a href="${n.link}" class="text-[10px] font-semibold text-[#c17c5f] hover:underline">View Details</a>` : ''}
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 text-gray-500 uppercase tracking-wider">${escapeHtml(String(n.type || '').replace('_', ' '))}</span>
+                            ${n.link ? `<a href="${safeUrl(n.link, '#')}" class="text-[10px] font-semibold text-[#c17c5f] hover:underline">View Details</a>` : ''}
                         </div>
                     </div>
-                    <button onclick="event.stopPropagation(); deleteNotification(${n.id}, this.closest('.notification-card'))" 
+                    <button onclick="event.stopPropagation(); deleteNotification(${Number(n.id)}, this.closest('.notification-card'))" 
                             class="text-gray-300 hover:text-red-500 transition-colors p-1">
                         <i class="fas fa-trash-alt text-sm"></i>
                     </button>
@@ -208,7 +208,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const container = document.querySelector('.toast-container');
         const toast = document.createElement('div');
         toast.className = `toast ${type}`;
-        toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'info-circle'}"></i> <span>${message}</span>`;
+        toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'info-circle'}"></i> <span>${escapeHtml(message)}</span>`;
         container.appendChild(toast);
         setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3000);
     }

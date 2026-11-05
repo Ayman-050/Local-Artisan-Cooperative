@@ -138,7 +138,7 @@ function renderOrders(orders) {
             <td class="py-4 px-6 text-[#8b7355]">${dateStr}</td>
             <td class="py-4 px-6">
                 <div class="flex items-center gap-3">
-                    <img src="${firstItem ? firstItem.imageUrl : '/images/placeholder.png'}" alt="${firstItem ? escapeHtml(firstItem.title) : 'Product'}" class="w-12 h-12 object-cover rounded-lg">
+                    <img src="${safeUrl(firstItem ? firstItem.imageUrl : '', '/images/placeholder.png')}" alt="${firstItem ? escapeHtml(firstItem.title) : 'Product'}" class="w-12 h-12 object-cover rounded-lg">
                     <div>
                         <p class="font-medium text-[#5c4a3d]">${firstItem ? escapeHtml(firstItem.title) : 'N/A'}</p>
                         ${moreCount > 0 ? `<p class="text-sm text-[#8b7355]">+ ${moreCount} more item${moreCount > 1 ? 's' : ''}</p>` : ''}
@@ -240,13 +240,15 @@ function openOrderModal(row) {
     const itemsHtml = order.items.map(item => `
         <div class="flex items-center justify-between py-3 border-b border-[#e5e0d8] last:border-0">
             <div class="flex items-center gap-3">
-                <img src="${item.imageUrl || '/images/placeholder.png'}" class="w-12 h-12 object-cover rounded-lg">
+                <img src="${safeUrl(item.imageUrl, '/images/placeholder.png')}" class="w-12 h-12 object-cover rounded-lg">
                 <div>
                     <div class="flex flex-wrap items-center gap-2">
                         <p class="font-semibold text-sm text-[#5c4a3d]">${escapeHtml(item.title)}</p>
                         ${item.reviewed ? `<span class="text-[10px] font-semibold uppercase tracking-wide px-2 py-1 rounded-full bg-green-100 text-green-700">Reviewed</span>` : ''}
                     </div>
-                    <p class="text-xs text-[#8b7355]">Qty: ${item.quantity} | ${Number(item.price).toFixed(2)} BD</p>
+                    <p class="text-xs text-[#8b7355]">Qty: ${item.quantity} | ${Number(item.price).toFixed(2)} BD${
+                        item.fulfilmentStatus && item.fulfilmentStatus.toLowerCase() !== order.status.toLowerCase()
+                            ? ` | <span class="font-semibold">${escapeHtml(capitalise(item.fulfilmentStatus))}</span>` : ''}</p>
                     ${item.refundRequested ? `
                         <div class="mt-2 flex flex-col gap-1.5 p-3 rounded-lg bg-[#faf9f6] border border-[#e5e0d8]">
                             <div class="flex items-center justify-between">

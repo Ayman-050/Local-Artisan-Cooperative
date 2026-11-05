@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script src="/app-core.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Auctions - Artisan Co-op</title>
@@ -485,7 +486,7 @@
                             <div class="border-2 border-dashed border-[#e5e0d8] rounded-xl p-6 text-center hover:border-[#c17c5f] transition-colors cursor-pointer" id="auction-image-upload-area">
                                 <i class="fas fa-cloud-upload-alt text-3xl text-[#b8a99a] mb-3"></i>
                                 <p class="text-[#8b7355] font-medium">Click to upload or drag and drop</p>
-                                <p class="text-[#b8a99a] text-sm mt-1">PNG, JPG up to 5MB</p>
+                                <p class="text-[#b8a99a] text-sm mt-1">PNG, JPG up to 2MB</p>
                                 <input id="auction-image-file" type="file" class="hidden" accept="image/*">
                             </div>
                             <p class="text-xs text-[#8b7355] mt-2">Or enter image URL:</p>
@@ -560,9 +561,9 @@
         document.getElementById('auction-image-file')?.addEventListener('change', function() {
             if (!this.files.length) return;
             const file = this.files[0];
-            const maxBytes = 5 * 1024 * 1024;
+            const maxBytes = 2 * 1024 * 1024; // server accepts ~2 MB images
             if (file.size > maxBytes) {
-                alert("Product image must be 5MB or smaller.");
+                alert("Product image must be 2MB or smaller.");
                 return;
             }
 

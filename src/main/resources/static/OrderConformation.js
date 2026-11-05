@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const container = document.querySelector('.toast-container');
         const toast = document.createElement('div');
         toast.className = `toast ${type}`;
-        toast.innerHTML = `<i class="fas fa-info-circle"></i> <span>${message}</span>`;
+        toast.innerHTML = `<i class="fas fa-info-circle"></i> <span>${escapeHtml(message)}</span>`;
         container.appendChild(toast);
         setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3000);
     }

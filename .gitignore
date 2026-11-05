@@ -6,3 +6,16 @@ out/
 .project
 .classpath
 *.class
+# IDE / OS
+.idea/
+*.iml
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Local secrets
+.env
+*.env
+application-local.properties
+
+node_modules/

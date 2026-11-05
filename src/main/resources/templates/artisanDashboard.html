@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
+    <script src="/app-core.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Artisan Dashboard - Artisan Co-op</title>
@@ -400,8 +401,8 @@
                                 </td>
                                 <td class="px-6 py-4">
                                     <span class="status-badge"
-                                          th:classappend="${summary.order.status != null and summary.order.status.equalsIgnoreCase('pending') ? ' status-pending' : (summary.order.status != null and summary.order.status.equalsIgnoreCase('completed') ? ' status-completed' : ' status-processing')}"
-                                          th:text="${summary.order.status}">Status</span>
+                                          th:classappend="${summary.status == 'pending' ? ' status-pending' : (summary.status == 'delivered' ? ' status-completed' : ' status-processing')}"
+                                          th:text="${summary.status}">Status</span>
                                 </td>
                                 <td class="px-6 py-4 text-sm text-[#8b7355]" th:text="${summary.order.date}">Date</td>
                                 <td class="px-6 py-4">

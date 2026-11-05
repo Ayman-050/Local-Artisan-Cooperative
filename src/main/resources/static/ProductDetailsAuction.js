@@ -198,10 +198,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function isValidName(name) {
-        return /^[A-Za-z\u0600-\u06FF\s]{2,50}$/.test(name);
-    }
-
     function extendCountdownTwoMinutes() {
         let total = hours * 3600 + minutes * 60 + seconds;
         total += 120;
@@ -228,9 +224,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const rawBid = bidInput?.value ?? '';
         const bidAmount = parseInt(rawBid, 10);
         const minBid = updateMinBid(getCurrentBidValue() + 1);
-        const bidderNameInput = document.getElementById('bidderName');
-        const bidderName = bidderNameInput?.value.trim() ?? '';
-
         if (!rawBid || isNaN(bidAmount)) {
             showToast('Please enter a valid bid amount.', 'error');
             bidInput?.focus();
@@ -246,14 +239,9 @@ document.addEventListener('DOMContentLoaded', () => {
             bidInput?.focus();
             return;
         }
-        if (!bidderName) {
-            showToast('Please enter your name before placing a bid.', 'error');
-            bidderNameInput?.focus();
-            return;
-        }
-        if (!isValidName(bidderName)) {
-            showToast('Name must contain letters only — no numbers or special characters.', 'error');
-            bidderNameInput?.focus();
+        // Bids are placed as the signed-in customer; the server takes the name from the account.
+        if (typeof window.requireLoginForAction === 'function'
+            && !window.requireLoginForAction('Please log in as a customer to place a bid.')) {
             return;
         }
         if (!auctionId) {
@@ -266,15 +254,13 @@ document.addEventListener('DOMContentLoaded', () => {
             bidBtn.textContent = 'Placing bid...';
         }
 
-        const bidderId = sessionStorage.getItem('userId');
-
         try {
             const res = await fetch(`/api/auctions/${encodeURIComponent(auctionId)}/bid`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ amount: bidAmount, bidderName, bidderId }),
+                body: JSON.stringify({ amount: bidAmount }),
             });
-            const result = await res.json();
+            const result = await res.json().catch(() => ({}));
 
             if (!res.ok || !result.success) {
                 showToast(result.message || 'Could not place bid.', 'error');
@@ -337,7 +323,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const container = document.querySelector('.toast-container');
         const toast = document.createElement('div');
         toast.className = `toast ${type}`;
-        toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'times-circle' : 'info-circle'}"></i> <span>${message}</span>`;
+        toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'times-circle' : 'info-circle'}"></i> <span>${escapeHtml(message)}</span>`;
         container.appendChild(toast);
         setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3500);
     }

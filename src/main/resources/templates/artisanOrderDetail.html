@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script src="/app-core.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Order Detail - Artisan Co-op</title>
@@ -441,25 +442,25 @@
                                 </div>
 
                                 <!-- Processing - Current/Completed -->
-                                <div class="timeline-step" th:classappend="${order.status.toLowerCase() == 'shipped' || order.status.toLowerCase() == 'delivered' ? 'completed' : 'current'}">
+                                <div class="timeline-step" th:classappend="${artisanStatus == 'shipped' || artisanStatus == 'delivered' ? 'completed' : 'current'}">
                                     <div class="timeline-icon">
                                         <i class="fas fa-box-open"></i>
                                     </div>
                                     <div>
                                         <h4 class="font-semibold text-[#5c4a3d]">Processing</h4>
-                                        <p class="text-sm text-[#8b7355] mt-1" th:text="${order.status.toLowerCase() == 'pending' ? 'Pending' : 'Completed'}">Completed</p>
+                                        <p class="text-sm text-[#8b7355] mt-1" th:text="${artisanStatus == 'pending' ? 'Pending' : 'Completed'}">Completed</p>
                                         <p class="text-sm text-[#8b7355]">Preparing items for shipment</p>
                                     </div>
                                 </div>
 
                                 <!-- Shipped - Pending/Current/Completed -->
-                                <div class="timeline-step" id="step-shipped" th:classappend="${order.status.toLowerCase() == 'delivered' ? 'completed' : (order.status.toLowerCase() == 'shipped' ? 'current' : 'pending')}">
+                                <div class="timeline-step" id="step-shipped" th:classappend="${artisanStatus == 'delivered' ? 'completed' : (artisanStatus == 'shipped' ? 'current' : 'pending')}">
                                     <div class="timeline-icon">
                                         <i class="fas fa-shipping-fast"></i>
                                     </div>
                                     <div>
                                         <h4 class="font-semibold text-[#5c4a3d]">Shipped</h4>
-                                        <p class="text-sm text-[#8b7355] mt-1" th:text="${order.status.toLowerCase() == 'shipped' || order.status.toLowerCase() == 'delivered' ? 'Completed' : 'Pending'}">Pending</p>
+                                        <p class="text-sm text-[#8b7355] mt-1" th:text="${artisanStatus == 'shipped' || artisanStatus == 'delivered' ? 'Completed' : 'Pending'}">Pending</p>
                                         <p class="text-sm text-[#8b7355]">Your item is on its way</p>
                                         <div class="mt-3 pt-3 border-t border-[#e5e0d8]">
                                             <p class="text-xs text-[#8b7355] mb-1">Estimated Delivery:</p>
@@ -469,13 +470,13 @@
                                 </div>
 
                                 <!-- Delivered - Pending/Current/Completed -->
-                                <div class="timeline-step" id="step-delivered" th:classappend="${order.status.toLowerCase() == 'delivered' ? 'completed' : 'pending'}">
+                                <div class="timeline-step" id="step-delivered" th:classappend="${artisanStatus == 'delivered' ? 'completed' : 'pending'}">
                                     <div class="timeline-icon">
                                         <i class="fas fa-home"></i>
                                     </div>
                                     <div>
                                         <h4 class="font-semibold text-[#5c4a3d]">Delivered</h4>
-                                        <p class="text-sm text-[#8b7355] mt-1" th:text="${order.status.toLowerCase() == 'delivered' ? 'Completed' : 'Pending'}">Pending</p>
+                                        <p class="text-sm text-[#8b7355] mt-1" th:text="${artisanStatus == 'delivered' ? 'Completed' : 'Pending'}">Pending</p>
                                         <p class="text-sm text-[#8b7355]">Awaiting delivery confirmation</p>
                                         <div id="delivered-inputs" class="hidden mt-3 space-y-2">
                                             <div class="flex items-center gap-2">
@@ -549,10 +550,10 @@
                             <div class="mb-4">
                                 <label class="block text-sm font-medium text-[#8b7355] mb-2">Current Status</label>
                                 <select id="orderStatus" class="w-full border border-[#e5e0d8] rounded-lg px-4 py-2.5 text-[#5c4a3d] focus:outline-none focus:border-[#c17c5f]" th:if="${order != null}">
-                                    <option value="pending" th:selected="${order.status.toLowerCase() == 'pending'}">Pending</option>
-                                    <option value="processing" th:selected="${order.status.toLowerCase() == 'processing'}">Processing</option>
-                                    <option value="shipped" th:selected="${order.status.toLowerCase() == 'shipped'}">Shipped</option>
-                                    <option value="delivered" th:selected="${order.status.toLowerCase() == 'delivered'}">Delivered</option>
+                                    <option value="pending" th:selected="${artisanStatus == 'pending'}">Pending</option>
+                                    <option value="processing" th:selected="${artisanStatus == 'processing'}">Processing</option>
+                                    <option value="shipped" th:selected="${artisanStatus == 'shipped'}">Shipped</option>
+                                    <option value="delivered" th:selected="${artisanStatus == 'delivered'}">Delivered</option>
                                 </select>
                             </div>
                             <button id="updateStatusBtn" onclick="updateOrderStatus()" class="w-full bg-[#c17c5f] hover:bg-[#a5664d] text-white font-medium py-2.5 rounded-lg transition-colors">

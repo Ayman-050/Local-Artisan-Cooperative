@@ -52,7 +52,7 @@
           <div class="bg-white rounded-2xl shadow-lg p-8 border border-[#e5e0d8]">
             <div class="text-[#c17c5f] text-4xl mb-4">🔒</div>
             <h1 class="text-2xl font-bold text-[#5c4a3d] mb-2">Login / Register Required</h1>
-            <p class="text-[#8b7355] text-lg mb-6">${message || 'You need to login or register first.'}</p>
+            <p class="text-[#8b7355] text-lg mb-6">${escapeHtml(message || 'You need to login or register first.')}</p>
             <div class="flex flex-col sm:flex-row gap-3">
               <a href="/login" class="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-[#c17c5f] text-white font-semibold hover:bg-[#a5664d] transition-colors">Go to Login</a>
               <button id="auth-guard-redirect" class="inline-flex items-center justify-center px-6 py-3 rounded-xl border-2 border-[#c17c5f] text-[#c17c5f] font-semibold hover:bg-[#f5ebe0] transition-colors">Continue</button>
@@ -150,7 +150,7 @@
 
     if (loggedIn && storedEmail) {
       // Sync with server in background
-      fetch(`/api/user/me?email=${encodeURIComponent(storedEmail)}`)
+      fetch('/api/user/me')
         .then(r => r.json())
         .then(data => {
           if (data.success) {
@@ -408,16 +408,10 @@
     startNotificationPolling();
   }
 
-  // Capture site exit / pagehide activity tracking
+  // Record "last active" when leaving a page. This must NOT call /api/auth/logout, which ends the session.
   window.addEventListener('pagehide', () => {
-    const email = sessionStorage.getItem('userEmail');
-    if (email) {
-      fetch('/api/auth/logout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email }),
-        keepalive: true
-      });
+    if (getLoggedIn()) {
+      fetch('/api/auth/activity', { method: 'POST', keepalive: true });
     }
   });
 

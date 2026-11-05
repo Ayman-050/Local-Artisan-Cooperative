@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script src="/app-core.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Products Management - Artisan Co-op</title>
@@ -351,7 +352,7 @@
                         <div class="relative">
                             <input 
                                 type="text" 
-                                id="searchInput" placeholder="Search products..." 
+                                id="searchInput" data-filter-param="q" placeholder="Search products..." 
                                 class="w-full pl-10 pr-4 py-2.5 border border-[#e5e0d8] rounded-lg focus:border-[#c17c5f] focus:outline-none text-[#5c4a3d] placeholder-[#b8a99a]"
                             />
                             <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-[#8b7355]"></i>
@@ -360,7 +361,7 @@
 
                     <!-- Category Filter -->
                     <div class="relative">
-                        <select id="categoryFilter" class="appearance-none border border-[#e5e0d8] rounded-lg px-4 py-2.5 pr-10 focus:border-[#c17c5f] focus:outline-none text-[#5c4a3d] bg-white cursor-pointer">
+                        <select id="categoryFilter" data-filter-param="category" class="appearance-none border border-[#e5e0d8] rounded-lg px-4 py-2.5 pr-10 focus:border-[#c17c5f] focus:outline-none text-[#5c4a3d] bg-white cursor-pointer">
                             <option value="">All Categories</option>
                             <option th:each="cat : ${categoriesList}" th:value="${cat}" th:text="${cat}"></option>
 
@@ -373,10 +374,11 @@
 
                     <!-- Status Filter -->
                     <div class="relative">
-                        <select id="statusFilter" class="appearance-none border border-[#e5e0d8] rounded-lg px-4 py-2.5 pr-10 focus:border-[#c17c5f] focus:outline-none text-[#5c4a3d] bg-white cursor-pointer">
+                        <select id="statusFilter" data-filter-param="status" class="appearance-none border border-[#e5e0d8] rounded-lg px-4 py-2.5 pr-10 focus:border-[#c17c5f] focus:outline-none text-[#5c4a3d] bg-white cursor-pointer">
                             <option value="">All Statuses</option>
                             <option value="active">Active</option>
                             <option value="out of stock">Out of stock</option>
+                            <option value="hidden">Hidden</option>
 
                         </select>
                         <i class="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-[#8b7355] pointer-events-none"></i>
@@ -384,7 +386,7 @@
 
                     <!-- Artisan Filter -->
                     <div class="relative">
-                        <select id="artisanFilter" class="appearance-none border border-[#e5e0d8] rounded-lg px-4 py-2.5 pr-10 focus:border-[#c17c5f] focus:outline-none text-[#5c4a3d] bg-white cursor-pointer">
+                        <select id="artisanFilter" data-filter-param="artisan" class="appearance-none border border-[#e5e0d8] rounded-lg px-4 py-2.5 pr-10 focus:border-[#c17c5f] focus:outline-none text-[#5c4a3d] bg-white cursor-pointer">
                             <option value="">All Artisans</option>
                             <option th:each="artisanName : ${artisansList}" th:value="${artisanName}" th:text="${artisanName}"></option>
 
@@ -835,24 +837,7 @@
                 </div>
 
                 <!-- Pagination -->
-                <div class="flex items-center justify-between px-6 py-4 border-t border-[#e5e0d8]">
-                    <p class="text-sm text-[#8b7355]" id="paginationLabel">
-                        Showing <span class="font-semibold text-[#5c4a3d]">1</span> to <span class="font-semibold text-[#5c4a3d]">5</span> of <span class="font-semibold text-[#5c4a3d]">2,156</span> products
-                    </p>
-                    <div class="flex items-center gap-2" id="paginationControls">
-                        <button class="px-4 py-2 border border-[#e5e0d8] rounded-lg text-[#8b7355] hover:bg-[#f5ebe0] transition-colors disabled:opacity-50" disabled>
-                            <i class="fas fa-chevron-left"></i>
-                        </button>
-                        <button class="px-4 py-2 bg-[#c17c5f] text-white rounded-lg font-medium">1</button>
-                        <button class="px-4 py-2 border border-[#e5e0d8] rounded-lg text-[#8b7355] hover:bg-[#f5ebe0] transition-colors">2</button>
-                        <button class="px-4 py-2 border border-[#e5e0d8] rounded-lg text-[#8b7355] hover:bg-[#f5ebe0] transition-colors">3</button>
-                        <span class="text-[#8b7355]">...</span>
-                        <button class="px-4 py-2 border border-[#e5e0d8] rounded-lg text-[#8b7355] hover:bg-[#f5ebe0] transition-colors">432</button>
-                        <button class="px-4 py-2 border border-[#e5e0d8] rounded-lg text-[#8b7355] hover:bg-[#f5ebe0] transition-colors">
-                            <i class="fas fa-chevron-right"></i>
-                        </button>
-                    </div>
-                </div>
+                <div th:replace="~{fragments/pager :: pager(${pager}, 'products')}"></div>
             </div>
         </main>
     </div>
@@ -1107,7 +1092,7 @@
                         const gallery = document.getElementById('thumbnailGallery');
                         gallery.innerHTML = `
                             <img 
-                                src="${p.imageUrl || 'https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=150&h=150&fit=crop'}" 
+                                src="${safeUrl(p.imageUrl, 'https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=150&h=150&fit=crop')}" 
                                 class="gallery-thumbnail active w-20 h-20 object-cover rounded-lg cursor-pointer border-2 border-[#c17c5f]"
                                 onclick="changeMainImage(this)"
                             />
@@ -1150,18 +1135,18 @@
                                         <div class="flex items-center justify-between mb-2">
                                             <div class="flex items-center gap-2">
                                                 <img 
-                                                    src="${r.reviewerImage}" 
-                                                    alt="${r.reviewerName}" 
+                                                    src="${safeUrl(r.reviewerImage, '/images/Logo.png')}" 
+                                                    alt="${escapeHtml(r.reviewerName)}" 
                                                     class="w-8 h-8 rounded-full object-cover"
                                                 />
-                                                <span class="text-sm font-medium text-[#5c4a3d]">${r.reviewerName}</span>
+                                                <span class="text-sm font-medium text-[#5c4a3d]">${escapeHtml(r.reviewerName)}</span>
                                             </div>
                                             <div class="flex items-center gap-1">
                                                 ${starHtml}
                                             </div>
                                         </div>
-                                        <p class="text-sm text-[#5c4a3d]">${r.comment}</p>
-                                        <p class="text-xs text-[#8b7355] mt-1">${r.date}</p>
+                                        <p class="text-sm text-[#5c4a3d]">${escapeHtml(r.comment)}</p>
+                                        <p class="text-xs text-[#8b7355] mt-1">${escapeHtml(r.date)}</p>
                                     </div>
                                 `;
                             }).join('');
@@ -1237,6 +1222,8 @@
             let showFlaggedOnly = false;
 
             function applyFilters() {
+                // Search, filters and paging are done by the server (admin-paging.js).
+                if (window.ADMIN_SERVER_PAGED) return;
                 const searchVal = searchInput.value.toLowerCase().trim();
                 const catVal = categoryFilter.value.toLowerCase();
                 const statusVal = statusFilter.value.toLowerCase();
@@ -1273,6 +1260,7 @@
             }
 
             function renderTable() {
+                if (window.ADMIN_SERVER_PAGED) return;
                 // Hide all rows
                 allRows.forEach(row => row.style.display = 'none');
 
@@ -1497,6 +1485,7 @@
             });
         }
     </script>
+    <script src="/admin-paging.js"></script>
     <script src="/adminDashboard.js"></script>
 </body>
 </html>

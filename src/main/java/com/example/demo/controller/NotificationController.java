@@ -2,58 +2,59 @@ package com.example.demo.controller;
 
 import com.example.demo.model.Notification;
 import com.example.demo.model.User;
+import com.example.demo.security.CurrentUser;
 import com.example.demo.service.NotificationService;
-import com.example.demo.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
+/**
+ * Notifications of the signed-in user. The {userId} path segment is kept for compatibility with the
+ * existing front end, but it must be the caller's own id.
+ */
 @RestController
 @RequestMapping("/api/notifications")
+@RequiredArgsConstructor
 public class NotificationController {
 
-    @Autowired
-    private NotificationService notificationService;
-
-    @Autowired
-    private UserRepository userRepository;
+    private final NotificationService notificationService;
+    private final CurrentUser currentUser;
 
     @GetMapping("/{userId}")
     public ResponseEntity<List<Notification>> getNotifications(@PathVariable Long userId) {
-        return userRepository.findById(userId)
-                .map(user -> ResponseEntity.ok(notificationService.getNotificationsForUser(user)))
-                .orElse(ResponseEntity.notFound().build());
+        return ResponseEntity.ok(notificationService.getNotificationsForUser(self(userId)));
     }
 
     @GetMapping("/{userId}/unread-count")
     public ResponseEntity<Long> getUnreadCount(@PathVariable Long userId) {
-        return userRepository.findById(userId)
-                .map(user -> ResponseEntity.ok(notificationService.getUnreadCount(user)))
-                .orElse(ResponseEntity.notFound().build());
+        return ResponseEntity.ok(notificationService.getUnreadCount(self(userId)));
     }
 
     @PutMapping("/{id}/read")
     public ResponseEntity<Void> markAsRead(@PathVariable Long id) {
-        notificationService.markAsRead(id);
+        notificationService.markAsRead(currentUser.require(), id);
         return ResponseEntity.ok().build();
     }
 
     @PutMapping("/read-all/{userId}")
     public ResponseEntity<Void> markAllAsRead(@PathVariable Long userId) {
-        return userRepository.findById(userId)
-                .map(user -> {
-                    notificationService.markAllAsRead(user);
-                    return ResponseEntity.ok().<Void>build();
-                })
-                .orElse(ResponseEntity.notFound().build());
+        notificationService.markAllAsRead(self(userId));
+        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteNotification(@PathVariable Long id) {
-        notificationService.deleteNotification(id);
+        notificationService.deleteNotification(currentUser.require(), id);
         return ResponseEntity.ok().build();
+    }
+
+    private User self(Long userId) {
+        User me = currentUser.require();
+        if (!me.getUserId().equals(userId)) {
+            throw CurrentUser.forbidden("You can only access your own notifications.");
+        }
+        return me;
     }
 }

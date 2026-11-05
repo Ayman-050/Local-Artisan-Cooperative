@@ -227,7 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const toast = document.createElement('div');
         toast.id        = 'av-toast';
         toast.className = `fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3 rounded-xl text-white font-medium shadow-lg transition-opacity duration-300 ${colours[type]}`;
-        toast.innerHTML = `<i class="fas ${icons[type]}"></i><span>${message}</span>`;
+        toast.innerHTML = `<i class="fas ${icons[type]}"></i><span>${escapeHtml(message)}</span>`;
         document.body.appendChild(toast);
 
         setTimeout(() => {

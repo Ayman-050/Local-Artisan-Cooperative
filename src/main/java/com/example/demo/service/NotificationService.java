@@ -1,192 +1,176 @@
 package com.example.demo.service;
 
-import com.example.demo.model.Notification;
-import com.example.demo.model.User;
 import com.example.demo.model.Artisan;
-import com.example.demo.model.OrderItem;
-import com.example.demo.model.Review;
-import com.example.demo.model.Product;
 import com.example.demo.model.Auction;
-import com.example.demo.repository.NotificationRepository;
+import com.example.demo.model.Notification;
+import com.example.demo.model.OrderItem;
+import com.example.demo.model.Product;
+import com.example.demo.model.RefundStatus;
+import com.example.demo.model.Review;
+import com.example.demo.model.Roles;
+import com.example.demo.model.User;
+import com.example.demo.model.UserStatus;
 import com.example.demo.repository.ArtisanRepository;
-import com.example.demo.repository.OrderItemRepository;
-import com.example.demo.repository.ReviewRepository;
-import com.example.demo.repository.ProductRepository;
 import com.example.demo.repository.AuctionRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.demo.repository.NotificationRepository;
+import com.example.demo.repository.OrderItemRepository;
+import com.example.demo.repository.ProductRepository;
+import com.example.demo.repository.ReviewRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDateTime;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
+@RequiredArgsConstructor
 public class NotificationService {
 
-    @Autowired
-    private NotificationRepository notificationRepository;
+    /** The admin backfill scans several tables; don't repeat it on every 30-second badge poll. */
+    private static final Duration ADMIN_BACKFILL_INTERVAL = Duration.ofMinutes(5);
 
-    @Autowired
-    private ArtisanRepository artisanRepository;
+    private final NotificationRepository notificationRepository;
+    private final ArtisanRepository artisanRepository;
+    private final OrderItemRepository orderItemRepository;
+    private final ReviewRepository reviewRepository;
+    private final ProductRepository productRepository;
+    private final AuctionRepository auctionRepository;
 
-    @Autowired
-    private OrderItemRepository orderItemRepository;
-
-    @Autowired
-    private ReviewRepository reviewRepository;
-
-    @Autowired
-    private ProductRepository productRepository;
-
-    @Autowired
-    private AuctionRepository auctionRepository;
+    private final Map<Long, Instant> lastAdminBackfill = new ConcurrentHashMap<>();
 
     public void sendNotification(User user, String title, String message, String type, String link) {
-        Notification notification = new Notification(user, title, message, type, link);
-        notificationRepository.save(notification);
+        notificationRepository.save(new Notification(user, title, message, type, link));
     }
 
+    @Transactional
     public List<Notification> getNotificationsForUser(User user) {
-        if (user != null && "ADMIN".equalsIgnoreCase(user.getRole())) {
-            ensureAdminNotifications(user);
-        }
+        ensureAdminNotifications(user);
         return notificationRepository.findByUserOrderByTimestampDesc(user);
     }
 
+    @Transactional
     public long getUnreadCount(User user) {
-        if (user != null && "ADMIN".equalsIgnoreCase(user.getRole())) {
-            ensureAdminNotifications(user);
-        }
+        ensureAdminNotifications(user);
         return notificationRepository.countByUserAndIsReadFalse(user);
     }
 
-    public void markAsRead(Long notificationId) {
-        notificationRepository.findById(notificationId).ifPresent(n -> {
-            n.setRead(true);
-            notificationRepository.save(n);
-        });
+    @Transactional
+    public void markAsRead(User owner, Long notificationId) {
+        findOwned(owner, notificationId).setRead(true);
     }
 
+    @Transactional
     public void markAllAsRead(User user) {
-        List<Notification> unread = notificationRepository.findByUserOrderByTimestampDesc(user);
-        for (Notification n : unread) {
-            if (!n.isRead()) {
-                n.setRead(true);
-            }
-        }
-        notificationRepository.saveAll(unread);
+        notificationRepository.markAllReadForUser(user.getUserId());
     }
 
-    public void deleteNotification(Long id) {
-        notificationRepository.deleteById(id);
+    @Transactional
+    public void deleteNotification(User owner, Long notificationId) {
+        notificationRepository.delete(findOwned(owner, notificationId));
     }
 
-    public synchronized void ensureAdminNotifications(User admin) {
-        if (admin == null || !"ADMIN".equalsIgnoreCase(admin.getRole())) {
+    private Notification findOwned(User owner, Long notificationId) {
+        return notificationRepository.findByIdAndUser_UserId(notificationId, owner.getUserId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Notification not found"));
+    }
+
+    /**
+     * Admins get a notification for every item that needs their attention (pending artisans, refunds,
+     * flagged reviews, products awaiting verification, ended auctions), created lazily the first time it is
+     * noticed. Throttled per admin. Duplicates are detected by matching link + message text, which is
+     * brittle; a proper fix stores the source entity id on the notification.
+     */
+    private void ensureAdminNotifications(User admin) {
+        if (admin == null || !Roles.ADMIN.equalsIgnoreCase(admin.getRole())) {
             return;
         }
+        Instant now = Instant.now();
+        Instant last = lastAdminBackfill.get(admin.getUserId());
+        if (last != null && Duration.between(last, now).compareTo(ADMIN_BACKFILL_INTERVAL) < 0) {
+            return;
+        }
+        lastAdminBackfill.put(admin.getUserId(), now);
 
-        List<Notification> existingNotifs = notificationRepository.findByUserOrderByTimestampDesc(admin);
+        List<Notification> existing = notificationRepository.findByUserOrderByTimestampDesc(admin);
 
-        // 1. Pending Artisan Approvals
-        List<Artisan> pendingArtisans = artisanRepository.findByStatusIn(List.of("pending approval", "pending"));
+        List<Artisan> pendingArtisans = artisanRepository.findByStatusIn(
+                List.of(UserStatus.PENDING_APPROVAL, UserStatus.PENDING));
         for (Artisan artisan : pendingArtisans) {
             String link = "/adminArtisanApproval";
-            String title = "New Artisan Application Pending";
             String shopName = artisan.getShopName() != null ? artisan.getShopName() : "Shop";
-            String message = artisan.getName() + " has submitted an artisan application for shop \"" 
+            String message = artisan.getName() + " has submitted an artisan application for shop \""
                     + shopName + "\". Portfolio verification required.";
-
-            boolean exists = existingNotifs.stream()
-                    .anyMatch(n -> link.equals(n.getLink()) && n.getMessage().contains(artisan.getName()));
-            if (!exists) {
-                sendNotification(admin, title, message, "ARTISAN_APPROVAL", link);
+            if (!exists(existing, link, artisan.getName())) {
+                sendNotification(admin, "New Artisan Application Pending", message, "ARTISAN_APPROVAL", link);
             }
         }
 
-        // 2. Pending Refunds
-        List<OrderItem> pendingRefunds = orderItemRepository.findAllWithOrderAndProduct().stream()
-                .filter(item -> item.isRefundRequested() && "PENDING".equalsIgnoreCase(item.getAdminRefundStatus()))
-                .toList();
-        for (OrderItem item : pendingRefunds) {
+        for (OrderItem item : orderItemRepository.findByRefundRequestedTrueAndAdminRefundStatusIgnoreCase(RefundStatus.PENDING)) {
             String link = "/adminRefund";
-            String title = "ESCALATED".equalsIgnoreCase(item.getRefundStatus()) ? "Refund Request Escalated" : "Refund Requires Review";
+            boolean escalated = RefundStatus.ESCALATED.equalsIgnoreCase(item.getRefundStatus());
             String orderIdStr = item.getOrder() != null ? String.valueOf(item.getOrder().getOrderId()) : "";
             String prodTitle = item.getProduct() != null ? item.getProduct().getTitle() : "Product";
-            String message = "Refund request for item \"" + prodTitle + "\" (Order #" + orderIdStr 
+            String message = "Refund request for item \"" + prodTitle + "\" (Order #" + orderIdStr
                     + ") requires administrator review and final decision.";
-
-            boolean exists = existingNotifs.stream()
-                    .anyMatch(n -> link.equals(n.getLink()) && n.getMessage().contains("Order #" + orderIdStr));
-            if (!exists) {
-                sendNotification(admin, title, message, "ESCALATED".equalsIgnoreCase(item.getRefundStatus()) ? "REFUND_ESCALATED" : "REFUND_ADMIN_REVIEW", link);
+            if (!exists(existing, link, "Order #" + orderIdStr)) {
+                sendNotification(admin, escalated ? "Refund Request Escalated" : "Refund Requires Review", message,
+                        escalated ? "REFUND_ESCALATED" : "REFUND_ADMIN_REVIEW", link);
             }
         }
 
-        // 3. Flagged Reviews
-        List<Review> flaggedReviews = reviewRepository.findAllWithProductAndCustomer().stream()
-                .filter(r -> Boolean.TRUE.equals(r.getAutoFlagged()) && !"approved".equalsIgnoreCase(r.getStatus()) && !"rejected".equalsIgnoreCase(r.getStatus()))
-                .toList();
-        for (Review review : flaggedReviews) {
+        for (Review review : reviewRepository.findByAutoFlaggedTrue()) {
+            if ("approved".equalsIgnoreCase(review.getStatus())
+                    || "rejected".equalsIgnoreCase(review.getStatus())) {
+                continue;
+            }
             String link = "/adminReview";
-            String title = "Flagged Review Awaiting Moderation";
             String prodTitle = review.getProduct() != null ? review.getProduct().getTitle() : "Product";
             String custName = review.getCustomer() != null ? review.getCustomer().getName() : "Customer";
-            String message = "Review for \"" + prodTitle + "\" by " + custName + " has been auto-flagged for offensive language. Manual moderation required.";
-
-            boolean exists = existingNotifs.stream()
-                    .anyMatch(n -> link.equals(n.getLink()) && n.getMessage().contains("\"" + prodTitle + "\"") && n.getMessage().contains(custName));
-            if (!exists) {
-                sendNotification(admin, title, message, "REVIEW_FLAGGED", link);
+            String message = "Review for \"" + prodTitle + "\" by " + custName
+                    + " has been auto-flagged for offensive language. Manual moderation required.";
+            if (!exists(existing, link, "\"" + prodTitle + "\"", custName)) {
+                sendNotification(admin, "Flagged Review Awaiting Moderation", message, "REVIEW_FLAGGED", link);
             }
         }
 
-        // 4. Products Pending Verification
-        List<Product> pendingProducts = productRepository.findAll().stream()
-                .filter(p -> "pending".equalsIgnoreCase(p.getStatus()) || "pending approval".equalsIgnoreCase(p.getStatus()))
-                .toList();
-        for (Product product : pendingProducts) {
+        for (Product product : productRepository.findPendingVerification()) {
             String link = "/adminProducts";
-            String title = "Product Verification Required";
-            String msg = "New product \"" + product.getTitle() + "\" by " 
-                    + (product.getArtisanName() != null ? product.getArtisanName() : "Artisan") + " is awaiting verification.";
-
-            boolean exists = existingNotifs.stream()
-                    .anyMatch(n -> link.equals(n.getLink()) && n.getMessage().contains("\"" + product.getTitle() + "\""));
-            if (!exists) {
-                sendNotification(admin, title, msg, "PRODUCT_VERIFICATION", link);
+            String msg = "New product \"" + product.getTitle() + "\" by "
+                    + (product.getArtisanName() != null ? product.getArtisanName() : "Artisan")
+                    + " is awaiting verification.";
+            if (!exists(existing, link, "\"" + product.getTitle() + "\"")) {
+                sendNotification(admin, "Product Verification Required", msg, "PRODUCT_VERIFICATION", link);
             }
         }
 
-        // 5. Ended Auctions
-        List<Auction> endedAuctions = auctionRepository.findAllWithProduct().stream()
-                .filter(a -> "ended".equalsIgnoreCase(a.getStatus()))
-                .toList();
-        for (Auction auction : endedAuctions) {
+        for (Auction auction : auctionRepository.findByStatusIgnoreCase(AuctionService.DISPLAY_ENDED)) {
             String link = "/adminAuction";
-            String title = "Auction Ended Successfully";
             String prodTitle = auction.getProduct() != null ? auction.getProduct().getTitle() : "Product";
-            String msg = "Auction for \"" + prodTitle + "\" has ended. Winning bid: " + String.format("%.2f BD", auction.getCurrentHighestBid()) + ".";
-
-            boolean exists = existingNotifs.stream()
-                    .anyMatch(n -> link.equals(n.getLink()) && n.getMessage().contains("\"" + prodTitle + "\""));
-            if (!exists) {
-                sendNotification(admin, title, msg, "AUCTION_ENDED", link);
+            String msg = "Auction for \"" + prodTitle + "\" has ended. Winning bid: "
+                    + auction.getCurrentHighestBid().stripTrailingZeros().toPlainString() + " BD.";
+            if (!exists(existing, link, "\"" + prodTitle + "\"")) {
+                sendNotification(admin, "Auction Ended Successfully", msg, "AUCTION_ENDED", link);
             }
         }
+    }
 
-        // 6. Suspicious Auction Activity / System Tasks (Milestone & Backup)
-        boolean hasSystemNotifs = existingNotifs.stream()
-                .anyMatch(n -> "SYSTEM_MILESTONE".equals(n.getType()) || "SYSTEM_BACKUP".equals(n.getType()));
-        if (!hasSystemNotifs) {
-            sendNotification(admin, "Milestone Achieved: 1,000th User Registered!", 
-                "Congratulations! The platform has reached 1,000 registered users. Emma Wilson from Manama is our 1,000th user.", 
-                "SYSTEM_MILESTONE", "/adminDashboard");
-            sendNotification(admin, "Daily Backup Completed Successfully", 
-                "Scheduled database backup completed successfully. 2.4GB archived successfully to S3 bucket.", 
-                "SYSTEM_BACKUP", "/adminDashboard");
-            sendNotification(admin, "Weekly System Uptime Report", 
-                "System uptime for the past week: 99.9%. Meets NFR-R1 requirement.", 
-                "SYSTEM_UPTIME", "/adminDashboard");
-        }
+    private static boolean exists(List<Notification> existing, String link, String... fragments) {
+        return existing.stream().anyMatch(n -> {
+            if (!link.equals(n.getLink()) || n.getMessage() == null) {
+                return false;
+            }
+            for (String f : fragments) {
+                if (!n.getMessage().contains(f)) {
+                    return false;
+                }
+            }
+            return true;
+        });
     }
 }

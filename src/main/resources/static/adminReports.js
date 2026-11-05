@@ -290,7 +290,7 @@
         <div>
           <div class="flex items-center justify-between mb-2">
             <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-full bg-[#c17c5f] flex items-center justify-center text-white font-bold">${initial}</div>
+              <div class="w-10 h-10 rounded-full bg-[#c17c5f] flex items-center justify-center text-white font-bold">${escapeHtml(initial)}</div>
               <span class="text-sm font-medium text-[#5c4a3d]">${escapeHtml(name)}</span>
             </div>
             <span class="text-sm font-bold text-[#c17c5f]">${rev}</span>

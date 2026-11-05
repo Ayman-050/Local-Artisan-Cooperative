@@ -214,16 +214,16 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="flex items-start justify-between mb-2">
                 <div class="flex items-center">
                     <div class="w-10 h-10 bg-[#f5ebe0] rounded-full flex items-center justify-center mr-3 flex-shrink-0">
-                        <span class="text-[#c17c5f] font-semibold text-sm">${initials}</span>
+                        <span class="text-[#c17c5f] font-semibold text-sm">${escapeHtml(initials)}</span>
                     </div>
                     <div>
-                        <h4 class="font-semibold text-[#5c4a3d]">${name}</h4>
+                        <h4 class="font-semibold text-[#5c4a3d]">${escapeHtml(name)}</h4>
                         <div class="flex text-sm mt-0.5">${stars}</div>
                     </div>
                 </div>
-                <span class="text-[#8b7355] text-sm flex-shrink-0">${date}</span>
+                <span class="text-[#8b7355] text-sm flex-shrink-0">${escapeHtml(date)}</span>
             </div>
-            <p class="text-[#8b7355] leading-relaxed mt-2">${comment}</p>
+            <p class="text-[#8b7355] leading-relaxed mt-2">${escapeHtml(comment)}</p>
         `;
         list.insertBefore(el, list.firstChild);
     }
@@ -242,7 +242,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const toast = document.createElement('div');
         toast.className = `toast ${type}`;
         const icon = type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle';
-        toast.innerHTML = `<i class="fas fa-${icon}"></i><span>${message}</span>`;
+        toast.innerHTML = `<i class="fas fa-${icon}"></i><span>${escapeHtml(message)}</span>`;
         container.appendChild(toast);
         setTimeout(() => { toast.style.opacity = '0'; toast.style.transition = 'opacity 0.3s'; setTimeout(() => toast.remove(), 300); }, 3000);
     };

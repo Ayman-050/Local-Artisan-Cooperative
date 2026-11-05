@@ -1,155 +1,58 @@
 package com.example.demo.controller;
 
-import com.example.demo.model.Customer;
-import com.example.demo.repository.CustomerRepository;
-import com.example.demo.repository.UserRepository;
+import com.example.demo.security.CurrentUser;
 import com.example.demo.service.CartService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
-import java.util.Optional;
 
+/**
+ * The signed-in customer's cart. The customer comes from the session; the legacy X-User-Email header that
+ * the front end still sends is ignored. Errors are mapped to JSON by ApiExceptionHandler.
+ */
 @RestController
 @RequestMapping("/api/cart")
+@RequiredArgsConstructor
 public class CartController {
 
-    @Autowired
-    private CartService cartService;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private CustomerRepository customerRepository;
+    private final CartService cartService;
+    private final CurrentUser currentUser;
 
     @GetMapping
-    public ResponseEntity<?> getCart(@RequestHeader(value = "X-User-Email", required = false) String email) {
-        if (email == null || email.isBlank()) {
-            return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Missing X-User-Email"));
-        }
-        Optional<ResponseEntity<?>> denied = verifyCustomer(email);
-        if (denied.isPresent()) {
-            return denied.get();
-        }
-        try {
-            return ResponseEntity.ok(cartService.getCartPayload(email.trim()));
-        } catch (IllegalArgumentException ex) {
-            return ResponseEntity.badRequest().body(Map.of("success", false, "message", ex.getMessage()));
-        }
+    public ResponseEntity<?> getCart() {
+        return ResponseEntity.ok(cartService.getCartPayload(currentUser.requireCustomer()));
     }
 
     @PostMapping("/add")
-    public ResponseEntity<?> add(@RequestHeader(value = "X-User-Email", required = false) String email,
-                                 @RequestBody Map<String, Object> body) {
-        if (email == null || email.isBlank()) {
-            return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Missing X-User-Email"));
-        }
-        Optional<ResponseEntity<?>> denied = verifyCustomer(email);
-        if (denied.isPresent()) {
-            return denied.get();
-        }
-        Object pid = body != null ? body.get("productId") : null;
-        if (pid == null) {
-            return ResponseEntity.badRequest().body(Map.of("success", false, "message", "productId required"));
-        }
-        long productId = pid instanceof Number ? ((Number) pid).longValue() : Long.parseLong(String.valueOf(pid));
-        int qty = 1;
-        if (body != null && body.get("quantity") != null) {
-            Object q = body.get("quantity");
-            qty = q instanceof Number ? ((Number) q).intValue() : Integer.parseInt(String.valueOf(q));
-        }
-        try {
-            return ResponseEntity.ok(cartService.addItem(email.trim(), productId, qty));
-        } catch (IllegalArgumentException ex) {
-            return ResponseEntity.badRequest().body(Map.of("success", false, "message", ex.getMessage()));
-        }
+    public ResponseEntity<?> add(@RequestBody Map<String, Object> body) {
+        Long productId = RequestValues.requiredLong(body, "productId");
+        int qty = RequestValues.optionalInt(body, "quantity", 1);
+        return ResponseEntity.ok(cartService.addItem(currentUser.requireCustomer(), productId, qty));
     }
 
     @PatchMapping("/items/{orderItemId}")
-    public ResponseEntity<?> updateQuantity(@RequestHeader(value = "X-User-Email", required = false) String email,
-                                            @PathVariable Long orderItemId,
-                                            @RequestBody Map<String, Object> body) {
-        if (email == null || email.isBlank()) {
-            return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Missing X-User-Email"));
+    public ResponseEntity<?> updateQuantity(@PathVariable Long orderItemId, @RequestBody Map<String, Object> body) {
+        int qty = RequestValues.optionalInt(body, "quantity", -1);
+        if (qty == -1) {
+            throw new IllegalArgumentException("quantity required");
         }
-        Optional<ResponseEntity<?>> denied = verifyCustomer(email);
-        if (denied.isPresent()) {
-            return denied.get();
-        }
-        if (body == null || body.get("quantity") == null) {
-            return ResponseEntity.badRequest().body(Map.of("success", false, "message", "quantity required"));
-        }
-        Object q = body.get("quantity");
-        int qty = q instanceof Number ? ((Number) q).intValue() : Integer.parseInt(String.valueOf(q));
-        try {
-            return ResponseEntity.ok(cartService.updateLineQuantity(email.trim(), orderItemId, qty));
-        } catch (IllegalArgumentException ex) {
-            if ("Forbidden".equals(ex.getMessage())) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("success", false, "message", ex.getMessage()));
-            }
-            return ResponseEntity.badRequest().body(Map.of("success", false, "message", ex.getMessage()));
-        }
+        return ResponseEntity.ok(cartService.updateLineQuantity(currentUser.requireCustomer(), orderItemId, qty));
     }
 
     @PostMapping("/checkout")
-    public ResponseEntity<?> checkout(@RequestHeader(value = "X-User-Email", required = false) String email,
-                                      @RequestBody Map<String, Object> body) {
-        if (email == null || email.isBlank()) {
-            return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Missing X-User-Email"));
-        }
-        Optional<ResponseEntity<?>> denied = verifyCustomer(email);
-        if (denied.isPresent()) {
-            return denied.get();
-        }
-        String paymentMethod = body != null && body.get("paymentMethod") != null
-                ? String.valueOf(body.get("paymentMethod")) : null;
+    public ResponseEntity<?> checkout(@RequestBody Map<String, Object> body) {
+        String paymentMethod = RequestValues.optionalString(body, "paymentMethod");
         String deliveryMode = body != null && body.get("deliveryMode") != null
-                ? String.valueOf(body.get("deliveryMode")) : "ship";
-        Long addressId = null;
-        if (body != null && body.get("addressId") != null) {
-            Object aid = body.get("addressId");
-            addressId = aid instanceof Number ? ((Number) aid).longValue() : Long.parseLong(String.valueOf(aid));
-        }
-        try {
-            return ResponseEntity.ok(cartService.checkout(email.trim(), paymentMethod, deliveryMode, addressId));
-        } catch (IllegalArgumentException ex) {
-            return ResponseEntity.badRequest().body(Map.of("success", false, "message", ex.getMessage()));
-        }
+                ? String.valueOf(body.get("deliveryMode"))
+                : "ship";
+        Long addressId = RequestValues.optionalLong(body, "addressId");
+        return ResponseEntity.ok(cartService.checkout(currentUser.requireCustomer(), paymentMethod, deliveryMode, addressId));
     }
 
     @DeleteMapping("/items/{orderItemId}")
-    public ResponseEntity<?> remove(@RequestHeader(value = "X-User-Email", required = false) String email,
-                                    @PathVariable Long orderItemId) {
-        if (email == null || email.isBlank()) {
-            return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Missing X-User-Email"));
-        }
-        Optional<ResponseEntity<?>> denied = verifyCustomer(email);
-        if (denied.isPresent()) {
-            return denied.get();
-        }
-        try {
-            return ResponseEntity.ok(cartService.removeLine(email.trim(), orderItemId));
-        } catch (IllegalArgumentException ex) {
-            if ("Forbidden".equals(ex.getMessage())) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("success", false, "message", ex.getMessage()));
-            }
-            return ResponseEntity.badRequest().body(Map.of("success", false, "message", ex.getMessage()));
-        }
-    }
-
-    private Optional<ResponseEntity<?>> verifyCustomer(String email) {
-        Optional<Customer> customerOpt = customerRepository.findByEmail(email.trim());
-        if (customerOpt.isPresent()) {
-            return Optional.empty();
-        }
-        if (userRepository.findByEmail(email.trim()).isEmpty()) {
-            return Optional.of(ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("success", false, "message", "User not found")));
-        }
-        return Optional.of(ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(Map.of("success", false, "message", "Only customer accounts have a cart")));
+    public ResponseEntity<?> remove(@PathVariable Long orderItemId) {
+        return ResponseEntity.ok(cartService.removeLine(currentUser.requireCustomer(), orderItemId));
     }
 }

@@ -52,7 +52,7 @@
     function getLastActive(row) { return row.children[6] ? row.children[6].textContent.trim() : ''; }
 
     function renderPaginationControls(totalFiltered) {
-      if (!paginationContainer) return;
+      if (!paginationContainer || window.ADMIN_SERVER_PAGED) return;
       
       const totalPages = Math.ceil(totalFiltered / perPage) || 1;
       if (currentPage > totalPages) currentPage = totalPages;
@@ -110,6 +110,8 @@
     // SECTION 1 — Search Filter & Pagination Application
     // ─────────────────────────────────────────────
     function applyAllFilters(resetPage = true) {
+      // Search, filters and paging are done by the server (admin-paging.js); nothing to do here.
+      if (window.ADMIN_SERVER_PAGED) return;
       if (resetPage) currentPage = 1;
       
       const searchVal = (searchInput ? searchInput.value : '').toLowerCase();

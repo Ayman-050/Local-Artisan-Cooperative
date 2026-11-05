@@ -202,7 +202,7 @@
           return `<tr>
             <td class="px-4 py-3">
               <div class="flex items-center gap-2">
-                <img src="${imgSrc}" class="w-8 h-8 rounded-full object-cover" alt="Bidder" onerror="this.src='/images/Logo.png'"/>
+                <img src="${escapeHtml(imgSrc)}" class="w-8 h-8 rounded-full object-cover" alt="Bidder" onerror="this.src='/images/Logo.png'"/>
                 <span class="text-sm font-medium text-[#5c4a3d]">${escapeHtml(bid.bidderName)}</span>
               </div>
             </td>

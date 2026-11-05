@@ -3,6 +3,7 @@ package com.example.demo.model;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import java.math.BigDecimal;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -10,13 +11,12 @@ import lombok.EqualsAndHashCode;
 @Table(name = "customers")
 public class Customer extends User {
     private String address;
-// duplicate phone removed
 
     @Column(nullable = false, columnDefinition = "integer default 0")
     private Integer totalOrders = 0;
 
-    @Column(nullable = false, columnDefinition = "double precision default 0")
-    private Double totalSpent = 0.0;
+    @Column(nullable = false, precision = 12, scale = 3)
+    private BigDecimal totalSpent = BigDecimal.ZERO;
 
     @PostLoad
     private void normalizeStats() {
@@ -24,7 +24,7 @@ public class Customer extends User {
             totalOrders = 0;
         }
         if (totalSpent == null) {
-            totalSpent = 0.0;
+            totalSpent = BigDecimal.ZERO;
         }
     }
 }

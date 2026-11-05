@@ -49,14 +49,31 @@
         pill.classList.add('bg-[#c17c5f]', 'text-white');
         pill.classList.remove('text-[#8b7355]', 'hover:bg-[#f5ebe0]');
 
+        // Server-side filtering: reload with ?status=...
+        if (window.ADMIN_SERVER_PAGED) {
+          window.AdminPaging.go({ status: pill.dataset.status === 'all' ? null : pill.dataset.status });
+          return;
+        }
         // Store active status and re-run combined filter
         document.body.dataset.activeStatus = pill.dataset.status;
         applyFilters();
       });
     });
 
-    // Default
-    document.body.dataset.activeStatus = 'all';
+    // Default (or the status the server filtered by)
+    const current = (window.AdminPaging && window.AdminPaging.param('status')) || 'all';
+    document.body.dataset.activeStatus = current;
+    pills.forEach(p => {
+      const on = p.dataset.status === current;
+      p.classList.toggle('bg-[#c17c5f]', on);
+      p.classList.toggle('text-white', on);
+      p.classList.toggle('text-[#8b7355]', !on);
+      p.classList.toggle('hover:bg-[#f5ebe0]', !on);
+    });
+    const flagToggle = qs('#flagThresholdToggle');
+    if (flagToggle && window.AdminPaging) {
+      flagToggle.checked = window.AdminPaging.param('flagged') === 'true';
+    }
   }
 
   // ─────────────────────────────────────────────
@@ -89,6 +106,8 @@
   // Reads all active filter values and shows/hides
   // each <tr> accordingly. Updates the result count label.
   function applyFilters() {
+    // Search, filters and paging are done by the server (admin-paging.js).
+    if (window.ADMIN_SERVER_PAGED) return;
     const searchVal   = (qs('input[type="text"]')?.value || '').toLowerCase().trim();
     const categoryVal = normalizeCategory(qs('#categoryFilter')?.value);
     const ratingVal   = qs('#ratingFilter')?.value || '';
@@ -141,6 +160,10 @@
   // re-run the combined filter and use window.showToast.
   window.toggleFlagThreshold = function () {
     const isChecked = qs('#flagThresholdToggle')?.checked;
+    if (window.ADMIN_SERVER_PAGED) {
+      window.AdminPaging.go({ flagged: isChecked ? 'true' : null });
+      return;
+    }
     applyFilters();
 
     const msg = isChecked
@@ -186,22 +209,22 @@
 
   function openReviewDetailModal(row) {
     // Gather data from the row
-    const productName   = qs('td:nth-child(1) p.font-semibold', row)?.textContent?.trim() || '—';
-    const productSku    = qs('td:nth-child(1) p.text-xs',        row)?.textContent?.trim() || '—';
-    const productImg    = qs('td:nth-child(1) img',              row)?.src  || '';
-    const artisanName   = qs('td:nth-child(2) span.font-medium', row)?.textContent?.trim() || '—';
-    const artisanImg    = qs('td:nth-child(2) img',              row)?.src  || '';
-    const reviewerName  = qs('td:nth-child(3) span.font-medium', row)?.textContent?.trim() || '—';
-    const reviewerImg   = qs('td:nth-child(3) img',              row)?.src  || '';
+    const productName   = escapeHtml(qs('td:nth-child(1) p.font-semibold', row)?.textContent?.trim() || '—');
+    const productSku    = escapeHtml(qs('td:nth-child(1) p.text-xs',        row)?.textContent?.trim() || '—');
+    const productImg    = safeUrl(qs('td:nth-child(1) img',              row)?.src  || '');
+    const artisanName   = escapeHtml(qs('td:nth-child(2) span.font-medium', row)?.textContent?.trim() || '—');
+    const artisanImg    = safeUrl(qs('td:nth-child(2) img',              row)?.src  || '');
+    const reviewerName  = escapeHtml(qs('td:nth-child(3) span.font-medium', row)?.textContent?.trim() || '—');
+    const reviewerImg   = safeUrl(qs('td:nth-child(3) img',              row)?.src  || '');
     const fullStars     = qsa('td:nth-child(4) .fas.fa-star',    row).length;
     const halfStar      = qs('td:nth-child(4) .fa-star-half-alt', row) ? 0.5 : 0;
     const ratingNum     = fullStars + halfStar;
-    const reviewText    = qs('td:nth-child(5) p',                row)?.textContent?.trim() || '—';
-    const submitted     = qs('td:nth-child(6) span',             row)?.textContent?.trim() || '—';
+    const reviewText    = escapeHtml(qs('td:nth-child(5) p',                row)?.textContent?.trim() || '—');
+    const submitted     = escapeHtml(qs('td:nth-child(6) span',             row)?.textContent?.trim() || '—');
     const isAutoFlagged = qs('.fa-robot',                        row) !== null;
     const statusBadge   = qs('.status-badge',                    row);
-    const statusText    = statusBadge?.textContent?.trim() || '—';
-    const rejectionReason = qs('p.text-red-600',                 row)?.textContent?.replace('Reason:', '').trim() || null;
+    const statusText    = escapeHtml(statusBadge?.textContent?.trim() || '—');
+    const rejectionReason = escapeHtml(qs('p.text-red-600',                 row)?.textContent?.replace('Reason:', '').trim() || null);
 
     // Build star HTML
     const starsHtml = buildStarHtml(ratingNum);
@@ -371,7 +394,7 @@
     if (_origReject) _origReject(button, reason);
     updatePendingCount();
     applyFilters();
-    if (window.showToast) window.showToast(`Review rejected: ${reason}`, 'warning');
+    if (window.showToast) window.showToast(`Review rejected: ${escapeHtml(reason)}`, 'warning');
   };
 
   // Patch executeApproveAll

@@ -1,6 +1,7 @@
 package com.example.demo.model;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import java.time.LocalDate;
 
@@ -23,6 +24,8 @@ public class Review {
 
     @ManyToOne
     @JoinColumn(name = "customer_id")
+    @JsonIgnoreProperties({ "email", "phone", "address", "role", "status", "joinDate", "lastActive",
+            "totalOrders", "totalSpent", "hibernateLazyInitializer", "handler" })
     private Customer customer;
 
     @ManyToOne

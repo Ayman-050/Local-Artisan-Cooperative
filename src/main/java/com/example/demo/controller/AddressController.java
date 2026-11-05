@@ -1,67 +1,102 @@
 package com.example.demo.controller;
 
 import com.example.demo.model.Address;
+import com.example.demo.model.User;
 import com.example.demo.repository.AddressRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.demo.security.CurrentUser;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
+/**
+ * The signed-in user's saved addresses. Addresses belong to whoever is in the session; the {@code email}
+ * query parameter / body field the front end still sends is ignored.
+ */
 @RestController
 @RequestMapping("/api/addresses")
+@RequiredArgsConstructor
 public class AddressController {
 
-    @Autowired
-    private AddressRepository addressRepository;
+    private final AddressRepository addressRepository;
+    private final CurrentUser currentUser;
 
     @GetMapping
-    public ResponseEntity<List<Address>> getAddresses(@RequestParam String email) {
-        return ResponseEntity.ok(addressRepository.findByUserEmail(email));
+    public ResponseEntity<List<Address>> getAddresses() {
+        return ResponseEntity.ok(addressRepository.findByUserEmail(currentUser.require().getEmail()));
     }
 
     @PostMapping
-    public ResponseEntity<Address> createAddress(@RequestBody Address address) {
+    @Transactional
+    public ResponseEntity<Address> createAddress(@RequestBody Address body) {
+        User user = currentUser.require();
+        Address address = new Address();
+        copyFields(body, address);
+        address.setUserEmail(user.getEmail());
         if (address.isDefault()) {
-            clearDefaults(address.getUserEmail());
+            clearDefaults(user.getEmail());
         }
-        Address saved = addressRepository.save(address);
-        return ResponseEntity.ok(saved);
+        return ResponseEntity.ok(addressRepository.save(address));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateAddress(@PathVariable Long id, @RequestBody Address updated) {
-        Optional<Address> opt = addressRepository.findById(id);
-        if (opt.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-        Address address = opt.get();
-        if (updated.isDefault()) {
+    @Transactional
+    public ResponseEntity<?> updateAddress(@PathVariable Long id, @RequestBody Address body) {
+        Address address = findOwned(id);
+        if (body.isDefault()) {
             clearDefaults(address.getUserEmail());
         }
-        address.setLabel(updated.getLabel());
-        address.setStreet(updated.getStreet());
-        address.setCity(updated.getCity());
-        address.setZip(updated.getZip());
-        address.setCountry(updated.getCountry());
-        address.setDefault(updated.isDefault());
+        copyFields(body, address);
         return ResponseEntity.ok(addressRepository.save(address));
     }
 
     @DeleteMapping("/{id}")
+    @Transactional
     public ResponseEntity<Map<String, Boolean>> deleteAddress(@PathVariable Long id) {
-        addressRepository.deleteById(id);
+        addressRepository.delete(findOwned(id));
         return ResponseEntity.ok(Map.of("success", true));
     }
 
+    private Address findOwned(Long id) {
+        String email = currentUser.require().getEmail();
+        return addressRepository.findById(id)
+                .filter(a -> email != null && email.equalsIgnoreCase(a.getUserEmail()))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Address not found"));
+    }
+
+    private static void copyFields(Address from, Address to) {
+        to.setLabel(limit(from.getLabel(), 255, "Label"));
+        to.setStreet(required(limit(from.getStreet(), 500, "Street"), "Street"));
+        to.setCity(required(limit(from.getCity(), 255, "City"), "City"));
+        to.setZip(limit(from.getZip(), 255, "ZIP code"));
+        to.setCountry(required(limit(from.getCountry(), 255, "Country"), "Country"));
+        to.setDefault(from.isDefault());
+    }
+
+    private static String limit(String value, int max, String label) {
+        if (value == null) {
+            return null;
+        }
+        String v = value.trim();
+        if (v.length() > max) {
+            throw new IllegalArgumentException(label + " is too long.");
+        }
+        return v;
+    }
+
+    private static String required(String value, String label) {
+        if (value == null || value.isEmpty()) {
+            throw new IllegalArgumentException(label + " is required.");
+        }
+        return value;
+    }
+
     private void clearDefaults(String userEmail) {
-        addressRepository.findByUserEmail(userEmail).forEach(a -> {
-            if (a.isDefault()) {
-                a.setDefault(false);
-                addressRepository.save(a);
-            }
-        });
+        addressRepository.findByUserEmail(userEmail).forEach(a -> a.setDefault(false));
     }
 }

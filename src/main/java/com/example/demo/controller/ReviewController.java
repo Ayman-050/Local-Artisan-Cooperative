@@ -3,150 +3,97 @@ package com.example.demo.controller;
 import com.example.demo.model.Customer;
 import com.example.demo.model.Product;
 import com.example.demo.model.Review;
-import com.example.demo.model.User;
-import com.example.demo.repository.CustomerRepository;
+import com.example.demo.repository.OrderItemRepository;
 import com.example.demo.repository.ProductRepository;
 import com.example.demo.repository.ReviewRepository;
-import com.example.demo.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.demo.security.CurrentUser;
+import com.example.demo.service.NotificationService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
-import com.example.demo.repository.OrderRepository;
-import com.example.demo.repository.OrderItemRepository;
-import com.example.demo.model.Order;
-import com.example.demo.model.OrderItem;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/reviews")
+@RequiredArgsConstructor
 public class ReviewController {
 
-    @Autowired
-    private ReviewRepository reviewRepository;
+    private static final int MAX_COMMENT_LENGTH = 2000;
 
-    @Autowired
-    private ProductRepository productRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private CustomerRepository customerRepository;
-
-    @Autowired
-    private OrderRepository orderRepository;
-
-    @Autowired
-    private OrderItemRepository orderItemRepository;
-
-    @Autowired
-    private com.example.demo.service.NotificationService notificationService;
+    private final ReviewRepository reviewRepository;
+    private final ProductRepository productRepository;
+    private final OrderItemRepository orderItemRepository;
+    private final NotificationService notificationService;
+    private final CurrentUser currentUser;
 
     @GetMapping("/product/{productId}")
+    @Transactional(readOnly = true)
     public ResponseEntity<?> getReviewsForProduct(@PathVariable Long productId) {
         List<Review> reviews = reviewRepository.findActiveByProductIdOrderByDateDesc(productId);
-        Double avg = reviewRepository.findAverageRatingByProductId(productId);
-        long count = reviewRepository.countByProductId(productId);
-
         return ResponseEntity.ok(Map.of(
                 "reviews", reviews,
-                "averageRating", avg != null ? Math.round(avg * 10.0) / 10.0 : 0.0,
-                "reviewCount", count));
+                "averageRating", roundedAverage(productId),
+                "reviewCount", reviewRepository.countByProductId(productId)));
     }
 
+    /** A customer reviews a product they bought and received. The reviewer comes from the session. */
     @PostMapping("/product/{productId}")
-    public ResponseEntity<?> submitReview(
-            @PathVariable Long productId,
-            @RequestBody Map<String, Object> payload) {
-
-        String email = (String) payload.get("email");
-        int rating = Integer.parseInt(payload.get("rating").toString());
-        String comment = (String) payload.get("comment");
+    @Transactional
+    public ResponseEntity<?> submitReview(@PathVariable Long productId, @RequestBody Map<String, Object> payload) {
+        Customer customer = currentUser.requireCustomer();
+        int rating = RequestValues.requiredInt(payload, "rating");
+        String comment = RequestValues.optionalString(payload, "comment");
 
         if (rating < 1 || rating > 5) {
-            return ResponseEntity.badRequest()
-                    .body(Map.of("success", false, "message", "Rating must be between 1 and 5"));
+            throw new IllegalArgumentException("Rating must be between 1 and 5");
         }
         if (comment == null || comment.isBlank()) {
-            return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Comment cannot be empty"));
+            throw new IllegalArgumentException("Comment cannot be empty");
         }
-
-        Optional<User> userOpt = userRepository.findByEmail(email);
-        if (userOpt.isEmpty()) {
-            return ResponseEntity.status(401).body(Map.of("success", false, "message", "User not found"));
+        if (comment.length() > MAX_COMMENT_LENGTH) {
+            throw new IllegalArgumentException("Comment is too long (" + MAX_COMMENT_LENGTH + " characters max).");
         }
-        if (!(userOpt.get() instanceof Customer)) {
-            return ResponseEntity.status(403)
-                    .body(Map.of("success", false, "message", "Only customers can leave reviews"));
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
+        if (reviewRepository.findByProductIdAndCustomerEmail(productId, customer.getEmail()).isPresent()) {
+            throw new IllegalArgumentException("You have already reviewed this product.");
         }
-
-        Optional<Product> productOpt = productRepository.findById(productId);
-        if (productOpt.isEmpty()) {
-            return ResponseEntity.status(404).body(Map.of("success", false, "message", "Product not found"));
-        }
-
-        Optional<Review> existingReview = reviewRepository.findByProductIdAndCustomerEmail(productId, email);
-        if (existingReview.isPresent()) {
-            return ResponseEntity.badRequest()
-                    .body(Map.of("success", false, "message", "You have already reviewed this product."));
-        }
-
-        // Verify the customer actually purchased and received (delivered) this product
-        Customer customer = (Customer) userOpt.get();
-        List<Order> pastOrders = orderRepository.findByCustomerAndStatusNotIgnoreCaseOrderByDateDesc(customer, "cart");
-        boolean eligibleToReview = false;
-        for (Order o : pastOrders) {
-            if (o.getStatus() != null && "delivered".equalsIgnoreCase(o.getStatus())) {
-                if (o.getOrderItems() != null) {
-                    for (OrderItem oi : o.getOrderItems()) {
-                        if (oi.getProduct() != null && oi.getProduct().getId().equals(productId)) {
-                            eligibleToReview = true;
-                            break;
-                        }
-                    }
-                }
-            }
-            if (eligibleToReview)
-                break;
-        }
-        if (!eligibleToReview) {
-            return ResponseEntity.status(403).body(
-                    Map.of("success", false, "message", "You can only review products you purchased and received."));
+        if (!orderItemRepository.hasDeliveredPurchase(customer.getUserId(), productId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "You can only review products you purchased and received.");
         }
 
         Review review = new Review();
         review.setRating(rating);
         review.setComment(comment.trim());
         review.setDate(LocalDate.now());
-        review.setCustomer((Customer) userOpt.get());
-        review.setProduct(productOpt.get());
-
+        review.setStatus("active");
+        review.setAutoFlagged(false);
+        review.setCustomer(customer);
+        review.setProduct(product);
         reviewRepository.save(review);
 
-        // Notify the product's artisan about the new review
-        Product product = productOpt.get();
         if (product.getArtisan() != null) {
-            String title = "New Customer Review";
-            String msg = "A customer wrote a " + rating + "-star review on your product \"" + product.getTitle() + "\"";
-            notificationService.sendNotification(
-                    product.getArtisan(),
-                    title,
-                    msg,
-                    "REVIEW",
-                    "/artisanAnalytics?id=" + product.getArtisan().getUserId());
+            notificationService.sendNotification(product.getArtisan(), "New Customer Review",
+                    "A customer wrote a " + rating + "-star review on your product \"" + product.getTitle() + "\"",
+                    "REVIEW", "/artisanAnalytics");
         }
-
-        Double newAvg = reviewRepository.findAverageRatingByProductId(productId);
-        long newCount = reviewRepository.countByProductId(productId);
 
         return ResponseEntity.ok(Map.of(
                 "success", true,
                 "message", "Review submitted successfully",
-                "averageRating", newAvg != null ? Math.round(newAvg * 10.0) / 10.0 : 0.0,
-                "reviewCount", newCount));
+                "averageRating", roundedAverage(productId),
+                "reviewCount", reviewRepository.countByProductId(productId)));
+    }
+
+    private double roundedAverage(Long productId) {
+        Double avg = reviewRepository.findAverageRatingByProductId(productId);
+        return avg != null ? Math.round(avg * 10.0) / 10.0 : 0.0;
     }
 }

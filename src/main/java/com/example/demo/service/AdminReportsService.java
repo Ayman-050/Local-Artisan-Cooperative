@@ -2,7 +2,7 @@ package com.example.demo.service;
 
 import com.example.demo.model.*;
 import com.example.demo.repository.*;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,32 +13,26 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class AdminReportsService {
 
     private static final String[] DONUT_COLORS = {
             "#c17c5f", "#8b7355", "#a5664d", "#d4c5b5", "#f5ebe0", "#e5e0d8"
     };
 
-    @Autowired
-    private OrderRepository orderRepository;
+    private final OrderRepository orderRepository;
 
-    @Autowired
-    private OrderItemRepository orderItemRepository;
+    private final OrderItemRepository orderItemRepository;
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private ArtisanRepository artisanRepository;
+    private final ArtisanRepository artisanRepository;
 
-    @Autowired
-    private AuctionRepository auctionRepository;
+    private final AuctionRepository auctionRepository;
 
-    @Autowired
-    private ReviewRepository reviewRepository;
+    private final ReviewRepository reviewRepository;
 
-    @Autowired
-    private AuctionService auctionService;
+    private final AuctionService auctionService;
 
     public record DatePeriod(LocalDate start, LocalDate end, String label) {
         public long daysInclusive() {
@@ -89,11 +83,14 @@ public class AdminReportsService {
         DatePeriod period = resolvePeriod(range, customStart, customEnd);
         DatePeriod previous = period.previousPeriod();
 
-        List<Order> allOrders = orderRepository.findAll();
-        List<OrderItem> allItems = orderItemRepository.findAllWithOrderAndProduct();
-        List<User> allUsers = userRepository.findAll();
-        List<Auction> allAuctions = auctionRepository.findAll();
-        List<Review> allReviews = reviewRepository.findAll();
+        // Only load what the report needs: the selected period plus the previous one (for the % change).
+        // Open carts (status "cart") are not sales and are excluded by the queries.
+        LocalDate from = previous.start();
+        LocalDate to = period.end();
+        List<Order> allOrders = orderRepository.findPlacedBetween(from, to);
+        List<OrderItem> allItems = orderItemRepository.findPlacedItemsBetween(from, to);
+        List<User> allUsers = userRepository.findByJoinDateBetween(from.atStartOfDay(), to.plusDays(1).atStartOfDay());
+        List<Auction> allAuctions = auctionRepository.findByEndTimeBetween(from.atStartOfDay(), to.plusDays(1).atStartOfDay());
 
         List<Order> periodOrders = filterOrdersByDate(allOrders, period);
         List<Order> prevOrders = filterOrdersByDate(allOrders, previous);
@@ -147,7 +144,7 @@ public class AdminReportsService {
         result.put("topArtisanRevenues", artisanData.get("revenues"));
         result.put("topArtisanPercentages", artisanData.get("percentages"));
 
-        result.put("bestProducts", buildBestProducts(periodItems, allReviews));
+        result.put("bestProducts", buildBestProducts(periodItems));
         result.put("donutColors", DONUT_COLORS);
 
         return result;
@@ -170,7 +167,8 @@ public class AdminReportsService {
     }
 
     private double sumOrderRevenue(List<Order> orders) {
-        return orders.stream().mapToDouble(Order::getTotalAmount).sum();
+        // Reports aggregate in double for charting; money is stored and computed as BigDecimal elsewhere.
+        return orders.stream().mapToDouble(o -> o.getTotalAmount().doubleValue()).sum();
     }
 
     private long countNewUsers(List<User> users, DatePeriod period, boolean artisansOnly) {
@@ -193,8 +191,8 @@ public class AdminReportsService {
         return auctions.stream()
                 .filter(this::isAuctionEnded)
                 .filter(a -> a.getEndTime() != null && period.contains(a.getEndTime()))
-                .filter(a -> a.getCurrentHighestBid() > 0)
-                .mapToDouble(Auction::getCurrentHighestBid)
+                .filter(a -> a.getCurrentHighestBid().signum() > 0)
+                .mapToDouble(a -> a.getCurrentHighestBid().doubleValue())
                 .sum();
     }
 
@@ -233,7 +231,7 @@ public class AdminReportsService {
             }
             long dayOffset = ChronoUnit.DAYS.between(period.start(), order.getDate());
             int bucket = (int) Math.min(5, (dayOffset * 6) / totalDays);
-            buckets[bucket] += order.getTotalAmount();
+            buckets[bucket] += order.getTotalAmount().doubleValue();
         }
         return buckets;
     }
@@ -318,7 +316,7 @@ public class AdminReportsService {
             String artisanName = (item.getProduct() != null && item.getProduct().getArtisanName() != null)
                     ? item.getProduct().getArtisanName()
                     : "Unknown";
-            artisanRevenue.merge(artisanName, item.getPrice() * item.getQuantity(), Double::sum);
+            artisanRevenue.merge(artisanName, item.getPrice().doubleValue() * item.getQuantity(), Double::sum);
         }
 
         List<Map.Entry<String, Double>> sorted = new ArrayList<>(artisanRevenue.entrySet());
@@ -343,7 +341,7 @@ public class AdminReportsService {
         return data;
     }
 
-    private List<Map<String, Object>> buildBestProducts(List<OrderItem> items, List<Review> allReviews) {
+    private List<Map<String, Object>> buildBestProducts(List<OrderItem> items) {
         Map<Long, int[]> productSales = new LinkedHashMap<>();
         Map<Long, Double> productRevenue = new LinkedHashMap<>();
         Map<Long, Product> productMap = new LinkedHashMap<>();
@@ -354,17 +352,15 @@ public class AdminReportsService {
             }
             Long pid = item.getProduct().getId();
             productSales.computeIfAbsent(pid, k -> new int[] { 0 })[0] += item.getQuantity();
-            productRevenue.merge(pid, item.getPrice() * item.getQuantity(), Double::sum);
+            productRevenue.merge(pid, item.getPrice().doubleValue() * item.getQuantity(), Double::sum);
             productMap.putIfAbsent(pid, item.getProduct());
         }
 
-        Map<Long, double[]> productRatings = new LinkedHashMap<>();
-        for (Review review : allReviews) {
-            if (review.getProduct() != null) {
-                Long pid = review.getProduct().getId();
-                productRatings.computeIfAbsent(pid, k -> new double[] { 0, 0 });
-                productRatings.get(pid)[0] += review.getRating();
-                productRatings.get(pid)[1]++;
+        // Average rating per product in one grouped query (rows of [productId, avgRating]).
+        Map<Long, Double> productRatings = new LinkedHashMap<>();
+        if (!productSales.isEmpty()) {
+            for (Object[] row : reviewRepository.averageRatingByProduct(productSales.keySet())) {
+                productRatings.put((Long) row[0], ((Number) row[1]).doubleValue());
             }
         }
 
@@ -390,10 +386,7 @@ public class AdminReportsService {
             row.put("category", p.getCategory() != null ? p.getCategory() : "Other");
             row.put("unitsSold", entry.getValue()[0]);
             row.put("revenue", productRevenue.getOrDefault(pid, 0.0));
-            double[] ratingData = productRatings.get(pid);
-            double avgRating = (ratingData != null && ratingData[1] > 0)
-                    ? Math.round(ratingData[0] / ratingData[1] * 10.0) / 10.0
-                    : 0.0;
+            double avgRating = Math.round(productRatings.getOrDefault(pid, 0.0) * 10.0) / 10.0;
             row.put("avgRating", avgRating);
             row.put("productId", pid);
             bestProducts.add(row);

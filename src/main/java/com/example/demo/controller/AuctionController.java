@@ -1,27 +1,27 @@
 package com.example.demo.controller;
 
-import com.example.demo.model.Auction;
+import com.example.demo.model.Customer;
+import com.example.demo.security.CurrentUser;
 import com.example.demo.service.AuctionService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auctions")
+@RequiredArgsConstructor
 public class AuctionController {
 
-    @Autowired
-    private AuctionService auctionService;
+    private final AuctionService auctionService;
+    private final CurrentUser currentUser;
 
     @GetMapping("/{id}")
+    @Transactional(readOnly = true)
     public ResponseEntity<?> getAuction(@PathVariable Long id) {
-        try {
-            auctionService.syncStoredStatuses();
-        } catch (Exception ex) {
-            // Ignore
-        }
         return auctionService.findById(id)
                 .map(auction -> ResponseEntity.ok(Map.of(
                         "success", true,
@@ -29,45 +29,29 @@ public class AuctionController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    /** The bidder is always the signed-in customer; any bidderId/bidderName in the body is ignored. */
     @PostMapping("/{id}/bid")
     public ResponseEntity<?> placeBid(@PathVariable Long id, @RequestBody Map<String, Object> body) {
-        try {
-            auctionService.syncStoredStatuses();
-        } catch (Exception ex) {
-            // Ignore
-        }
+        Customer bidder = currentUser.requireCustomer();
+
         Object amountObj = body != null ? body.get("amount") : null;
-        String bidderName = body != null && body.get("bidderName") != null
-                ? String.valueOf(body.get("bidderName")).trim()
-                : "";
-
         if (amountObj == null) {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "success", false,
-                    "message", "Bid amount is required."));
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Bid amount is required."));
         }
-
         int bidAmount;
         try {
-            double parsed = amountObj instanceof Number
-                    ? ((Number) amountObj).doubleValue()
-                    : Double.parseDouble(String.valueOf(amountObj));
-            if (parsed != Math.floor(parsed)) {
-                return ResponseEntity.badRequest().body(Map.of(
-                        "success", false,
+            BigDecimal parsed = new BigDecimal(String.valueOf(amountObj).trim());
+            if (parsed.stripTrailingZeros().scale() > 0) {
+                return ResponseEntity.badRequest().body(Map.of("success", false,
                         "message", "Bids must be whole BD amounts only (no decimals)."));
             }
-            bidAmount = (int) parsed;
-        } catch (NumberFormatException ex) {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "success", false,
+            bidAmount = parsed.intValueExact();
+        } catch (NumberFormatException | ArithmeticException ex) {
+            return ResponseEntity.badRequest().body(Map.of("success", false,
                     "message", "Please enter a valid bid amount."));
         }
 
-        Object bidderIdObj = body.get("bidderId");
-        Long bidderId = bidderIdObj != null ? Long.parseLong(bidderIdObj.toString()) : null;
-
-        Map<String, Object> result = auctionService.placeBid(id, bidAmount, bidderName, bidderId);
+        Map<String, Object> result = auctionService.placeBid(id, bidAmount, bidder);
         boolean success = Boolean.TRUE.equals(result.get("success"));
         return success ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
     }

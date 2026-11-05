@@ -114,7 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Redirect back to the originally requested page (if any)
                 const url = new URL(window.location.href);
-                const next = url.searchParams.get('next') || sessionStorage.getItem('postLoginNext');
+                const next = window.AppCore.safeNextPath(url.searchParams.get('next') || sessionStorage.getItem('postLoginNext'));
                 sessionStorage.removeItem('postLoginNext');
 
                 const userRole = (data.user.role || '').toUpperCase();
@@ -240,7 +240,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     showToast('Account created! Welcome to ArtsyVibe.', 'success');
                     setTimeout(() => {
                         const url = new URL(window.location.href);
-                        const next = url.searchParams.get('next') || sessionStorage.getItem('postLoginNext');
+                        const next = window.AppCore.safeNextPath(url.searchParams.get('next') || sessionStorage.getItem('postLoginNext'));
                         sessionStorage.removeItem('postLoginNext');
                         window.location.href = next || '/';
                     }, 1500);

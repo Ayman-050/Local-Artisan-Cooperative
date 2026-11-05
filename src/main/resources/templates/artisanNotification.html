@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script src="/app-core.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Notifications - Artisan Co-op</title>
@@ -403,7 +404,7 @@
                         finalLink += (finalLink.includes('?') ? '&' : '?') + 'id=' + userId;
                     }
                 }
-                const linkAttr = finalLink ? `href="${finalLink}"` : `href="#"`;
+                const linkAttr = finalLink ? `href="${safeUrl(finalLink, '#')}"` : `href="#"`;
 
                 return `
                     <div class="notification-card p-6 flex items-start gap-4 hover:bg-gray-50 transition-colors ${unreadClass} cursor-pointer" 

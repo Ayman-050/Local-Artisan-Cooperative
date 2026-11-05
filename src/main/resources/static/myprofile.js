@@ -348,18 +348,50 @@ window.saveShopInfo = function () {
 // Delete Account
 // ============================================================
 
-window.deleteAccount = function () {
-    const message = 'Are you sure you want to delete your account? This action cannot be undone.';
-    const userEmail = sessionStorage.getItem('userEmail');
+/** Small modal with a masked password field. Resolves to the password, or null if cancelled. */
+function askPassword(title) {
+    return new Promise(resolve => {
+        const overlay = document.createElement('div');
+        overlay.className = 'fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4';
+        overlay.innerHTML = `
+            <form class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl">
+                <h3 class="text-lg font-bold text-[#5c4a3d] mb-2"></h3>
+                <p class="text-sm text-[#8b7355] mb-4">Enter your password to confirm.</p>
+                <input type="password" autocomplete="current-password" required
+                       class="w-full px-4 py-2 border border-[#e5e0d8] rounded-lg mb-4 focus:outline-none focus:border-[#c17c5f]">
+                <div class="flex justify-end gap-2">
+                    <button type="button" data-cancel class="px-4 py-2 rounded-lg text-[#8b7355] hover:bg-[#faf9f6]">Cancel</button>
+                    <button type="submit" class="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white font-medium">Delete account</button>
+                </div>
+            </form>`;
+        overlay.querySelector('h3').textContent = title;
+        const form = overlay.querySelector('form');
+        const input = overlay.querySelector('input');
+        const close = value => { overlay.remove(); resolve(value); };
+        form.addEventListener('submit', e => { e.preventDefault(); close(input.value); });
+        overlay.querySelector('[data-cancel]').addEventListener('click', () => close(null));
+        document.body.appendChild(overlay);
+        input.focus();
+    });
+}
 
-    if (!userEmail) {
-        showToast('User email not found. Please log in again.', 'error');
+window.deleteAccount = async function () {
+    const message = 'Are you sure you want to delete your account? This action cannot be undone.';
+
+    if (!confirm(message)) {
+        showToast('Account deletion cancelled.', 'info');
         return;
     }
-
-    if (confirm(message)) {
-        fetch(`/api/auth/delete-account?email=${encodeURIComponent(userEmail)}`, {
-            method: 'DELETE'
+    const password = await askPassword('Delete your account');
+    if (!password) {
+        showToast('Account deletion cancelled.', 'info');
+        return;
+    }
+    {
+        fetch('/api/auth/delete-account', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password })
         })
         .then(response => response.json())
         .then(data => {
@@ -382,8 +414,6 @@ window.deleteAccount = function () {
             console.error('Error deleting account:', error);
             showToast('An error occurred while deleting your account.', 'error');
         });
-    } else {
-        showToast('Account deletion cancelled.', 'info');
     }
 };
 

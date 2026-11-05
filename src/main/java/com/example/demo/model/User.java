@@ -1,47 +1,48 @@
 package com.example.demo.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
+
+import java.time.LocalDateTime;
 
 @Data
 @Entity
 @Table(name = "users")
 @Inheritance(strategy = InheritanceType.JOINED)
 public class User {
+
+    public static final String DEFAULT_PROFILE_PICTURE = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userId;
 
-    public Long getUserId() {
-        return this.userId;
-    }
-
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
-
     private String name;
     private String phone;
     private String email;
+
+    /** BCrypt hash. Never serialized: entities are returned as JSON from several endpoints. */
+    @JsonIgnore
+    @ToString.Exclude
     private String password;
+
+    /** One of {@link Roles}. */
     private String role;
+
     @Column(columnDefinition = "TEXT")
-    private String profilePicture = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+    private String profilePicture = DEFAULT_PROFILE_PICTURE;
 
-    private String status = "active";
-    private java.time.LocalDateTime joinDate;
-    private java.time.LocalDateTime lastActive;
-
-    public String getStatus() {
-        return this.status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
+    /** One of {@link UserStatus}. */
+    private String status = UserStatus.ACTIVE;
+    private LocalDateTime joinDate;
+    private LocalDateTime lastActive;
 
     @PrePersist
     protected void onCreate() {
-        joinDate = java.time.LocalDateTime.now();
+        if (joinDate == null) {
+            joinDate = LocalDateTime.now();
+        }
     }
 }

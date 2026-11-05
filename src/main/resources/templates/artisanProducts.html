@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
+    <script src="/app-core.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Products - Artisan Co-op</title>
@@ -506,7 +507,7 @@
                             <div class="border-2 border-dashed border-[#e5e0d8] rounded-xl p-6 text-center hover:border-[#c17c5f] transition-colors cursor-pointer">
                                 <i class="fas fa-cloud-upload-alt text-3xl text-[#b8a99a] mb-3"></i>
                                 <p class="text-[#8b7355] font-medium">Click to upload or drag and drop</p>
-                                <p class="text-[#b8a99a] text-sm mt-1">PNG, JPG up to 5MB</p>
+                                <p class="text-[#b8a99a] text-sm mt-1">PNG, JPG up to 2MB</p>
                                 <input id="product-image-file" type="file" class="hidden" accept="image/*">
                             </div>
                             <p class="text-xs text-[#8b7355] mt-2">Or enter image URL:</p>
@@ -667,8 +668,12 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(bodyData)
             })
-            .then(r => r.json())
+            .then(r => r.json().catch(() => ({})))
             .then(data => {
+                if (!data.success) {
+                    alert(data.message || 'Failed to save product.');
+                    return;
+                }
                 alert(currentEditProductId ? 'Product updated successfully!' : 'Product added successfully!');
                 closeModal();
                 window.location.reload();
@@ -686,9 +691,13 @@
             fetch(`/api/products/${id}`, {
                 method: 'DELETE'
             })
-            .then(r => r.json())
+            .then(r => r.json().catch(() => ({})))
             .then(data => {
-                alert('Product deleted successfully!');
+                if (!data.success) {
+                    alert(data.message || 'Failed to delete product.');
+                    return;
+                }
+                alert(data.message || 'Product deleted successfully!');
                 window.location.reload();
             })
             .catch(err => {
@@ -732,9 +741,9 @@
             document.getElementById('product-image-file')?.addEventListener('change', function() {
                 if (!this.files.length) return;
                 const file = this.files[0];
-                const maxBytes = 5 * 1024 * 1024;
+                const maxBytes = 2 * 1024 * 1024; // server accepts ~2 MB images
                 if (file.size > maxBytes) {
-                    alert("Product image must be 5MB or smaller.");
+                    alert("Product image must be 2MB or smaller.");
                     return;
                 }
 

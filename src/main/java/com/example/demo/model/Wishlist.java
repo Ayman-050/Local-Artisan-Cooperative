@@ -2,6 +2,8 @@ package com.example.demo.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -20,5 +22,7 @@ public class Wishlist {
     private Customer customer;
 
     @OneToMany(mappedBy = "wishlist", cascade = CascadeType.ALL)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private List<WishlistItem> wishlistItems;
 }

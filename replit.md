@@ -5,7 +5,7 @@ A Spring Boot web application for an artisan marketplace called "ArtsyVibe" — 
 ## Run & Operate
 
 - **Run**: `./gradlew bootRun` (via "Start application" workflow, port 5000)
-- **Build**: `./gradlew build -x test`
+- **Build**: `./gradlew build` (tests use in-memory H2; no database needed)
 - **Deploy run**: `java -jar build/libs/demo-0.0.1-SNAPSHOT.jar --server.port=5000`
 - **Required env vars**: `PGHOST`, `PGPORT`, `PGDATABASE`, `PGUSER`, `PGPASSWORD` (provided automatically by Replit PostgreSQL)
 
@@ -16,7 +16,9 @@ A Spring Boot web application for an artisan marketplace called "ArtsyVibe" — 
 - **Build**: Gradle 9.4.1 (wrapper)
 - **Template Engine**: Thymeleaf (server-side rendering, `.html` suffix)
 - **Database**: PostgreSQL via Replit built-in integration
-- **ORM**: Spring Data JPA / Hibernate (ddl-auto=update)
+- **ORM**: Spring Data JPA / Hibernate (`ddl-auto=validate`)
+- **Schema**: Flyway migrations in `src/main/resources/db/migration`
+- **Security**: Spring Security, session-based (see README "Security model")
 
 ## Where things live
 
@@ -31,7 +33,8 @@ A Spring Boot web application for an artisan marketplace called "ArtsyVibe" — 
 - Thymeleaf suffix set to lowercase `.html` to match actual template filenames
 - `gradlew` CRLF line endings were converted to LF for Linux compatibility
 - `MainController` maps `/` to the `index` template (homepage)
-- JPA `ddl-auto=update` auto-creates/updates tables from entity classes — no manual migrations needed
+- Schema changes go in a new Flyway migration (`V3__...sql`). Hibernate only validates; it never alters tables.
+- Existing databases created by the old `ddl-auto=update` are baselined at V1 automatically on first start
 - Port 5000 mapped to external port 80 in `.replit`
 
 ## Product
@@ -47,7 +50,7 @@ A Spring Boot web application for an artisan marketplace called "ArtsyVibe" — 
 
 _Populate as you build_
 
-## Test Credentials (seed data, password: `password123`)
+## Test Credentials (`db/demo-data.sql`, run manually on an empty DB; password: `password123`)
 
 | Role     | Email                  |
 |----------|------------------------|

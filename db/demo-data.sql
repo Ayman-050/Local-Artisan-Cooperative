@@ -1,9 +1,11 @@
 -- ============================================================
--- ArtsyVibe seed data
--- Runs automatically on every startup via:
---   spring.sql.init.mode=always
---   spring.jpa.defer-datasource-initialization=true
--- ddl-auto=create wipes tables first, so no duplicate-key risk.
+-- ArtsyVibe demo data (OPTIONAL, run manually)
+--
+-- The schema is created by Flyway when the app starts. To load demo data into an EMPTY
+-- database, start the app once (so Flyway creates the tables), then run:
+--     psql "$DATABASE_URL" -f db/demo-data.sql
+-- All demo accounts use the password: password123
+-- Do not run this against a database with real data.
 -- ============================================================
 
 -- ── 1. Product categories ────────────────────────────────────
@@ -162,3 +164,12 @@ SELECT setval('payments_payment_id_seq',            (SELECT MAX(payment_id)  FRO
 SELECT setval('reviews_review_id_seq',              (SELECT MAX(review_id)   FROM reviews));
 SELECT setval('wishlists_wishlist_id_seq',          (SELECT MAX(wishlist_id) FROM wishlists));
 SELECT setval('wishlist_items_wishlist_item_id_seq',(SELECT MAX(wishlist_item_id) FROM wishlist_items));
+
+-- ── Fill columns the inserts above leave empty (the app treats a NULL status as "not active") ──
+UPDATE users SET status = 'active' WHERE status IS NULL;
+UPDATE users SET join_date = CURRENT_TIMESTAMP WHERE join_date IS NULL;
+UPDATE products SET status = 'active' WHERE status IS NULL AND stock_quantity > 0;
+UPDATE products SET status = 'out of stock' WHERE status IS NULL;
+UPDATE reviews SET status = 'active' WHERE status IS NULL;
+UPDATE reviews SET auto_flagged = FALSE WHERE auto_flagged IS NULL;
+UPDATE auctions SET flagged = FALSE WHERE flagged IS NULL;

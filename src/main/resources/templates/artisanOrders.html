@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script src="/app-core.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Orders - Artisan Co-op</title>
@@ -458,14 +459,14 @@
                             </tr>
                             <tr th:each="summary : ${orders}" class="table-row cursor-pointer" 
                                 th:attr="data-order-id=${summary.order.orderId}"
-                                th:data-status="${summary.order.status != null ? summary.order.status.toLowerCase() : ''}"
+                                th:data-status="${summary.status}"
                                 th:data-date="${summary.order.date}">
                                 <td class="px-6 py-4"><span class="font-mono text-sm font-semibold text-[#5c4a3d]" th:text="'#ORD-' + ${summary.order.orderId}">#ORD-0</span></td>
                                 <td class="px-6 py-4 text-sm text-[#8b7355]" th:text="${summary.order.customer != null ? summary.order.customer.name : 'Customer'}">Customer</td>
                                 <td class="px-6 py-4 text-sm text-[#8b7355]" th:text="${summary.productNames}">Product</td>
                                 <td class="px-6 py-4 text-sm font-semibold text-[#c17c5f]"><span th:text="${#numbers.formatDecimal(summary.totalAmount, 1, 2)} + ' BD'">0.00 BD</span></td>
                                 <td class="px-6 py-4 text-sm text-[#8b7355]" th:text="${summary.order.date}">Date</td>
-                                <td class="px-6 py-4"><span class="status-badge status-processing" th:text="${summary.order.status}">Status</span></td>
+                                <td class="px-6 py-4"><span class="status-badge" th:classappend="${'status-' + summary.status}" th:text="${summary.status}">Status</span></td>
                                 <td class="px-6 py-4"><button type="button" class="text-[#c17c5f] hover:text-[#a5664d] font-medium text-sm">View</button></td>
                             </tr>
                         </tbody>

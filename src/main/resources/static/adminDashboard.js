@@ -560,7 +560,7 @@
       animation: slideInRight 0.3s ease;
       cursor: pointer;
     `;
-    toast.innerHTML = `<span style="font-weight:bold;font-size:16px">${c.icon}</span><span>${message}</span>`;
+    toast.innerHTML = `<span style="font-weight:bold;font-size:16px">${c.icon}</span><span>${escapeHtml(message)}</span>`;
     toast.title = 'Click to dismiss';
 
     // Add slide-in animation
@@ -630,86 +630,6 @@
   }
 
   // ─────────────────────────────────────────────
-  // SECTION 12 — API Fetch for Live KPI Stats
-  // ─────────────────────────────────────────────
-  // Fetches live numbers from the backend and updates
-  // the KPI cards. Uncomment the call in the init block
-  // once the API endpoint is ready.
-  async function loadAdminStats() {
-    try {
-      const res = await fetch('/api/admin/stats', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('adminToken') || ''}`,
-          'Content-Type' : 'application/json',
-        },
-      });
-
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-
-      // Map API response fields to DOM element IDs
-      const fieldMap = {
-        totalUsers     : data.totalUsers,
-        totalArtisans  : data.totalArtisans,
-        activeProducts : data.activeProducts,
-        openAuctions   : data.openAuctions,
-        pendingReviews : data.pendingReviews,
-        pendingRefunds : data.pendingRefunds,
-      };
-
-      // Update notification badge on bell icon
-      const bellBadge = qs('nav .fa-bell + span');
-      if (bellBadge && data.unreadNotifications !== undefined) {
-        bellBadge.textContent = data.unreadNotifications;
-      }
-
-      // Update Quick Action badges
-      const quickBadges = qsa('.quick-action-card span.rounded-full');
-      if (quickBadges[0] && data.pendingArtisanApprovals !== undefined) {
-        quickBadges[0].textContent = data.pendingArtisanApprovals;
-      }
-      if (quickBadges[1] && data.pendingRefunds !== undefined) {
-        quickBadges[1].textContent = data.pendingRefunds;
-      }
-      if (quickBadges[2] && data.flaggedReviews !== undefined) {
-        quickBadges[2].textContent = data.flaggedReviews;
-      }
-
-    } catch (err) {
-      console.warn('[ArtsyVibe] Could not load admin stats from API:', err.message);
-      // Silent fail — dashboard continues with static data
-    }
-  }
-
-  // ─────────────────────────────────────────────
-  // SECTION 13 — Notification Bell Badge Update
-  // ─────────────────────────────────────────────
-  // Polls for new notifications every 60 seconds.
-  // Replace fetch URL with your actual endpoint.
-  function initNotificationPolling() {
-    const bellBadge = qs('nav .fa-bell ~ span, nav button span.bg-red-500');
-    if (!bellBadge) return;
-
-    const poll = async () => {
-      try {
-        const res  = await fetch('/api/admin/notifications/unread-count');
-        if (!res.ok) return;
-        const data = await res.json();
-        if (data.count !== undefined) {
-          bellBadge.textContent = data.count;
-          bellBadge.style.display = data.count > 0 ? 'flex' : 'none';
-        }
-      } catch {
-        // Silent fail — network may be unavailable
-      }
-    };
-
-    // Uncomment to enable live polling:
-    // poll();
-    // setInterval(poll, 60_000);
-  }
-
-  // ─────────────────────────────────────────────
   // SECTION 14 — Page Load Animation
   // ─────────────────────────────────────────────
   // Staggered fade-in for the stat cards and activity items.
@@ -760,10 +680,8 @@
     initPageAnimations();
 
     // Notifications
-    initNotificationPolling();
 
     // ── Live API stats (uncomment when backend is ready) ──
-    // loadAdminStats();
 
   });
 

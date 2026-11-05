@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script src="/app-core.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Order Confirmation - Artisan Co-op</title>
@@ -208,9 +209,9 @@
                             <i class="fas fa-credit-card terracotta mr-2"></i>Payment Method
                         </h3>
                         <div class="flex items-center gap-3">
-                            <i class="fab fa-cc-visa text-3xl text-[#1a1f71]" th:if="${#strings.containsIgnoreCase(order.payment?.paymentMethod, 'visa')}"></i>
-                            <i class="fab fa-cc-mastercard text-3xl text-[#eb001b]" th:if="${#strings.containsIgnoreCase(order.payment?.paymentMethod, 'master')}"></i>
-                            <i class="fas fa-money-bill-wave text-3xl text-green-600" th:if="${#strings.containsIgnoreCase(order.payment?.paymentMethod, 'cash')}"></i>
+                            <i class="fab fa-cc-visa text-3xl text-[#1a1f71]" th:if="${order.payment != null and #strings.containsIgnoreCase(order.payment.paymentMethod ?: '', 'visa')}"></i>
+                            <i class="fab fa-cc-mastercard text-3xl text-[#eb001b]" th:if="${order.payment != null and #strings.containsIgnoreCase(order.payment.paymentMethod ?: '', 'master')}"></i>
+                            <i class="fas fa-money-bill-wave text-3xl text-green-600" th:if="${order.payment != null and #strings.containsIgnoreCase(order.payment.paymentMethod ?: '', 'cash')}"></i>
                             <div>
                                 <p class="font-medium text-[#5c4a3d]" th:text="${order.payment?.paymentMethod}">Visa ending in 4242</p>
                                 <p class="text-sm text-[#8b7355]">Payment processed successfully</p>

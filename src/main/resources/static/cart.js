@@ -302,7 +302,7 @@ document.addEventListener('DOMContentLoaded', () => {
         div.dataset.orderItemId = String(item.orderItemId);
         div.dataset.maxQuantity = String(item.maxQuantity);
         const title = escapeHtml(item.title);
-        const img = escapeHtml(item.imageUrl);
+        const img = safeUrl(item.imageUrl, '/images/Logo.png');
         const unit = Number(item.unitPrice).toFixed(2);
         const sub = Number(item.subtotal).toFixed(2);
         const q = Number(item.quantity);
@@ -402,7 +402,7 @@ function loadCartAddresses() {
                     : '';
                 const html = `
                     <label class="relative cursor-pointer group cart-address-item">
-                        <input type="radio" name="selected_address" value="${addr.id}" class="peer sr-only" ${checked}>
+                        <input type="radio" name="selected_address" value="${Number(addr.id)}" class="peer sr-only" ${checked}>
                         <div class="h-full p-4 rounded-xl border-2 border-[#f8f5f0] bg-[#fcfaf7] transition-all
                                     peer-checked:border-[#c17c5f] peer-checked:bg-white hover:border-[#e5e0d8]">
                             <div class="flex items-center mb-3">

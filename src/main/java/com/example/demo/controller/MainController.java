@@ -1,71 +1,51 @@
 package com.example.demo.controller;
 
-import com.example.demo.repository.ProductRepository;
+import com.example.demo.model.ProductStatus;
+import com.example.demo.model.Roles;
 import com.example.demo.repository.AuctionRepository;
-import com.example.demo.repository.ReviewRepository;
 import com.example.demo.repository.OrderRepository;
-import com.example.demo.model.Order;
+import com.example.demo.repository.ProductRepository;
+import com.example.demo.repository.ReviewRepository;
+import com.example.demo.security.CurrentUser;
 import com.example.demo.service.AuctionService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-import java.util.Optional;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
+/** Public storefront pages and the customer page shells (their data is loaded by JS from /api). */
 @Controller
+@RequiredArgsConstructor
 public class MainController {
 
-    @Autowired
-    private ProductRepository productRepository;
+    private static final int FEATURED_PRODUCTS = 6;
 
-    @Autowired
-    private AuctionRepository auctionRepository;
-
-    @Autowired
-    private AuctionService auctionService;
-
-    @Autowired
-    private ReviewRepository reviewRepository;
-
-    @Autowired
-    private OrderRepository orderRepository;
+    private final ProductRepository productRepository;
+    private final AuctionRepository auctionRepository;
+    private final AuctionService auctionService;
+    private final ReviewRepository reviewRepository;
+    private final OrderRepository orderRepository;
+    private final CurrentUser currentUser;
 
     @GetMapping("/")
     public String index(Model model) {
-        model.addAttribute("featuredProducts", productRepository.findAll().stream()
-                .filter(p -> !"hidden".equalsIgnoreCase(p.getStatus()))
-                .limit(6)
-                .collect(java.util.stream.Collectors.toList()));
+        model.addAttribute("featuredProducts", productRepository.findVisible(PageRequest.of(0, FEATURED_PRODUCTS)));
         return "index";
     }
 
     @GetMapping("/products")
     public String products(Model model) {
-        model.addAttribute("products", productRepository.findByIsAuctionItem(false).stream()
-                .filter(p -> !"hidden".equalsIgnoreCase(p.getStatus()))
-                .collect(java.util.stream.Collectors.toList()));
+        model.addAttribute("products", productRepository.findVisibleStandardProducts());
         return "products";
     }
 
     @GetMapping("/auctions")
     public String auctions(Model model) {
-        try {
-            auctionService.syncStoredStatuses();
-        } catch (Exception ex) {
-            // Ignore
-        }
-        model.addAttribute("auctions", auctionRepository.findAll());
+        model.addAttribute("auctions", auctionRepository.findAllWithProduct());
         model.addAttribute("categories", productRepository.findDistinctCategories());
         return "auctions";
-    }
-
-    @PostMapping("/auctions/bid")
-    public String placeBid(@RequestParam Long auctionId, @RequestParam int amount,
-            @RequestParam(required = false) String bidderName, Model model) {
-        String name = (bidderName != null && !bidderName.isBlank()) ? bidderName : "Guest Bidder";
-        var result = auctionService.placeBid(auctionId, amount, name, null);
-        model.addAttribute("message", result.get("message"));
-        return "redirect:/auctions";
     }
 
     @GetMapping("/cart")
@@ -73,22 +53,22 @@ public class MainController {
         return "cart";
     }
 
-    @GetMapping("/login")
+    @GetMapping({ "/login", "/Login" })
     public String login() {
         return "Login";
     }
 
-    @GetMapping("/profile")
+    @GetMapping({ "/profile", "/myprofile" })
     public String profile() {
         return "myprofile";
     }
 
-    @GetMapping("/orders")
+    @GetMapping({ "/orders", "/myorders" })
     public String orders() {
         return "myorders";
     }
 
-    @GetMapping("/wishlist")
+    @GetMapping({ "/wishlist", "/mywishlist" })
     public String wishlist() {
         return "mywishlist";
     }
@@ -98,7 +78,7 @@ public class MainController {
         return "notifications";
     }
 
-    @GetMapping("/forgot-password")
+    @GetMapping({ "/forgot-password", "/ForgetPassword" })
     public String forgotPassword() {
         return "ForgetPassword";
     }
@@ -118,47 +98,21 @@ public class MainController {
         return "redirect:/";
     }
 
-    @GetMapping("/Login")
-    public String loginAlt() {
-        return "Login";
-    }
-
-    @GetMapping("/ForgetPassword")
-    public String forgetPasswordAlt() {
-        return "ForgetPassword";
-    }
-
-    @GetMapping("/myprofile")
-    public String myProfile() {
-        return "myprofile";
-    }
-
-    @GetMapping("/myorders")
-    public String myOrders() {
-        return "myorders";
-    }
-
-    @GetMapping("/mywishlist")
-    public String myWishlist() {
-        return "mywishlist";
-    }
-
+    /** Order confirmation; only the customer who placed the order (or an admin) can see it. */
     @GetMapping("/OrderConformation")
     public String orderConformation(@RequestParam(required = false) Long orderId, Model model) {
         if (orderId != null) {
-            Optional<Order> orderOpt = orderRepository.findById(orderId);
-            orderOpt.ifPresent(order -> model.addAttribute("order", order));
+            boolean isAdmin = currentUser.hasRole(Roles.ADMIN);
+            currentUser.id().flatMap(me -> orderRepository.findById(orderId)
+                    .filter(order -> isAdmin || (order.getCustomer() != null
+                            && me.equals(order.getCustomer().getUserId()))))
+                    .ifPresent(order -> model.addAttribute("order", order));
         }
         return "OrderConformation";
     }
 
     @GetMapping("/ProductDetailsAuction")
     public String productDetailsAuction(@RequestParam(required = false) Long id, Model model) {
-        try {
-            auctionService.syncStoredStatuses();
-        } catch (Exception ex) {
-            // Ignore
-        }
         if (id != null) {
             auctionRepository.findById(id).ifPresent(auction -> {
                 model.addAttribute("auction", auction);
@@ -171,17 +125,19 @@ public class MainController {
     @GetMapping("/ProductDetailsStandard")
     public String productDetailsStandard(@RequestParam(required = false) Long id, Model model) {
         if (id != null) {
-            productRepository.findById(id).ifPresent(product -> {
-                model.addAttribute("product", product);
-                model.addAttribute("reviews", reviewRepository.findByProductIdWithCustomerOrderByDateDesc(id));
-                Double avg = reviewRepository.findAverageRatingByProductId(id);
-                long count = reviewRepository.countByProductId(id);
-                model.addAttribute("averageRating", avg != null ? Math.round(avg * 10.0) / 10.0 : 0.0);
-                model.addAttribute("reviewCount", count);
-            });
+            productRepository.findById(id)
+                    .filter(p -> !ProductStatus.HIDDEN.equalsIgnoreCase(p.getStatus()) || currentUser.hasRole(Roles.ADMIN)
+                            || currentUser.id().map(me -> p.getArtisan() != null
+                                    && me.equals(p.getArtisan().getUserId())).orElse(false))
+                    .ifPresent(product -> {
+                        model.addAttribute("product", product);
+                        model.addAttribute("reviews", reviewRepository.findByProductIdWithCustomerOrderByDateDesc(id));
+                        Double avg = reviewRepository.findAverageRatingByProductId(id);
+                        model.addAttribute("averageRating", avg != null ? Math.round(avg * 10.0) / 10.0 : 0.0);
+                        model.addAttribute("reviewCount", reviewRepository.countByProductId(id));
+                    });
         }
-        // Do not allow writing reviews directly from the product page; reviews can be
-        // written from orders only.
+        // Reviews can only be written from the customer's orders page.
         model.addAttribute("canWriteReview", false);
         return "ProductDetailsStandard";
     }

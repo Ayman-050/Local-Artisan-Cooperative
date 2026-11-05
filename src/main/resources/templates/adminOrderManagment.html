@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
+    <script src="/app-core.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Orders Management - Artisan Co-op</title>
@@ -155,7 +156,7 @@
 
             <!-- Results count -->
             <p class="text-sm text-[#8b7355] mb-3" th:if="${ordersList != null}">
-                Showing <span class="font-semibold text-[#5c4a3d]" th:text="${ordersList.size()}">0</span> order(s)
+                Showing <span class="font-semibold text-[#5c4a3d]" th:text="${pager.total}">0</span> order(s)
             </p>
 
             <!-- Orders Table -->
@@ -250,6 +251,7 @@
                         </tbody>
                     </table>
                 </div>
+                <div th:replace="~{fragments/pager :: pager(${pager}, 'orders')}"></div>
             </div>
         </main>
     </div>
@@ -259,6 +261,7 @@
             initAuthGuard({ redirectTo: "/login", message: "Administrator access required. Please login." });
         }
     </script>
+    <script src="/admin-paging.js"></script>
     <script src="/adminDashboard.js"></script>
 </body>
 </html>

@@ -1,301 +1,172 @@
 package com.example.demo.controller;
 
-import com.example.demo.model.Product;
 import com.example.demo.model.Artisan;
 import com.example.demo.model.Auction;
-import com.example.demo.service.ProductService;
-import com.example.demo.service.AuctionService;
-import com.example.demo.repository.ProductRepository;
-import com.example.demo.repository.ArtisanRepository;
-import com.example.demo.repository.AuctionRepository;
-import com.example.demo.repository.WishlistItemRepository;
-import com.example.demo.repository.ReviewRepository;
+import com.example.demo.model.Product;
+import com.example.demo.model.ProductStatus;
 import com.example.demo.model.Review;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
+import com.example.demo.model.Roles;
+import com.example.demo.model.User;
+import com.example.demo.repository.ProductRepository;
+import com.example.demo.repository.ReviewRepository;
+import com.example.demo.security.CurrentUser;
+import com.example.demo.service.ProductService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Map;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeParseException;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/products")
+@RequiredArgsConstructor
 public class ProductApiController {
 
-    @Autowired
-    private ProductService productService;
-
-    @Autowired
-    private ProductRepository productRepository;
-
-    @Autowired
-    private ArtisanRepository artisanRepository;
-
-    @Autowired
-    private AuctionRepository auctionRepository;
-
-    @Autowired
-    private WishlistItemRepository wishlistItemRepository;
-
-    @Autowired
-    private AuctionService auctionService;
-
-    @Autowired
-    private ReviewRepository reviewRepository;
+    private final ProductService productService;
+    private final ProductRepository productRepository;
+    private final ReviewRepository reviewRepository;
+    private final CurrentUser currentUser;
 
     @GetMapping("/{id}")
+    @Transactional(readOnly = true)
     public ResponseEntity<?> getProduct(@PathVariable Long id) {
-        return productRepository.findById(id)
-                .map(product -> {
-                    // Fetch reviews
-                    List<Review> reviews = reviewRepository.findByProductIdWithCustomerOrderByDateDesc(id);
-                    List<Map<String, Object>> reviewsList = reviews.stream().map(r -> Map.<String, Object>of(
-                            "reviewerName", r.getCustomer() != null ? r.getCustomer().getName() : "Anonymous",
-                            "reviewerImage", r.getCustomer() != null && r.getCustomer().getProfilePicture() != null
-                                    ? r.getCustomer().getProfilePicture()
-                                    : "https://cdn-icons-png.flaticon.com/512/149/149071.png",
-                            "rating", r.getRating(),
-                            "comment", r.getComment(),
-                            "date", r.getDate() != null ? r.getDate().toString() : "")).toList();
+        Product product = productRepository.findById(id)
+                .filter(this::isVisibleToCaller)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
 
-                    // Calculate artisan info if present
-                    long totalProducts = 0;
-                    double avgRating = 0.0;
-                    long reviewsCount = 0;
+        List<Map<String, Object>> reviewsList = reviewRepository.findByProductIdWithCustomerOrderByDateDesc(id)
+                .stream()
+                .map(r -> Map.<String, Object>of(
+                        "reviewerName", r.getCustomer() != null ? r.getCustomer().getName() : "Anonymous",
+                        "reviewerImage", r.getCustomer() != null && r.getCustomer().getProfilePicture() != null
+                                ? r.getCustomer().getProfilePicture()
+                                : User.DEFAULT_PROFILE_PICTURE,
+                        "rating", r.getRating(),
+                        "comment", r.getComment() != null ? r.getComment() : "",
+                        "date", r.getDate() != null ? r.getDate().toString() : ""))
+                .toList();
 
-                    if (product.getArtisan() != null) {
-                        Long artisanId = product.getArtisan().getUserId();
-                        totalProducts = productRepository.countByArtisanUserId(artisanId);
+        long totalProducts = 0;
+        double avgRating = 0.0;
+        long reviewsCount = 0;
+        if (product.getArtisan() != null) {
+            Long artisanId = product.getArtisan().getUserId();
+            totalProducts = productRepository.countByArtisanUserId(artisanId);
+            List<Review> artisanReviews = reviewRepository.findByProductArtisanUserId(artisanId).stream()
+                    .filter(r -> r.getStatus() == null || !"rejected".equalsIgnoreCase(r.getStatus()))
+                    .toList();
+            reviewsCount = artisanReviews.size();
+            // No reviews means no rating (previously reported as a perfect 5.0).
+            avgRating = artisanReviews.stream().mapToInt(Review::getRating).average().orElse(0.0);
+            avgRating = Math.round(avgRating * 10.0) / 10.0;
+        }
 
-                        List<Review> artisanReviews = reviewRepository.findByProductArtisanUserId(artisanId).stream()
-                                .filter(r -> r.getStatus() == null || !"rejected".equalsIgnoreCase(r.getStatus()))
-                                .toList();
-                        reviewsCount = artisanReviews.size();
-                        if (reviewsCount > 0) {
-                            avgRating = artisanReviews.stream().mapToInt(Review::getRating).average().orElse(0.0);
-                        } else {
-                            avgRating = 5.0; // fallback if no reviews
-                        }
-                    }
-
-                    // Build dynamic response Map
-                    return ResponseEntity.ok(Map.of(
-                            "success", true,
-                            "product", product,
-                            "reviews", reviewsList,
-                            "artisanTotalProducts", totalProducts,
-                            "artisanAverageRating", avgRating,
-                            "artisanReviewsCount", reviewsCount));
-                })
-                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(Map.of("success", false, "message", "Product not found")));
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "product", product,
+                "reviews", reviewsList,
+                "artisanTotalProducts", totalProducts,
+                "artisanAverageRating", avgRating,
+                "artisanReviewsCount", reviewsCount));
     }
 
+    /** Creates a product (or an auction lot) for the signed-in artisan. Any artisanEmail in the body is ignored. */
     @PostMapping
     public ResponseEntity<?> createProduct(@RequestBody Map<String, Object> payload) {
-        try {
-            String email = (String) payload.get("artisanEmail");
-            String title = (String) payload.get("title");
-            String description = (String) payload.get("description");
-            double price = Double.parseDouble(payload.get("price").toString());
-            String category = (String) payload.get("category");
-            String imageUrl = (String) payload.get("imageUrl");
-            int stockQuantity = Integer.parseInt(payload.get("stockQuantity").toString());
-            boolean isAuctionItem = Boolean.parseBoolean(payload.get("isAuctionItem").toString());
-
-            Artisan artisan = artisanRepository.findByEmail(email)
-                    .orElseThrow(() -> new IllegalArgumentException("Artisan not found"));
-
-            if (!"active".equalsIgnoreCase(artisan.getStatus())) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body(Map.of("success", false, "message", "Your artisan account status is currently "
-                                + artisan.getStatus() + ". You cannot perform this action until approved."));
-            }
-
-            Product product = new Product();
-            product.setArtisan(artisan);
-            product.setArtisanName(artisan.getName());
-            product.setTitle(title);
-            product.setDescription(description);
-            product.setPrice(price);
-            product.setCategory(category);
-            product.setImageUrl(imageUrl);
-            product.setStockQuantity(stockQuantity);
-            String status = payload.get("status") != null ? (String) payload.get("status")
-                    : (stockQuantity > 0 ? "active" : "out of stock");
-            product.setStatus(status);
-            product.setAuctionItem(isAuctionItem);
-            product.setAddingDate(java.time.LocalDate.now());
-
-            Product saved = productRepository.save(product);
-
-            if (isAuctionItem) {
-                Auction auction = new Auction();
-                auction.setProduct(saved);
-                auction.setStartingBid(price);
-                auction.setCurrentHighestBid(price);
-
-                java.time.LocalDateTime now = java.time.LocalDateTime.now();
-                java.time.LocalDateTime start = now;
-                String startTimeStr = (String) payload.get("startTime");
-                if (startTimeStr != null && !startTimeStr.isBlank()) {
-                    try {
-                        if (startTimeStr.endsWith("Z")) {
-                            start = java.time.Instant.parse(startTimeStr).atZone(java.time.ZoneId.systemDefault())
-                                    .toLocalDateTime();
-                        } else {
-                            start = java.time.LocalDateTime.parse(startTimeStr);
-                        }
-                    } catch (Exception ex) {
-                    }
-                }
-                auction.setStartTime(start);
-
-                java.time.LocalDateTime end = start.plusDays(7);
-                String endTimeStr = (String) payload.get("endTime");
-                if (endTimeStr != null && !endTimeStr.isBlank()) {
-                    try {
-                        if (endTimeStr.endsWith("Z")) {
-                            end = java.time.Instant.parse(endTimeStr).atZone(java.time.ZoneId.systemDefault())
-                                    .toLocalDateTime();
-                        } else {
-                            end = java.time.LocalDateTime.parse(endTimeStr);
-                        }
-                    } catch (Exception ex) {
-                    }
-                }
-                auction.setEndTime(end);
-
-                if (start.isAfter(now)) {
-                    auction.setStatus("UPCOMING");
-                } else {
-                    auction.setStatus("LIVE");
-                }
-
-                Auction savedAuction = auctionRepository.save(auction);
-
-                if ("LIVE".equals(savedAuction.getStatus())) {
-                    try {
-                        auctionService.triggerAuctionStartNotification(savedAuction);
-                    } catch (Exception ex) {
-                        // Ignore
-                    }
-                }
-            }
-
-            return ResponseEntity.ok(Map.of("success", true, "product", saved));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
-        }
+        Artisan artisan = currentUser.requireArtisan();
+        boolean isAuctionItem = RequestValues.optionalBoolean(payload, "isAuctionItem", false);
+        LocalDateTime start = parseTime(RequestValues.optionalString(payload, "startTime"), "startTime");
+        LocalDateTime end = parseTime(RequestValues.optionalString(payload, "endTime"), "endTime");
+        Product saved = productService.createProduct(artisan, readInput(payload), isAuctionItem, start, end);
+        return ResponseEntity.ok(Map.of("success", true, "product", saved));
     }
 
     @PostMapping("/auction")
     public ResponseEntity<?> listProductForAuction(@RequestBody Map<String, Object> payload) {
-        try {
-            Long productId = Long.parseLong(payload.get("productId").toString());
-            double startingBid = Double.parseDouble(payload.get("startingBid").toString());
-            int durationDays = Integer.parseInt(payload.get("durationDays").toString());
-
-            Product product = productRepository.findById(productId)
-                    .orElseThrow(() -> new IllegalArgumentException("Product not found"));
-
-            if (product.getArtisan() != null && !"active".equalsIgnoreCase(product.getArtisan().getStatus())) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body(Map.of("success", false, "message", "Your artisan account is not active."));
-            }
-
-            product.setAuctionItem(true);
-            product.setPrice(startingBid);
-            Product savedProduct = productRepository.save(product);
-
-            Auction auction = new Auction();
-            auction.setProduct(savedProduct);
-            auction.setStartingBid(startingBid);
-            auction.setCurrentHighestBid(startingBid);
-            auction.setStartTime(java.time.LocalDateTime.now());
-            auction.setEndTime(java.time.LocalDateTime.now().plusDays(durationDays));
-            auction.setStatus("LIVE");
-
-            Auction savedAuction = auctionRepository.save(auction);
-
-            try {
-                auctionService.triggerAuctionStartNotification(savedAuction);
-            } catch (Exception ex) {
-                // Ignore
-            }
-
-            return ResponseEntity.ok(Map.of("success", true, "auction", savedAuction));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
-        }
+        Product product = findOwnedProduct(RequestValues.requiredLong(payload, "productId"));
+        Auction auction = productService.listForAuction(product,
+                RequestValues.requiredMoney(payload, "startingBid"),
+                RequestValues.requiredInt(payload, "durationDays"));
+        return ResponseEntity.ok(Map.of("success", true, "auction", auction));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateProduct(@PathVariable Long id, @RequestBody Product product) {
-        try {
-            Product existing = productRepository.findById(id)
-                    .orElseThrow(() -> new IllegalArgumentException("Product not found"));
-            if (existing.getArtisan() != null && !"active".equalsIgnoreCase(existing.getArtisan().getStatus())) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body(Map.of("success", false, "message",
-                                "Your artisan account is not active. Access denied."));
-            }
-            Product updated = productService.updateProduct(id, product);
-            return ResponseEntity.ok(updated);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
-        }
+    public ResponseEntity<?> updateProduct(@PathVariable Long id, @RequestBody Map<String, Object> payload) {
+        Product updated = productService.updateProduct(findOwnedProduct(id), readInput(payload));
+        return ResponseEntity.ok(Map.of("success", true, "product", updated));
     }
 
+    /** Admin moderation: "hidden" hides the listing, anything else re-publishes it. */
     @PutMapping("/{id}/status")
+    @Transactional
     public ResponseEntity<?> updateProductStatus(@PathVariable Long id, @RequestParam String status) {
-        try {
-            return productRepository.findById(id)
-                    .map(product -> {
-                        if ("hidden".equalsIgnoreCase(status)) {
-                            product.setStatus("hidden");
-                        } else {
-                            // "approve": reset to active/out of stock depending on stockQuantity
-                            product.setStatus(product.getStockQuantity() > 0 ? "active" : "out of stock");
-                        }
-                        Product saved = productRepository.save(product);
-                        return ResponseEntity.ok(Map.of("success", true, "product", saved));
-                    })
-                    .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)
-                            .body(Map.of("success", false, "message", "Product not found")));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
-        }
+        currentUser.requireAdmin();
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
+        product.setStatus(ProductStatus.HIDDEN.equalsIgnoreCase(status)
+                ? ProductStatus.HIDDEN
+                : ProductStatus.forStock(product.getStockQuantity()));
+        return ResponseEntity.ok(Map.of("success", true, "product", product));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteProduct(@PathVariable Long id) {
+        boolean deleted = productService.deleteOrHide(findOwnedProduct(id));
+        return ResponseEntity.ok(Map.of("success", true, "deleted", deleted,
+                "message", deleted ? "Product deleted." : "Product has order history, so it was hidden instead."));
+    }
+
+    private Product findOwnedProduct(Long id) {
+        Long artisanId = currentUser.requireArtisan().getUserId();
+        return productRepository.findById(id)
+                .filter(p -> p.getArtisan() != null && p.getArtisan().getUserId().equals(artisanId))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
+    }
+
+    /** Hidden products are only visible to their artisan and to admins. */
+    private boolean isVisibleToCaller(Product product) {
+        if (!ProductStatus.HIDDEN.equalsIgnoreCase(product.getStatus())) {
+            return true;
+        }
+        if (currentUser.hasRole(Roles.ADMIN)) {
+            return true;
+        }
+        return currentUser.id()
+                .map(id -> product.getArtisan() != null && id.equals(product.getArtisan().getUserId()))
+                .orElse(false);
+    }
+
+    private static ProductService.ProductInput readInput(Map<String, Object> payload) {
+        return new ProductService.ProductInput(
+                RequestValues.requiredString(payload, "title"),
+                RequestValues.optionalString(payload, "description"),
+                RequestValues.requiredMoney(payload, "price"),
+                RequestValues.optionalString(payload, "category"),
+                RequestValues.optionalString(payload, "imageUrl"),
+                RequestValues.optionalInt(payload, "stockQuantity", 0),
+                RequestValues.optionalString(payload, "status"));
+    }
+
+    /** Accepts ISO instants ("...Z", from the browser) or local date-times ("2026-01-31T10:00"). */
+    private static LocalDateTime parseTime(String value, String field) {
+        if (value == null || value.isBlank() || "null".equals(value)) {
+            return null;
+        }
         try {
-            Product existing = productRepository.findById(id)
-                    .orElseThrow(() -> new IllegalArgumentException("Product not found"));
-            if (existing.getArtisan() != null && !"active".equalsIgnoreCase(existing.getArtisan().getStatus())) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body(Map.of("success", false, "message",
-                                "Your artisan account is not active. Access denied."));
+            if (value.endsWith("Z")) {
+                return Instant.parse(value).atZone(ZoneId.systemDefault()).toLocalDateTime();
             }
-
-            productRepository.findById(id).ifPresent(product -> {
-                // Delete associated wishlist items
-                var wishlistItems = wishlistItemRepository.findByProduct(product);
-                wishlistItemRepository.deleteAll(wishlistItems);
-
-                // Delete associated auctions
-                var auctions = auctionRepository.findAll().stream()
-                        .filter(a -> a.getProduct() != null && a.getProduct().getId().equals(id))
-                        .toList();
-                auctionRepository.deleteAll(auctions);
-            });
-
-            productRepository.deleteById(id);
-            return ResponseEntity.ok(Map.of("success", true));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
+            return LocalDateTime.parse(value);
+        } catch (DateTimeParseException e) {
+            throw new IllegalArgumentException(field + " is not a valid date/time.");
         }
     }
 }

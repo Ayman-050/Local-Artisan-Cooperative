@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
+    <script src="/app-core.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Management - Artisan Co-op</title>
@@ -397,6 +398,7 @@
                             <input 
                                 type="text" 
                                 placeholder="Search by name or email..."
+                                data-filter-param="q"
                                 class="form-input w-full pl-12 pr-4 py-3 rounded-xl border border-[#e5e0d8] text-[#5c4a3d] placeholder-[#b8a99a]"
                             />
                         </div>
@@ -405,7 +407,7 @@
                     <!-- Role Filter -->
                     <div class="flex items-center gap-2">
                         <label class="text-[#5c4a3d] font-medium whitespace-nowrap">Role:</label>
-                        <select class="form-input px-4 py-3 rounded-xl border border-[#e5e0d8] text-[#5c4a3d] bg-white min-w-32">
+                        <select data-filter-param="role" class="form-input px-4 py-3 rounded-xl border border-[#e5e0d8] text-[#5c4a3d] bg-white min-w-32">
                             <option value="">All Roles</option>
                             <option value="customer">Customer</option>
                             <option value="artisan">Artisan</option>
@@ -416,7 +418,7 @@
                     <!-- Status Filter -->
                     <div class="flex items-center gap-2">
                         <label class="text-[#5c4a3d] font-medium whitespace-nowrap">Status:</label>
-                        <select class="form-input px-4 py-3 rounded-xl border border-[#e5e0d8] text-[#5c4a3d] bg-white min-w-32">
+                        <select data-filter-param="status" class="form-input px-4 py-3 rounded-xl border border-[#e5e0d8] text-[#5c4a3d] bg-white min-w-32">
                             <option value="">All Statuses</option>
                             <option value="active">Active</option>
                             <option value="pending">Pending</option>
@@ -534,23 +536,8 @@
                     </table>
                 </div>
 
-                <!-- Pagination -->
-                <div class="flex items-center justify-between px-6 py-4 border-t border-[#e5e0d8]">
-                    <p class="text-sm text-[#8b7355]" th:text="'Showing all ' + ${#lists.size(usersList.?[role != 'ADMIN'])} + ' users'">Showing all users</p>
-                    <div class="flex items-center gap-2">
-                        <button class="px-4 py-2 border border-[#e5e0d8] rounded-lg text-[#8b7355] hover:border-[#c17c5f] hover:text-[#c17c5f] transition-colors" disabled>
-                            Previous
-                        </button>
-                        <button class="px-4 py-2 bg-[#c17c5f] text-white rounded-lg font-medium">1</button>
-                        <button class="px-4 py-2 border border-[#e5e0d8] rounded-lg text-[#8b7355] hover:border-[#c17c5f] hover:text-[#c17c5f] transition-colors">2</button>
-                        <button class="px-4 py-2 border border-[#e5e0d8] rounded-lg text-[#8b7355] hover:border-[#c17c5f] hover:text-[#c17c5f] transition-colors">3</button>
-                        <span class="px-2 text-[#8b7355]">...</span>
-                        <button class="px-4 py-2 border border-[#e5e0d8] rounded-lg text-[#8b7355] hover:border-[#c17c5f] hover:text-[#c17c5f] transition-colors">13</button>
-                        <button class="px-4 py-2 border border-[#e5e0d8] rounded-lg text-[#8b7355] hover:border-[#c17c5f] hover:text-[#c17c5f] transition-colors">
-                            Next
-                        </button>
-                    </div>
-                </div>
+                <!-- Pagination: server-side, see fragments/pager.html -->
+                <div th:replace="~{fragments/pager :: pager(${pager}, 'users')}"></div>
             </div>
         </main>
     </div>
@@ -800,6 +787,7 @@
         }
     </script>
     <script src="/adminDashboard.js"></script>
+    <script src="/admin-paging.js"></script>
     <script src="/adminUsersManagement.js"></script>
 </body>
 </html>
