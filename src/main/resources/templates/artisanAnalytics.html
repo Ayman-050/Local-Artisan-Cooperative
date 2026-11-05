@@ -1,70 +1,87 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Settings - Artisan Co-op</title>
-        <script src="https://cdn.tailwindcss.com"></script>
-        <link
-            rel="stylesheet"
-            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-        />
-        <style>
-            @import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap");
+<head>
+    <script src="/app-core.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics - Artisan Co-op</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #faf9f6;
+        }
+        
+        h1, h2, h3, h4 {
+            font-family: 'Playfair Display', serif;
+        }
+        
+        .terracotta {
+            color: #c17c5f;
+        }
+        
+        .bg-terracotta {
+            background-color: #c17c5f;
+        }
+        
+        .bg-terracotta-dark {
+            background-color: #a5664d;
+        }
+        
+        .hover\:bg-terracotta-dark:hover {
+            background-color: #a5664d;
+        }
+        
+        .border-terracotta {
+            border-color: #c17c5f;
+        }
+        
+        .text-earth {
+            color: #8b7355;
+        }
+        
+        .bg-earth {
+            background-color: #8b7355;
+        }
+        
+        .card-shadow {
+            box-shadow: 0 4px 6px -1px rgba(139, 115, 85, 0.1), 0 2px 4px -1px rgba(139, 115, 85, 0.06);
+        }
+        
+        .card-shadow:hover {
+            box-shadow: 0 10px 15px -3px rgba(139, 115, 85, 0.15), 0 4px 6px -2px rgba(139, 115, 85, 0.1);
+        }
+        
+        .sidebar-link {
+            transition: background-color 0.2s ease, color 0.2s ease;
+            color: #d4c5b5;
+        }
 
-            body {
-                font-family: "Inter", sans-serif;
-                background-color: #faf9f6;
-            }
+        .sidebar-link:hover {
+            background-color: rgba(255, 255, 255, 0.18);
+            color: #ffffff;
+        }
 
-            h1,
-            h2,
-            h3,
-            h4 {
-                font-family: "Playfair Display", serif;
-            }
+        .sidebar-link:hover i,
+        .sidebar-link:hover span {
+            color: #ffffff;
+        }
 
-            .terracotta {
-                color: #c17c5f;
-            }
+        .sidebar-link.active {
+            background-color: rgba(255, 255, 255, 0.25);
+            border-left: 3px solid #ffffff;
+            color: #ffffff;
+        }
 
-            .bg-terracotta {
-                background-color: #c17c5f;
-            }
+        .sidebar-link.active i,
+        .sidebar-link.active span {
+            color: #ffffff;
+        }
 
-            .bg-terracotta-dark {
-                background-color: #a5664d;
-            }
-
-            .hover\:bg-terracotta-dark:hover {
-                background-color: #a5664d;
-            }
-
-            .border-terracotta {
-                border-color: #c17c5f;
-            }
-
-            .text-earth {
-                color: #8b7355;
-            }
-
-            .bg-earth {
-                background-color: #8b7355;
-            }
-
-            .card-shadow {
-                box-shadow:
-                    0 4px 6px -1px rgba(139, 115, 85, 0.1),
-                    0 2px 4px -1px rgba(139, 115, 85, 0.06);
-            }
-
-            .card-shadow:hover {
-                box-shadow:
-                    0 10px 15px -3px rgba(139, 115, 85, 0.15),
-                    0 4px 6px -2px rgba(139, 115, 85, 0.1);
-            }
-
-                    .user-menu {
+                .user-menu {
             position: relative;
         }
 
@@ -103,117 +120,83 @@
             color: #b91c1c;
             background-color: #fee2e2;
         }
+        
+        .stat-card {
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 20px -4px rgba(139, 115, 85, 0.15), 0 6px 10px -4px rgba(139, 115, 85, 0.1);
+        }
+        
+        .table-row {
+            transition: all 0.2s ease;
+        }
+        
+        .table-row:hover {
+            background-color: #f5ebe0;
+        }
+        
+        .tab-pill {
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .tab-pill.active {
+            background-color: #c17c5f;
+            color: white;
+            border-color: #c17c5f;
+        }
+        
+        .tab-pill:not(.active) {
+            background-color: white;
+            color: #8b7355;
+            border-color: #e5e0d8;
+        }
+        
+        .tab-pill:not(.active):hover {
+            border-color: #c17c5f;
+            color: #c17c5f;
+        }
+        
+        .star-rating {
+            color: #fbbf24;
+        }
+        
+        .rating-bar {
+            transition: width 0.5s ease;
+        }
 
-            .sidebar-link {
-                transition: background-color 0.2s ease, color 0.2s ease;
-                color: #d4c5b5;
-            }
+        
+        .modal-overlay {
+            transition: opacity 0.3s ease;
+        }
 
-            .sidebar-link:hover {
-                background-color: rgba(255, 255, 255, 0.18);
-                color: #ffffff;
-            }
+        .modal-content {
+            transition: transform 0.3s ease;
+        }
 
-            .sidebar-link:hover i,
-            .sidebar-link:hover span {
-                color: #ffffff;
-            }
+        .chevron-icon {
+            transition: transform 0.3s ease;
+        }
 
-            .sidebar-link.active {
-                background-color: rgba(255, 255, 255, 0.25);
-                border-left: 3px solid #ffffff;
-                color: #ffffff;
-            }
-
-            .sidebar-link.active i,
-            .sidebar-link.active span {
-                color: #ffffff;
-            }
-
-            .form-input {
-                transition: all 0.2s ease;
-            }
-
-            .form-input:focus {
-                border-color: #c17c5f;
-                outline: none;
-                box-shadow: 0 0 0 3px rgba(193, 124, 95, 0.1);
-            }
-
-            /* Toggle Switch */
-            .toggle-switch {
-                position: relative;
-                width: 50px;
-                height: 26px;
-            }
-
-            .toggle-switch input {
-                opacity: 0;
-                width: 0;
-                height: 0;
-            }
-
-            .toggle-slider {
-                position: absolute;
-                cursor: pointer;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background-color: #e5e0d8;
-                transition: 0.3s;
-                border-radius: 26px;
-            }
-
-            .toggle-slider:before {
-                position: absolute;
-                content: "";
-                height: 20px;
-                width: 20px;
-                left: 3px;
-                bottom: 3px;
-                background-color: white;
-                transition: 0.3s;
-                border-radius: 50%;
-            }
-
-            input:checked + .toggle-slider {
-                background-color: #c17c5f;
-            }
-
-            input:checked + .toggle-slider:before {
-                transform: translateX(24px);
-            }
-
-            /* Modal */
-            .modal-overlay {
-                transition: opacity 0.3s ease;
-            }
-
-            .modal-content {
-                transition: transform 0.3s ease;
-            }
-
-            .chevron-icon {
-                transition: transform 0.3s ease;
-            }
-
-            .chevron-icon.rotated {
-                transform: rotate(180deg);
-            }
-        </style>
-    </head>
-    <body class="min-h-screen flex flex-col">
-        <!-- Top Navigation Bar -->
+        .chevron-icon.rotated {
+            transform: rotate(180deg);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    <!-- Top Navigation Bar -->
     <nav class="bg-[#faf9f6] border-b border-[#e5e0d8] py-4 px-6 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto flex items-center justify-between">
+        <div class="w-full flex items-center justify-between">
             <div class="flex items-center">
                 <a href="/artisanDashboard" class="flex items-center gap-3 group">
                     <!-- Logo -->
                     <img src="/images/Logo.png" alt="ArtsyVibe Logo"
                         class="h-10 w-auto object-contain"
                         style="filter: drop-shadow(0 0 0.5px rgba(193, 124, 95, 1));">
-
+                    
                     <!-- Brand Name -->
                     <span class="text-2xl font-semibold" 
                         style="font-family: 'Playfair Display', serif;">
@@ -225,34 +208,38 @@
             <!-- Right Side - Notifications and User -->
             <div class="flex items-center space-x-4">
                 <!-- Notification Bell -->
-                <button class="relative p-2 text-[#8b7355] hover:text-[#c17c5f] transition-colors">
-                    <i class="fas fa-bell text-xl"></i>
-                    <span class="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-[#faf9f6]"></span>
-                </button>
+                <a id="notifications-link" href="/artisanNotification" class="relative">
+                    <button class="relative p-2 text-[#8b7355] hover:text-[#c17c5f] transition-colors">
+                        <i class="fas fa-bell text-xl"></i>
+                        <span class="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-[#faf9f6]"></span>
+                    </button>
+                </a>
 
-                <!-- User Profile -->
+                                                                <!-- User Profile -->
                 <div class="user-menu flex items-center space-x-3 pl-4 border-l border-[#e5e0d8]">
                     <button id="userMenuButton" type="button" class="flex items-center gap-3 text-left focus:outline-none">
                         <img 
-                            src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=40&h=40&fit=crop&crop=face" 
-                            alt="Elena Martinez" 
+                            th:src="${artisan != null ? artisan.profilePicture : 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" 
+                            th:alt="${artisan != null ? artisan.name : 'User'}" 
                             class="w-10 h-10 rounded-full object-cover border-2 border-[#c17c5f]"
                         />
                         <div class="hidden md:block">
-                            <p class="font-semibold text-[#5c4a3d] text-sm">Elena Martinez</p>
-                            <p class="text-xs text-[#8b7355]">elena@artisan.com</p>
+                            <p class="font-semibold text-[#5c4a3d] text-sm" th:text="${artisan != null ? artisan.name : 'User'}">Elena Martinez</p>
+                            <p class="text-xs text-[#8b7355]" th:text="${artisan != null ? artisan.email : 'email@artisan.com'}">elena@artisan.com</p>
                         </div>
                         <i id="chevronIcon" class="chevron-icon fas fa-chevron-down text-[#8b7355] text-xs hidden md:block"></i>
                     </button>
                     <div id="userMenuDropdown" class="user-menu-dropdown">
-                        <button id="logoutButton" class="user-menu-item logout w-full text-left">
+                        <button id="logoutButton" type="button" class="user-menu-item logout w-full text-left">
                             <i class="fas fa-sign-out-alt mr-2"></i> Logout
                         </button>
                     </div>
+                </div>
+</div>
         </div>
     </nav>
 
-        <!-- Main Content Area with Sidebar -->
+    <!-- Main Content Area with Sidebar -->
     <div class="flex flex-1">
         <!-- Left Sidebar -->
         <aside class="w-64 bg-[#5c4a3d] min-h-[calc(100vh-80px)] fixed left-0 top-20 overflow-y-auto">
@@ -260,13 +247,13 @@
             <div class="p-6 border-b border-[#7a6655]">
                 <div class="flex items-center gap-4">
                     <img 
-                        src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face" 
-                        alt="Elena Martinez" 
+                        th:src="${artisan != null ? artisan.profilePicture : 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" 
+                        th:alt="${artisan != null ? artisan.name : 'User'}" 
                         class="w-14 h-14 rounded-full object-cover border-2 border-[#c17c5f]"
                     />
                     <div>
-                        <h3 class="text-white font-semibold">Elena Martinez</h3>
-                        <p class="text-[#d4c5b5] text-sm">Ceramics Artist</p>
+                        <h3 class="text-white font-semibold" th:text="${artisan != null ? artisan.name : 'User'}">Elena Martinez</h3>
+                        <p class="text-[#d4c5b5] text-sm" th:text="${artisan != null ? artisan.shopName : 'Shop'}">Ceramics Artist</p>
                     </div>
                 </div>
             </div>
@@ -275,31 +262,31 @@
             <nav class="p-4">
                 <ul class="space-y-1">
                     <li>
-                        <a href="artisan-dashboard.html" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                        <a href="/artisanDashboard" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
                             <i class="fas fa-chart-line w-5"></i>
                             <span>Dashboard</span>
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                        <a href="/artisanProducts" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
                             <i class="fas fa-box w-5"></i>
                             <span>My Products</span>
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                        <a href="/artisanAuction" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
                             <i class="fas fa-gavel w-5"></i>
                             <span>My Auctions</span>
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                        <a href="/artisanOrders" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
                             <i class="fas fa-receipt w-5"></i>
                             <span>Orders</span>
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                        <a href="/artisanAnalytics" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
                             <i class="fas fa-chart-bar w-5"></i>
                             <span>Analytics</span>
                         </a>
@@ -311,7 +298,7 @@
             <div class="p-4 mt-8 border-t border-[#7a6655]">
                 <ul class="space-y-1">
                     <li>
-                        <a href="#" class="sidebar-link active flex items-center gap-3 text-white px-4 py-3 rounded-lg">
+                        <a id="settingsLink" href="/artisanSettings" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
                             <i class="fas fa-cog w-5"></i>
                             <span>Settings</span>
                         </a>
@@ -320,665 +307,543 @@
             </div>
         </aside>
 
-            <!-- Main Content -->
-            <main class="flex-1 ml-64 p-8">
-                <!-- Page Header -->
-                <div class="mb-8">
-                    <h1 class="text-3xl font-bold text-[#5c4a3d] mb-2">
-                        Settings
-                    </h1>
-                    <p class="text-[#8b7355]">
-                        Manage your account preferences and shop details.
-                    </p>
+        <!-- Main Content -->
+        <main class="flex-1 ml-64 p-8">
+            <!-- Page Header -->
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-[#5c4a3d] mb-2">Analytics & Sales Reports</h1>
+                <p class="text-[#8b7355]">Track your sales performance and customer insights.</p>
+            </div>
+
+            <!-- Summary Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <!-- Total Revenue -->
+                <div class="stat-card bg-white rounded-xl p-6 card-shadow">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-[#fef3c7] rounded-xl flex items-center justify-center">
+                            <i class="fas fa-coins text-2xl text-[#d97706]"></i>
+                        </div>
+                        <span th:classappend="${revenuePercentage >= 0 ? 'text-green-600' : 'text-red-500'}" class="text-sm font-semibold flex items-center gap-1">
+                            <i th:class="${revenuePercentage >= 0 ? 'fas fa-arrow-up' : 'fas fa-arrow-down'}"></i>
+                            <span th:text="${#numbers.formatDecimal(revenuePercentage >= 0 ? revenuePercentage : -revenuePercentage, 1, 1)} + '%'">0.0%</span>
+                        </span>
+                    </div>
+                    <h3 class="text-[#8b7355] text-sm font-medium mb-1">Total Revenue</h3>
+                    <p class="text-3xl font-bold text-[#5c4a3d]">BD <span th:text="${#numbers.formatDecimal(totalRevenue, 1, 2)}">0.00</span></p>
+                    <p class="text-xs text-[#8b7355] mt-2" title="The percentage compares this month with last month">All time (% vs last month)</p>
                 </div>
 
-                <!-- Profile Information Section -->
-                <div class="bg-white rounded-xl card-shadow p-6 mb-6">
-                    <h2 class="text-xl font-bold text-[#5c4a3d] mb-6">
-                        Profile Information
-                    </h2>
-
-                    <div class="flex flex-col md:flex-row gap-8">
-                        <!-- Avatar Upload -->
-                        <div class="flex flex-col items-center">
-                            <img
-                                src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&h=200&fit=crop&crop=face"
-                                alt="Profile Photo"
-                                class="w-32 h-32 rounded-full object-cover border-4 border-[#e5e0d8] mb-4"
-                            />
-                            <button
-                                class="text-[#c17c5f] hover:text-[#a5664d] font-medium text-sm transition-colors"
-                            >
-                                Change Photo
-                            </button>
+                <!-- Total Orders -->
+                <div class="stat-card bg-white rounded-xl p-6 card-shadow">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-[#dbeafe] rounded-xl flex items-center justify-center">
+                            <i class="fas fa-shopping-bag text-2xl text-[#2563eb]"></i>
                         </div>
+                        <span th:classappend="${ordersPercentage >= 0 ? 'text-green-600' : 'text-red-500'}" class="text-sm font-semibold flex items-center gap-1">
+                            <i th:class="${ordersPercentage >= 0 ? 'fas fa-arrow-up' : 'fas fa-arrow-down'}"></i>
+                            <span th:text="${#numbers.formatDecimal(ordersPercentage >= 0 ? ordersPercentage : -ordersPercentage, 1, 1)} + '%'">0.0%</span>
+                        </span>
+                    </div>
+                    <h3 class="text-[#8b7355] text-sm font-medium mb-1">Total Orders</h3>
+                    <p class="text-3xl font-bold text-[#5c4a3d]" th:text="${ordersCount}">0</p>
+                    <p class="text-xs text-[#8b7355] mt-2" title="The percentage compares this month with last month">All time (% vs last month)</p>
+                </div>
 
-                        <!-- Form Fields -->
-                        <div class="flex-1 space-y-4">
-                            <div>
-                                <label
-                                    class="block text-[#5c4a3d] font-semibold mb-2"
-                                    >Full Name</label
-                                >
-                                <input
-                                    type="text"
-                                    value="Elena Martinez"
-                                    class="form-input w-full px-4 py-3 rounded-xl border border-[#e5e0d8] text-[#5c4a3d] bg-white"
-                                />
-                            </div>
-
-                            <div>
-                                <label
-                                    class="block text-[#5c4a3d] font-semibold mb-2"
-                                    >Email</label
-                                >
-                                <input
-                                    type="email"
-                                    value="elena@artisan.com"
-                                    class="form-input w-full px-4 py-3 rounded-xl border border-[#e5e0d8] text-[#5c4a3d] bg-white"
-                                />
-                            </div>
-
-                            <div>
-                                <label
-                                    class="block text-[#5c4a3d] font-semibold mb-2"
-                                    >Phone Number</label
-                                >
-                                <input
-                                    type="tel"
-                                    value="+973 3312 3456"
-                                    placeholder="+973 XXXX XXXX"
-                                    class="form-input w-full px-4 py-3 rounded-xl border border-[#e5e0d8] text-[#5c4a3d] bg-white placeholder-[#b8a99a]"
-                                />
-                            </div>
-
-                            <div>
-                                <label
-                                    class="block text-[#5c4a3d] font-semibold mb-2"
-                                    >Specialty/Title</label
-                                >
-                                <input
-                                    type="text"
-                                    value="Ceramics Artist"
-                                    class="form-input w-full px-4 py-3 rounded-xl border border-[#e5e0d8] text-[#5c4a3d] bg-white"
-                                />
-                            </div>
-
-                            <button
-                                class="bg-[#c17c5f] hover:bg-[#a5664d] text-white px-6 py-3 rounded-xl font-semibold transition-colors shadow-lg"
-                            >
-                                Save Profile
-                            </button>
+                <!-- Top Product -->
+                <div class="stat-card bg-white rounded-xl p-6 card-shadow">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-[#d1fae5] rounded-xl flex items-center justify-center">
+                            <i class="fas fa-star text-2xl text-[#059669]"></i>
                         </div>
                     </div>
+                    <h3 class="text-[#8b7355] text-sm font-medium mb-1">Top Product</h3>
+                    <p class="text-lg font-bold text-[#5c4a3d] truncate" th:text="${bestSellers != null and !bestSellers.isEmpty() ? bestSellers.get(0).title : 'No sales yet'}">No sales yet</p>
+                    <p class="text-xs text-[#8b7355] mt-2" th:text="${bestSellers != null and !bestSellers.isEmpty() ? (bestSellers.get(0).unitsSold + ' units sold') : 'Add products to see stats'}">Add products to see stats</p>
                 </div>
 
-                <!-- Shop Information Section -->
-                <div class="bg-white rounded-xl card-shadow p-6 mb-6">
-                    <h2 class="text-xl font-bold text-[#5c4a3d] mb-6">
-                        Shop Information
-                    </h2>
-
-                    <div class="space-y-4">
-                        <div>
-                            <label
-                                class="block text-[#5c4a3d] font-semibold mb-2"
-                                >Shop Name</label
-                            >
-                            <input
-                                type="text"
-                                value="Elena's Ceramics Studio"
-                                class="form-input w-full px-4 py-3 rounded-xl border border-[#e5e0d8] text-[#5c4a3d] bg-white"
-                            />
+                <!-- Average Rating -->
+                <div class="stat-card bg-white rounded-xl p-6 card-shadow">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-[#fce7f3] rounded-xl flex items-center justify-center">
+                            <i class="fas fa-heart text-2xl text-[#db2777]"></i>
                         </div>
-
-                        <div>
-                            <label
-                                class="block text-[#5c4a3d] font-semibold mb-2"
-                                >Biography</label
-                            >
-                            <textarea
-                                rows="4"
-                                class="form-input w-full px-4 py-3 rounded-xl border border-[#e5e0d8] text-[#5c4a3d] bg-white resize-none"
-                            >
-Passionate ceramics artist with over 10 years of experience creating handcrafted pottery. Each piece is uniquely designed and made with love in my home studio. I specialize in functional ware and decorative pieces inspired by nature.</textarea
-                            >
-                        </div>
-
-                        <div>
-                            <label
-                                class="block text-[#5c4a3d] font-semibold mb-2"
-                                >Shop Banner Image</label
-                            >
-                            <div
-                                class="border-2 border-dashed border-[#e5e0d8] rounded-xl p-4"
-                            >
-                                <div class="mb-4">
-                                    <img
-                                        src="https://images.unsplash.com/photo-1459411552884-841db9b3cc2a?w=800&h=300&fit=crop"
-                                        alt="Shop Banner"
-                                        class="w-full h-48 object-cover rounded-lg"
-                                    />
-                                </div>
-                                <div class="flex items-center justify-center">
-                                    <label class="cursor-pointer">
-                                        <span
-                                            class="bg-[#f5ebe0] hover:bg-[#e8dcc8] text-[#c17c5f] px-4 py-2 rounded-lg font-medium transition-colors inline-flex items-center gap-2"
-                                        >
-                                            <i class="fas fa-upload"></i>
-                                            Upload New Banner
-                                        </span>
-                                        <input
-                                            type="file"
-                                            accept="image/*"
-                                            class="hidden"
-                                        />
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <button
-                            class="bg-[#c17c5f] hover:bg-[#a5664d] text-white px-6 py-3 rounded-xl font-semibold transition-colors shadow-lg"
-                        >
-                            Save Shop Info
-                        </button>
+                        <span class="hidden">
+                            <i class="fas fa-arrow-up"></i>
+                            0.3
+                        </span>
                     </div>
-                </div>
-
-                <!-- My Addresses Section -->
-                <div class="bg-white rounded-xl card-shadow p-6 mb-6">
-                    <h2 class="text-xl font-bold text-[#5c4a3d] mb-6">
-                        My Addresses
-                    </h2>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <!-- Address Card 1 - Default -->
-                        <div
-                            class="border border-[#e5e0d8] rounded-xl p-4 relative"
-                        >
-                            <div class="absolute top-4 right-4 flex gap-2">
-                                <button
-                                    class="text-[#8b7355] hover:text-[#c17c5f] transition-colors p-1"
-                                >
-                                    <i class="fas fa-pen text-sm"></i>
-                                </button>
-                                <button
-                                    class="text-[#8b7355] hover:text-red-500 transition-colors p-1"
-                                >
-                                    <i class="fas fa-trash text-sm"></i>
-                                </button>
-                            </div>
-                            <div class="flex items-start gap-3 mb-2">
-                                <div
-                                    class="w-10 h-10 bg-[#f5ebe0] rounded-lg flex items-center justify-center flex-shrink-0"
-                                >
-                                    <i
-                                        class="fas fa-map-marker-alt text-[#c17c5f]"
-                                    ></i>
-                                </div>
-                                <div>
-                                    <div class="flex items-center gap-2 mb-1">
-                                        <h3
-                                            class="font-semibold text-[#5c4a3d]"
-                                        >
-                                            Studio
-                                        </h3>
-                                        <span
-                                            class="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full font-medium"
-                                            >Default</span
-                                        >
-                                    </div>
-                                    <p class="text-sm text-[#8b7355]">
-                                        Block 312, Road 2815<br />Seef District,
-                                        Manama<br />Bahrain
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Address Card 2 -->
-                        <div
-                            class="border border-[#e5e0d8] rounded-xl p-4 relative"
-                        >
-                            <div class="absolute top-4 right-4 flex gap-2">
-                                <button
-                                    class="text-[#8b7355] hover:text-[#c17c5f] transition-colors p-1"
-                                >
-                                    <i class="fas fa-pen text-sm"></i>
-                                </button>
-                                <button
-                                    class="text-[#8b7355] hover:text-red-500 transition-colors p-1"
-                                >
-                                    <i class="fas fa-trash text-sm"></i>
-                                </button>
-                            </div>
-                            <div class="flex items-start gap-3 mb-2">
-                                <div
-                                    class="w-10 h-10 bg-[#f5ebe0] rounded-lg flex items-center justify-center flex-shrink-0"
-                                >
-                                    <i
-                                        class="fas fa-map-marker-alt text-[#c17c5f]"
-                                    ></i>
-                                </div>
-                                <div>
-                                    <h3
-                                        class="font-semibold text-[#5c4a3d] mb-1"
-                                    >
-                                        Home
-                                    </h3>
-                                    <p class="text-sm text-[#8b7355]">
-                                        Building 45, Road 1204<br />Juffair,
-                                        Manama<br />Bahrain
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Add New Address Card -->
-                        <div
-                            onclick="openModal()"
-                            class="border-2 border-dashed border-[#e5e0d8] rounded-xl p-4 flex flex-col items-center justify-center cursor-pointer hover:border-[#c17c5f] hover:bg-[#f5ebe0] transition-all min-h-[120px]"
-                        >
-                            <div
-                                class="w-12 h-12 bg-[#f5ebe0] rounded-full flex items-center justify-center mb-2"
-                            >
-                                <i
-                                    class="fas fa-plus text-[#c17c5f] text-xl"
-                                ></i>
-                            </div>
-                            <span class="text-[#8b7355] font-medium"
-                                >Add New Address</span
-                            >
-                        </div>
+                    <h3 class="text-[#8b7355] text-sm font-medium mb-1">Average Rating</h3>
+                    <div class="flex items-center gap-2">
+                        <p class="text-3xl font-bold text-[#5c4a3d]" th:text="${totalReviewsCount > 0 ? #numbers.formatDecimal(averageRating, 1, 1) : '-'}">-</p>
+                        <div class="flex star-rating"><i th:each="star : ${#numbers.sequence(1, 5)}" th:class="${averageRating >= star ? 'fas fa-star' : (averageRating >= star - 0.5 ? 'fas fa-star-half-alt' : 'far fa-star')}"></i><!--
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                        --></div>
                     </div>
-                </div>
-
-                <!-- Notification Preferences Section -->
-                <div class="bg-white rounded-xl card-shadow p-6 mb-6">
-                    <h2 class="text-xl font-bold text-[#5c4a3d] mb-6">
-                        Notification Preferences
-                    </h2>
-
-                    <div class="space-y-4">
-                        <!-- Toggle 1 -->
-                        <div
-                            class="flex items-center justify-between py-3 border-b border-[#e5e0d8] last:border-0"
-                        >
-                            <div>
-                                <p class="font-semibold text-[#5c4a3d]">
-                                    New Order Received
-                                </p>
-                                <p class="text-sm text-[#8b7355]">
-                                    Get notified when a customer places an order
-                                </p>
-                            </div>
-                            <label class="toggle-switch">
-                                <input type="checkbox" checked />
-                                <span class="toggle-slider"></span>
-                            </label>
-                        </div>
-
-                        <!-- Toggle 2 -->
-                        <div
-                            class="flex items-center justify-between py-3 border-b border-[#e5e0d8] last:border-0"
-                        >
-                            <div>
-                                <p class="font-semibold text-[#5c4a3d]">
-                                    Bid Placed on My Auction
-                                </p>
-                                <p class="text-sm text-[#8b7355]">
-                                    Receive alerts when someone bids on your
-                                    auction
-                                </p>
-                            </div>
-                            <label class="toggle-switch">
-                                <input type="checkbox" checked />
-                                <span class="toggle-slider"></span>
-                            </label>
-                        </div>
-
-                        <!-- Toggle 3 -->
-                        <div
-                            class="flex items-center justify-between py-3 border-b border-[#e5e0d8] last:border-0"
-                        >
-                            <div>
-                                <p class="font-semibold text-[#5c4a3d]">
-                                    Auction Ending Soon
-                                </p>
-                                <p class="text-sm text-[#8b7355]">
-                                    Reminder before your auction ends
-                                </p>
-                            </div>
-                            <label class="toggle-switch">
-                                <input type="checkbox" checked />
-                                <span class="toggle-slider"></span>
-                            </label>
-                        </div>
-
-                        <!-- Toggle 4 -->
-                        <div
-                            class="flex items-center justify-between py-3 border-b border-[#e5e0d8] last:border-0"
-                        >
-                            <div>
-                                <p class="font-semibold text-[#5c4a3d]">
-                                    Review Posted on My Product
-                                </p>
-                                <p class="text-sm text-[#8b7355]">
-                                    Know when customers leave reviews
-                                </p>
-                            </div>
-                            <label class="toggle-switch">
-                                <input type="checkbox" />
-                                <span class="toggle-slider"></span>
-                            </label>
-                        </div>
-
-                        <!-- Toggle 5 -->
-                        <div
-                            class="flex items-center justify-between py-3 border-b border-[#e5e0d8] last:border-0"
-                        >
-                            <div>
-                                <p class="font-semibold text-[#5c4a3d]">
-                                    Refund Request Received
-                                </p>
-                                <p class="text-sm text-[#8b7355]">
-                                    Alert for refund or return requests
-                                </p>
-                            </div>
-                            <label class="toggle-switch">
-                                <input type="checkbox" checked />
-                                <span class="toggle-slider"></span>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Security Section -->
-                <div class="bg-white rounded-xl card-shadow p-6 mb-6">
-                    <h2 class="text-xl font-bold text-[#5c4a3d] mb-6">
-                        Security
-                    </h2>
-
-                    <div class="space-y-4 max-w-md">
-                        <div>
-                            <label
-                                class="block text-[#5c4a3d] font-semibold mb-2"
-                                >Current Password</label
-                            >
-                            <input
-                                type="password"
-                                placeholder="Enter current password"
-                                class="form-input w-full px-4 py-3 rounded-xl border border-[#e5e0d8] text-[#5c4a3d] bg-white placeholder-[#b8a99a]"
-                            />
-                        </div>
-
-                        <div>
-                            <label
-                                class="block text-[#5c4a3d] font-semibold mb-2"
-                                >New Password</label
-                            >
-                            <input
-                                type="password"
-                                placeholder="Enter new password"
-                                class="form-input w-full px-4 py-3 rounded-xl border border-[#e5e0d8] text-[#5c4a3d] bg-white placeholder-[#b8a99a]"
-                            />
-                        </div>
-
-                        <div>
-                            <label
-                                class="block text-[#5c4a3d] font-semibold mb-2"
-                                >Confirm New Password</label
-                            >
-                            <input
-                                type="password"
-                                placeholder="Confirm new password"
-                                class="form-input w-full px-4 py-3 rounded-xl border border-[#e5e0d8] text-[#5c4a3d] bg-white placeholder-[#b8a99a]"
-                            />
-                        </div>
-
-                        <button
-                            class="bg-[#c17c5f] hover:bg-[#a5664d] text-white px-6 py-3 rounded-xl font-semibold transition-colors shadow-lg"
-                        >
-                            Update Password
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Danger Zone Section -->
-                <div class="bg-white rounded-xl border-2 border-red-200 p-6">
-                    <h2 class="text-xl font-bold text-red-600 mb-2">
-                        Danger Zone
-                    </h2>
-                    <p class="text-[#8b7355] mb-4">
-                        Once you delete your account, there is no going back.
-                        Please be certain.
-                    </p>
-
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h3 class="font-semibold text-[#5c4a3d]">
-                                Delete Account
-                            </h3>
-                            <p class="text-sm text-[#8b7355]">
-                                Permanently remove your account and all
-                                associated data
-                            </p>
-                        </div>
-                        <button
-                            class="border-2 border-red-500 text-red-500 hover:bg-red-500 hover:text-white px-6 py-3 rounded-xl font-semibold transition-colors"
-                        >
-                            Delete My Account
-                        </button>
-                    </div>
-                </div>
-            </main>
-        </div>
-
-        <!-- Add Address Modal -->
-        <div
-            id="address-modal"
-            class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center p-4 modal-overlay"
-        >
-            <div
-                class="bg-white rounded-2xl card-shadow w-full max-w-lg max-h-[90vh] overflow-y-auto modal-content"
-            >
-                <!-- Modal Header -->
-                <div
-                    class="flex items-center justify-between p-6 border-b border-[#e5e0d8] sticky top-0 bg-white rounded-t-2xl"
-                >
-                    <h3
-                        class="text-xl font-bold text-[#5c4a3d]"
-                        style="font-family: &quot;Playfair Display&quot;, serif"
-                    >
-                        Add New Address
-                    </h3>
-                    <button
-                        onclick="closeModal()"
-                        class="text-[#8b7355] hover:text-[#c17c5f] transition-colors"
-                    >
-                        <i class="fas fa-times text-xl"></i>
-                    </button>
-                </div>
-
-                <!-- Modal Body -->
-                <div class="p-6">
-                    <form id="address-form" onsubmit="saveAddress(event)">
-                        <div class="space-y-4">
-                            <div>
-                                <label
-                                    class="block text-[#5c4a3d] font-semibold mb-2"
-                                    >Address Label</label
-                                >
-                                <input
-                                    type="text"
-                                    placeholder="e.g., Home, Studio, Warehouse"
-                                    class="form-input w-full px-4 py-3 rounded-xl border border-[#e5e0d8] text-[#5c4a3d] bg-white placeholder-[#b8a99a]"
-                                    required
-                                />
-                            </div>
-
-                            <div>
-                                <label
-                                    class="block text-[#5c4a3d] font-semibold mb-2"
-                                    >Street Address</label
-                                >
-                                <input
-                                    type="text"
-                                    placeholder="Building number, Road number"
-                                    class="form-input w-full px-4 py-3 rounded-xl border border-[#e5e0d8] text-[#5c4a3d] bg-white placeholder-[#b8a99a]"
-                                    required
-                                />
-                            </div>
-
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label
-                                        class="block text-[#5c4a3d] font-semibold mb-2"
-                                        >City</label
-                                    >
-                                    <input
-                                        type="text"
-                                        placeholder="Manama"
-                                        class="form-input w-full px-4 py-3 rounded-xl border border-[#e5e0d8] text-[#5c4a3d] bg-white placeholder-[#b8a99a]"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label
-                                        class="block text-[#5c4a3d] font-semibold mb-2"
-                                        >ZIP Code</label
-                                    >
-                                    <input
-                                        type="text"
-                                        placeholder="12345"
-                                        class="form-input w-full px-4 py-3 rounded-xl border border-[#e5e0d8] text-[#5c4a3d] bg-white placeholder-[#b8a99a]"
-                                    />
-                                </div>
-                            </div>
-
-                            <div>
-                                <label
-                                    class="block text-[#5c4a3d] font-semibold mb-2"
-                                    >Country</label
-                                >
-                                <select
-                                    class="form-input w-full px-4 py-3 rounded-xl border border-[#e5e0d8] text-[#5c4a3d] bg-white"
-                                    required
-                                >
-                                    <option value="">Select Country</option>
-                                    <option value="BH" selected>Bahrain</option>
-                                    <option value="AE">
-                                        United Arab Emirates
-                                    </option>
-                                    <option value="SA">Saudi Arabia</option>
-                                    <option value="KW">Kuwait</option>
-                                    <option value="QA">Qatar</option>
-                                    <option value="OM">Oman</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label class="flex items-center cursor-pointer">
-                                    <input
-                                        type="checkbox"
-                                        class="w-5 h-5 rounded border-[#e5e0d8] text-[#c17c5f] focus:ring-[#c17c5f]"
-                                    />
-                                    <span class="ml-3 text-sm text-[#8b7355]"
-                                        >Set as Default Address</span
-                                    >
-                                </label>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-
-                <!-- Modal Footer -->
-                <div
-                    class="flex items-center justify-end gap-3 p-6 border-t border-[#e5e0d8] sticky bottom-0 bg-white rounded-b-2xl"
-                >
-                    <button
-                        type="button"
-                        onclick="closeModal()"
-                        class="px-6 py-3 border-2 border-[#e5e0d8] text-[#8b7355] hover:text-[#5c4a3d] hover:border-[#c17c5f] rounded-xl font-medium transition-colors"
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        type="submit"
-                        form="address-form"
-                        class="px-6 py-3 bg-[#c17c5f] hover:bg-[#a5664d] text-white rounded-xl font-semibold transition-colors shadow-lg"
-                    >
-                        Save Address
-                    </button>
+                    <p class="text-xs text-[#8b7355] mt-2" th:text="'Based on ' + ${totalReviewsCount} + ' reviews'">Based on 0 reviews</p>
                 </div>
             </div>
-        </div>
 
-        <script>
-            // Sidebar navigation active state handling
-            document.querySelectorAll(".sidebar-link").forEach((link) => {
-                link.addEventListener("click", function (e) {
-                    // Remove active state from all links
-                    document.querySelectorAll(".sidebar-link").forEach((l) => {
-                        l.classList.remove("active");
-                        l.classList.remove("text-white");
-                        l.classList.add("text-[#d4c5b5]");
-                    });
+            <!-- Revenue Over Time Chart -->
+            <div class="bg-white rounded-xl card-shadow p-6 mb-8">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold text-[#5c4a3d]">Revenue Over Time</h2>
+                    <div class="flex gap-2">
+                        <button onclick="switchTimeframe(this, 'weekly')" class="tab-pill active px-4 py-2 rounded-lg border-2 text-sm font-medium">
+                            Weekly
+                        </button>
+                        <button onclick="switchTimeframe(this, 'monthly')" class="tab-pill px-4 py-2 rounded-lg border-2 text-sm font-medium">
+                            Monthly
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Line Chart SVG -->
+                <div class="relative h-72">
+                    <svg class="w-full h-full" viewBox="0 0 800 280" preserveAspectRatio="none">
+                        <!-- Grid Lines -->
+                        <defs>
+                            <linearGradient id="lineGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" style="stop-color:#c17c5f;stop-opacity:0.3" />
+                                <stop offset="100%" style="stop-color:#c17c5f;stop-opacity:0" />
+                            </linearGradient>
+                        </defs>
+                        
+                        <!-- Horizontal Grid Lines -->
+                        <line x1="0" y1="40" x2="800" y2="40" stroke="#e5e0d8" stroke-width="1" />
+                        <line x1="0" y1="90" x2="800" y2="90" stroke="#e5e0d8" stroke-width="1" />
+                        <line x1="0" y1="140" x2="800" y2="140" stroke="#e5e0d8" stroke-width="1" />
+                        <line x1="0" y1="190" x2="800" y2="190" stroke="#e5e0d8" stroke-width="1" />
+                        <line x1="0" y1="240" x2="800" y2="240" stroke="#e5e0d8" stroke-width="1" />
+                        
+                        <!-- Vertical Grid Lines -->
+                        <line x1="100" y1="0" x2="100" y2="240" stroke="#e5e0d8" stroke-width="1" />
+                        <line x1="200" y1="0" x2="200" y2="240" stroke="#e5e0d8" stroke-width="1" />
+                        <line x1="300" y1="0" x2="300" y2="240" stroke="#e5e0d8" stroke-width="1" />
+                        <line x1="400" y1="0" x2="400" y2="240" stroke="#e5e0d8" stroke-width="1" />
+                        <line x1="500" y1="0" x2="500" y2="240" stroke="#e5e0d8" stroke-width="1" />
+                        <line x1="600" y1="0" x2="600" y2="240" stroke="#e5e0d8" stroke-width="1" />
+                        <line x1="700" y1="0" x2="700" y2="240" stroke="#e5e0d8" stroke-width="1" />
+                        
+                        <!-- Area Fill -->
+                        <path class="chart-area" d="M 0,220 L 100,190 L 200,160 L 300,130 L 400,110 L 500,80 L 600,60 L 700,50 L 800,30 L 800,280 L 0,280 Z" fill="url(#lineGradient)" />
+                        
+                        <!-- Line -->
+                        <path class="chart-line" d="M 0,220 L 100,190 L 200,160 L 300,130 L 400,110 L 500,80 L 600,60 L 700,50 L 800,30" fill="none" stroke="#c17c5f" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                        
+                        <!-- Data Points -->
+                        <circle cx="0" cy="220" r="6" fill="#c17c5f" />
+                        <circle cx="100" cy="190" r="6" fill="#c17c5f" />
+                        <circle cx="200" cy="160" r="6" fill="#c17c5f" />
+                        <circle cx="300" cy="130" r="6" fill="#c17c5f" />
+                        <circle cx="400" cy="110" r="6" fill="#c17c5f" />
+                        <circle cx="500" cy="80" r="6" fill="#c17c5f" />
+                        <circle cx="600" cy="60" r="6" fill="#c17c5f" />
+                        <circle cx="700" cy="50" r="6" fill="#c17c5f" />
+                        <circle cx="800" cy="30" r="6" fill="#c17c5f" />
+                    </svg>
+                    
+                    <!-- X-axis Labels -->
+                    <div id="x-axis-labels" class="absolute bottom-0 left-0 right-0 flex justify-between text-xs text-[#8b7355] pt-2 pl-12">
+                        <span>Week 1</span>
+                        <span>Week 2</span>
+                        <span>Week 3</span>
+                        <span>Week 4</span>
+                        <span>Week 5</span>
+                        <span>Week 6</span>
+                        <span>Week 7</span>
+                        <span>Week 8</span>
+                    </div>
+                </div>
+                
+                <!-- Y-axis Labels -->
+                <div id="y-axis-labels" class="absolute left-0 top-10 bottom-8 flex flex-col justify-between text-xs text-[#8b7355] pr-2 -ml-10">
+                    <span>BD 0</span>
+                    <span>BD 100</span>
+                    <span>BD 200</span>
+                    <span>BD 300</span>
+                    <span>BD 400</span>
+                </div>
+            </div>
 
-                    // Add active state to clicked link
-                    this.classList.add("active");
-                    this.classList.remove("text-[#d4c5b5]");
-                });
+            <!-- Best Selling Products Table -->
+            <div class="bg-white rounded-xl card-shadow overflow-hidden mb-8">
+                <div class="p-6 border-b border-[#e5e0d8]">
+                    <h2 class="text-xl font-bold text-[#5c4a3d]">Best Selling Products</h2>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-[#f5ebe0]">
+                            <tr>
+                                <th class="text-left px-6 py-4 text-sm font-semibold text-[#5c4a3d]">Product</th>
+                                <th class="text-left px-6 py-4 text-sm font-semibold text-[#5c4a3d]">Category</th>
+                                <th class="text-left px-6 py-4 text-sm font-semibold text-[#5c4a3d]">Units Sold</th>
+                                <th class="text-left px-6 py-4 text-sm font-semibold text-[#5c4a3d]">Revenue</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-[#e5e0d8]">
+                            <!-- Empty State for new artisan -->
+                            <tr th:if="${bestSellers == null or bestSellers.isEmpty()}" class="table-row">
+                                <td colspan="4" class="px-6 py-12 text-center text-[#8b7355]">
+                                    <i class="fas fa-box-open text-4xl mb-3 text-[#d4c5b5] block"></i>
+                                    <p class="font-medium text-[#5c4a3d]">No sales yet</p>
+                                    <p class="text-sm mt-1">Once you sell products, your best sellers will appear here.</p>
+                                </td>
+                            </tr>
+                            <!-- Dynamic Rows -->
+                            <tr th:each="prod : ${bestSellers}" class="table-row">
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <img 
+                                            th:src="${prod.imageUrl != null ? prod.imageUrl : 'https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=60&h=60&fit=crop'}" 
+                                            th:alt="${prod.title}" 
+                                            class="w-12 h-12 rounded-lg object-cover"
+                                        />
+                                        <span class="font-medium text-[#5c4a3d]" th:text="${prod.title}">Product Title</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-sm text-[#8b7355]" th:text="${prod.category}">Category</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="font-semibold text-[#5c4a3d]" th:text="${prod.unitsSold}">0</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="font-bold text-[#c17c5f]" th:text="'BD ' + ${#numbers.formatDecimal(prod.revenue, 1, 2)}">BD 0.00</span>
+                                </td>
+                            </tr>
+                            <!--<!--
+                            <tr class="table-row">
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <img 
+                                            src="https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=60&h=60&fit=crop" 
+                                            alt="Handcrafted Ceramic Vase" 
+                                            class="w-12 h-12 rounded-lg object-cover"
+                                        />
+                                        <span class="font-medium text-[#5c4a3d]">Handcrafted Ceramic Vase</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-sm text-[#8b7355]">Ceramics</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="font-semibold text-[#5c4a3d]">23</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="font-bold text-[#c17c5f]">BD 1,955.00</span>
+                                </td>
+                            </tr>
+                            <tr class="table-row">
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <img 
+                                            src="https://images.unsplash.com/photo-1578749556920-d1e28f925f40?w=60&h=60&fit=crop" 
+                                            alt="Ceramic Bowl Set" 
+                                            class="w-12 h-12 rounded-lg object-cover"
+                                        />
+                                        <span class="font-medium text-[#5c4a3d]">Ceramic Bowl Set</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-sm text-[#8b7355]">Ceramics</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="font-semibold text-[#5c4a3d]">18</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="font-bold text-[#c17c5f]">BD 2,160.00</span>
+                                </td>
+                            </tr>
+                            <tr class="table-row">
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <img 
+                                            src="https://images.unsplash.com/photo-1590422749830-674860a6e4d4?w=60&h=60&fit=crop" 
+                                            alt="Artisan Tea Set" 
+                                            class="w-12 h-12 rounded-lg object-cover"
+                                        />
+                                        <span class="font-medium text-[#5c4a3d]">Artisan Tea Set</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-sm text-[#8b7355]">Ceramics</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="font-semibold text-[#5c4a3d]">15</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="font-bold text-[#c17c5f]">BD 2,925.00</span>
+                                </td>
+                            </tr>
+                            <tr class="table-row">
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <img 
+                                            src="https://images.unsplash.com/photo-1565193566173-033e4e379cda?w=60&h=60&fit=crop" 
+                                            alt="Decorative Plant Pot" 
+                                            class="w-12 h-12 rounded-lg object-cover"
+                                        />
+                                        <span class="font-medium text-[#5c4a3d]">Decorative Plant Pot</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-sm text-[#8b7355]">Ceramics</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="font-semibold text-[#5c4a3d]">12</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="font-bold text-[#c17c5f]">BD 540.00</span>
+                                </td>
+                            </tr>
+                            <tr class="table-row">
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <img 
+                                            src="https://images.unsplash.com/photo-1578749556920-d1e28f925f40?w=60&h=60&fit=crop" 
+                                            alt="Rustic Mug Set" 
+                                            class="w-12 h-12 rounded-lg object-cover"
+                                        />
+                                        <span class="font-medium text-[#5c4a3d]">Rustic Mug Set</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-sm text-[#8b7355]">Ceramics</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="font-semibold text-[#5c4a3d]">10</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="font-bold text-[#c17c5f]">BD 450.00</span>
+                                </td>
+                            </tr>
+                        --></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Customer Reviews Summary -->
+            <div class="bg-white rounded-xl card-shadow p-6">
+                <h2 class="text-xl font-bold text-[#5c4a3d] mb-6">Customer Reviews Summary</h2>
+                
+                <div class="flex flex-col lg:flex-row gap-8">
+                    <!-- Average Rating -->
+                    <div class="flex flex-col items-center justify-center lg:w-1/3">
+                        <div class="text-6xl font-bold text-[#5c4a3d] mb-2" th:text="${totalReviewsCount > 0 ? #numbers.formatDecimal(averageRating, 1, 1) : '0.0'}">0.0</div>
+                        <div class="flex star-rating text-2xl mb-3"><i th:each="star : ${#numbers.sequence(1, 5)}" th:class="${averageRating >= star ? 'fas fa-star' : (averageRating >= star - 0.5 ? 'fas fa-star-half-alt' : 'far fa-star')}"></i><!--
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                        --></div>
+                        <p class="text-[#8b7355] text-sm" th:text="'Based on ' + ${totalReviewsCount} + ' reviews'">Based on 0 reviews</p>
+                    </div>
+                    
+                    <!-- Rating Distribution Bar Chart -->
+                    <div class="lg:w-2/3">
+                        <div class="space-y-4">
+                            <div th:each="starIdx : ${#numbers.sequence(5, 1)}" class="flex items-center gap-4">
+                                <span class="text-sm font-medium text-[#5c4a3d] w-16" th:text="${starIdx} + ' Star'">5 Star</span>
+                                <div class="flex-1 h-5 bg-[#f5ebe0] rounded-full overflow-hidden">
+                                    <div class="h-full rating-bar rounded-full" 
+                                         th:classappend="${starIdx == 5 ? 'bg-[#c17c5f]' : (starIdx == 4 ? 'bg-[#d97706]' : (starIdx == 3 ? 'bg-[#fbbf24]' : (starIdx == 2 ? 'bg-[#fcd34d]' : 'bg-[#fde68a]')))}"
+                                         th:style="'width: ' + ${starPercent.get(starIdx - 1)} + '%'"></div>
+                                </div>
+                                <span class="text-sm text-[#8b7355] w-12 text-right" th:text="${starDistribution[starIdx - 1]}">0</span>
+                            </div>
+                            <div class="hidden">
+                            <!-- 5 Star -->
+                            <div class="flex items-center gap-4">
+                                <span class="text-sm font-medium text-[#5c4a3d] w-16">5 Star</span>
+                                <div class="flex-1 h-5 bg-[#f5ebe0] rounded-full overflow-hidden">
+                                    <div class="h-full bg-[#c17c5f] rating-bar rounded-full" style="width: 72%"></div>
+                                </div>
+                                <span class="text-sm text-[#8b7355] w-12 text-right">64</span>
+                            </div>
+                            
+                            <!-- 4 Star -->
+                            <div class="flex items-center gap-4">
+                                <span class="text-sm font-medium text-[#5c4a3d] w-16">4 Star</span>
+                                <div class="flex-1 h-5 bg-[#f5ebe0] rounded-full overflow-hidden">
+                                    <div class="h-full bg-[#d97706] rating-bar rounded-full" style="width: 18%"></div>
+                                </div>
+                                <span class="text-sm text-[#8b7355] w-12 text-right">16</span>
+                            </div>
+                            
+                            <!-- 3 Star -->
+                            <div class="flex items-center gap-4">
+                                <span class="text-sm font-medium text-[#5c4a3d] w-16">3 Star</span>
+                                <div class="flex-1 h-5 bg-[#f5ebe0] rounded-full overflow-hidden">
+                                    <div class="h-full bg-[#fbbf24] rating-bar rounded-full" style="width: 6%"></div>
+                                </div>
+                                <span class="text-sm text-[#8b7355] w-12 text-right">5</span>
+                            </div>
+                            
+                            <!-- 2 Star -->
+                            <div class="flex items-center gap-4">
+                                <span class="text-sm font-medium text-[#5c4a3d] w-16">2 Star</span>
+                                <div class="flex-1 h-5 bg-[#f5ebe0] rounded-full overflow-hidden">
+                                    <div class="h-full bg-[#fcd34d] rating-bar rounded-full" style="width: 3%"></div>
+                                </div>
+                                <span class="text-sm text-[#8b7355] w-12 text-right">3</span>
+                            </div>
+                            
+                            <!-- 1 Star -->
+                            <div class="flex items-center gap-4">
+                                <span class="text-sm font-medium text-[#5c4a3d] w-16">1 Star</span>
+                                <div class="flex-1 h-5 bg-[#f5ebe0] rounded-full overflow-hidden">
+                                    <div class="h-full bg-[#fde68a] rating-bar rounded-full" style="width: 1%"></div>
+                                </div>
+                                <span class="text-sm text-[#8b7355] w-12 text-right">1</span>
+                            </div>
+                            </div></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        /** Real dates for the chart axis: the server sends the last 8 weeks / 6 months, oldest first. */
+        function axisLabel(timeframe, idx, count) {
+            const now = new Date();
+            if (timeframe === 'weekly') {
+                const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7));
+                monday.setDate(monday.getDate() - 7 * (count - 1 - idx));
+                return monday.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+            }
+            const month = new Date(now.getFullYear(), now.getMonth() - (count - 1 - idx), 1);
+            return month.toLocaleDateString('en-GB', { month: 'short', year: '2-digit' });
+        }
+
+        const weeklyRevenueData = /*[[${weeklyRevenue}]]*/ [0,0,0,0,0,0,0,0];
+        const monthlyRevenueData = /*[[${monthlyRevenue}]]*/ [0,0,0,0,0,0];
+        /*]]>*/
+
+        function renderRevenueChart(data, timeframe) {
+            const svg = document.querySelector('svg');
+            if (!svg) return;
+
+            const maxVal = Math.max(...data, 100); // default to 100 max if all are 0
+            const n = data.length;
+            const width = 800;
+            const height = 200; // Y goes from 40 to 240 (height 200)
+            const startY = 240;
+            const startX = 50; // padding for labels
+            const endX = 750;
+            const stepX = (endX - startX) / (n - 1);
+
+            // Compute points
+            const points = [];
+            for (let i = 0; i < n; i++) {
+                const x = startX + i * stepX;
+                const y = startY - (data[i] / maxVal) * height;
+                points.push({x, y, val: data[i]});
+            }
+
+            // 1. Build line path
+            let lineD = `M ${points[0].x},${points[0].y}`;
+            for (let i = 1; i < points.length; i++) {
+                lineD += ` L ${points[i].x},${points[i].y}`;
+            }
+
+            // 2. Build area path
+            const areaD = lineD + ` L ${points[points.length - 1].x},240 L ${points[0].x},240 Z`;
+
+            // Update SVG elements
+            const chartLine = svg.querySelector('.chart-line');
+            const chartArea = svg.querySelector('.chart-area');
+            if (chartLine) chartLine.setAttribute('d', lineD);
+            if (chartArea) chartArea.setAttribute('d', areaD);
+
+            // Remove existing circles
+            svg.querySelectorAll('circle').forEach(c => c.remove());
+
+            // Add new dynamic circles with hover titles (tooltips!)
+            points.forEach((pt, idx) => {
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('cx', pt.x);
+                circle.setAttribute('cy', pt.y);
+                circle.setAttribute('r', '6');
+                circle.setAttribute('fill', '#c17c5f');
+                circle.setAttribute('class', 'cursor-pointer hover:r-8 transition-all');
+                
+                // Add simple SVG title element for hover tooltip
+                const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+                title.textContent = `${timeframe === 'weekly' ? 'Week' : 'Month'} ${idx + 1}: BD ${pt.val.toFixed(2)}`;
+                circle.appendChild(title);
+                
+                svg.appendChild(circle);
             });
 
-            // Modal functions
-            function openModal() {
-                const modal = document.getElementById("address-modal");
-                modal.classList.remove("hidden");
-                modal.classList.add("flex");
-            }
-
-            function closeModal() {
-                const modal = document.getElementById("address-modal");
-                modal.classList.add("hidden");
-                modal.classList.remove("flex");
-                document.getElementById("address-form").reset();
-            }
-
-            // Save address
-            function saveAddress(event) {
-                event.preventDefault();
-                // In a real application, you would submit the form data to a server
-                showNotification("Address saved successfully!");
-                closeModal();
-            }
-
-            // Show notification
-            function showNotification(message) {
-                const notification = document.createElement("div");
-                notification.className =
-                    "fixed bottom-4 right-4 bg-[#5c4a3d] text-white px-6 py-3 rounded-xl shadow-lg z-50";
-                notification.textContent = message;
-                document.body.appendChild(notification);
-
-                setTimeout(() => {
-                    notification.style.opacity = "0";
-                    notification.style.transition = "opacity 0.3s ease";
-                    setTimeout(() => {
-                        notification.remove();
-                    }, 300);
-                }, 2000);
-            }
-
-            // Close modal when clicking outside
-            document
-                .getElementById("address-modal")
-                .addEventListener("click", function (e) {
-                    if (e.target === this) {
-                        closeModal();
-                    }
+            // Update X-axis Labels
+            const xAxisContainer = document.getElementById('x-axis-labels');
+            if (xAxisContainer) {
+                xAxisContainer.innerHTML = '';
+                points.forEach((pt, idx) => {
+                    const span = document.createElement('span');
+                    span.textContent = axisLabel(timeframe, idx, data.length);
+                    xAxisContainer.appendChild(span);
                 });
+            }
+
+            // Update Y-axis Labels
+            const yAxisContainer = document.getElementById('y-axis-labels');
+            if (yAxisContainer) {
+                yAxisContainer.innerHTML = '';
+                const steps = 5;
+                for (let i = steps - 1; i >= 0; i--) {
+                    const val = (maxVal / (steps - 1)) * i;
+                    const span = document.createElement('span');
+                    span.textContent = `BD ${Math.round(val)}`;
+                    yAxisContainer.appendChild(span);
+                }
+            }
+        }
+
+        // Render weekly chart on load
+        window.addEventListener('DOMContentLoaded', () => {
+            renderRevenueChart(weeklyRevenueData, 'weekly');
+        });
+        /* Sidebar active state handled by dynamic script below */
+
+        // Switch time frame for revenue chart
+        function switchTimeframe(button, timeframe) {
+            // Update tab pills
+            document.querySelectorAll('.tab-pill').forEach(pill => {
+                pill.classList.remove('active');
+            });
+            button.classList.add('active');
+            
+            if (timeframe === 'weekly') { renderRevenueChart(weeklyRevenueData, 'weekly'); } else { renderRevenueChart(monthlyRevenueData, 'monthly'); }
+            // For demo purposes, we'll just show a notification
+            const message = timeframe === 'weekly' ? 'Showing weekly revenue data' : 'Showing monthly revenue data';
+            showNotification(message);
+        }
+
+        // Show notification
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'fixed bottom-4 right-4 bg-[#5c4a3d] text-white px-6 py-3 rounded-xl shadow-lg z-50';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 2000);
+        }
+
+        /* Sidebar active state handled by dynamic script below */
 
         // User profile logout dropdown
         const userMenuButton = document.getElementById('userMenuButton');
@@ -1007,9 +872,39 @@ Passionate ceramics artist with over 10 years of experience creating handcrafted
         logoutButton.addEventListener('click', () => {
             const confirmed = window.confirm('Are you sure you want to logout?');
             if (confirmed) {
-                window.location.href = 'index.html';
+                if (typeof window.artisanLogout === 'function') {
+                    window.artisanLogout();
+                } else {
+                    sessionStorage.clear();
+                    window.location.href = '/login';
+                }
             }
         });
-        </script>
-    </body>
+    </script>
+    <script src="/artisan-common.js"></script>
+
+    <script>
+        // Dynamic sidebar active state: highlights the link matching the current page URL
+        (function() {
+            var path = window.location.pathname.toLowerCase();
+            document.querySelectorAll('.sidebar-link').forEach(function(link) {
+                link.classList.remove('active', 'text-white');
+                link.classList.add('text-[#d4c5b5]');
+                var href = (link.getAttribute('href') || '').toLowerCase().replace(/^\//, '');
+                if (href && path.includes(href)) {
+                    link.classList.add('active', 'text-white');
+                    link.classList.remove('text-[#d4c5b5]');
+                }
+            });
+            // Special case: artisanOrderDetail should highlight Orders
+            if (path.includes('artisanorderdetail')) {
+                var ordersLink = document.querySelector('a[href="/artisanOrders"]');
+                if (ordersLink) {
+                    ordersLink.classList.add('active', 'text-white');
+                    ordersLink.classList.remove('text-[#d4c5b5]');
+                }
+            }
+        })();
+    </script>
+</body>
 </html>

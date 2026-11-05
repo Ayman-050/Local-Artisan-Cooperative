@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="/app-core.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Refunds Management - Artisan Co-op</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #faf9f6;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Playfair Display', serif;
+        }
+
+        .terracotta {
+            color: #c17c5f;
+        }
+
+        .bg-terracotta {
+            background-color: #c17c5f;
+        }
+
+        .bg-terracotta-dark {
+            background-color: #a5664d;
+        }
+
+        .hover\:bg-terracotta-dark:hover {
+            background-color: #a5664d;
+        }
+
+        .border-terracotta {
+            border-color: #c17c5f;
+        }
+
+        .text-earth {
+            color: #8b7355;
+        }
+
+        .bg-earth {
+            background-color: #8b7355;
+        }
+
+        .card-shadow {
+            box-shadow: 0 4px 6px -1px rgba(139, 115, 85, 0.1), 0 2px 4px -1px rgba(139, 115, 85, 0.06);
+        }
+
+        .card-shadow:hover {
+            box-shadow: 0 10px 15px -3px rgba(139, 115, 85, 0.15), 0 4px 6px -2px rgba(139, 115, 85, 0.1);
+        }
+
+        .sidebar-link {
+            transition: background-color 0.2s ease, color 0.2s ease;
+            color: #d4c5b5;
+        }
+        
+        .sidebar-link:hover {
+            background-color: rgba(255, 255, 255, 0.18);
+            color: #ffffff;
+        }
+        
+        .sidebar-link:hover i,
+        .sidebar-link:hover span {
+            color: #ffffff;
+        }
+        
+        .sidebar-link.active {
+            background-color: rgba(255, 255, 255, 0.25);
+            border-left: 3px solid #ffffff;
+            color: #ffffff;
+        }
+        
+        .sidebar-link.active i,
+        .sidebar-link.active span {
+            color: #ffffff;
+        }
+        
+        .user-menu {
+            position: relative;
+        }
+        
+        .user-menu-dropdown {
+            position: absolute;
+            right: 0;
+            top: calc(100% + 0.5rem);
+            width: 200px;
+            background: #ffffff;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-radius: 1rem;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+            display: none;
+            z-index: 50;
+        }
+        
+        .user-menu-dropdown.show {
+            display: block;
+        }
+        
+        .user-menu-item {
+            display: block;
+            padding: 0.85rem 1rem;
+            color: #5c4a3d;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            border-radius: 0.75rem;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+        
+        .user-menu-item:hover {
+            background-color: #f5ebe0;
+        }
+        
+        .user-menu-item.logout:hover {
+            color: #b91c1c;
+            background-color: #fee2e2;
+        }
+        
+        .chevron-icon {
+            transition: transform 0.3s ease;
+        }
+        
+        .chevron-icon.rotated {
+            transform: rotate(180deg);
+        }
+
+        .table-row-hover:hover {
+            background-color: #fef9f3;
+        }
+
+        .tab-button {
+            transition: all 0.2s ease;
+        }
+
+        .tab-button.active {
+            background-color: #c17c5f;
+            color: white;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .review-panel {
+            transition: max-height 0.3s ease;
+        }
+
+        .timeline-step {
+            position: relative;
+            padding-left: 2rem;
+            padding-bottom: 1.5rem;
+        }
+
+        .timeline-step::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: #e5e0d8;
+        }
+
+        .timeline-step:last-child::before {
+            bottom: auto;
+            height: 50%;
+        }
+
+        .timeline-step:first-child::before {
+            top: 50%;
+        }
+
+        .timeline-icon {
+            position: absolute;
+            left: -0.5rem;
+            top: 0;
+            width: 1.25rem;
+            height: 1.25rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.625rem;
+        }
+
+        .timeline-step.completed .timeline-icon {
+            background-color: #c17c5f;
+            color: white;
+        }
+
+        .timeline-step.current .timeline-icon {
+            background-color: #fef3c7;
+            color: #c17c5f;
+            border: 2px solid #c17c5f;
+        }
+
+        .timeline-step.pending .timeline-icon {
+            background-color: #f5f5f4;
+            color: #a8a29e;
+        }
+
+        .modal-overlay {
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+    </style>
+    <script src="/authguard.js"></script>
+</head>
+<body class="min-h-screen flex flex-col">
+    <!-- Top Navigation Bar -->
+    <nav class="bg-[#faf9f6] border-b border-[#e5e0d8] py-4 px-6 sticky top-0 z-50">
+        <div class="w-full flex items-center justify-between">
+            <div class="flex items-center">
+                <a href="/adminDashboard" class="flex items-center gap-3 group">
+                    <!-- Logo -->
+                    <img src="/images/Logo.png" alt="ArtsyVibe Logo"
+                        class="h-10 w-auto object-contain"
+                        style="filter: drop-shadow(0 0 0.5px rgba(193, 124, 95, 1));">
+                    
+                    <!-- Brand Name -->
+                    <span class="text-2xl font-semibold" 
+                        style="font-family: 'Playfair Display', serif;">
+                        ArtsyVibe
+                    </span>
+                </a>
+            </div>
+            
+            <!-- Right Side - Notifications and User -->
+            <div class="flex items-center space-x-4">
+                 <!-- Notification Bell -->
+                <a href="/adminNotification"><button class="relative p-2 text-[#8b7355] hover:text-[#c17c5f] transition-colors">
+                    <i class="fas fa-bell text-xl"></i>
+                    <span class="absolute top-0 right-0 w-5 h-5 bg-red-500 rounded-full border-2 border-[#faf9f6] text-white text-xs flex items-center justify-center font-semibold">5</span>
+                </button></a>
+                
+                <!-- User Profile -->
+                <div class="user-menu flex items-center space-x-3 pl-4 border-l border-[#e5e0d8]">
+                    <button id="userMenuButton" type="button" class="flex items-center gap-3 text-left focus:outline-none">
+                        <img 
+                            src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face" 
+                            alt="Admin User" 
+                            class="w-10 h-10 rounded-full object-cover border-2 border-[#c17c5f]"
+                        />
+                        <div class="hidden md:block">
+                            <p class="font-semibold text-[#5c4a3d] text-sm">Admin User</p>
+                            <p class="text-xs text-[#8b7355]">admin@artisancoop.com</p>
+                        </div>
+                        <i id="chevronIcon" class="chevron-icon fas fa-chevron-down text-[#8b7355] text-xs hidden md:block"></i>
+                    </button>
+                    <div id="userMenuDropdown" class="user-menu-dropdown">
+                        <button id="logoutButton" class="user-menu-item logout w-full text-left">
+                            <i class="fas fa-sign-out-alt mr-3"></i>Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area with Sidebar -->
+    <div class="flex flex-1">
+        <!-- Left Sidebar -->
+        <aside class="w-64 bg-[#5c4a3d] min-h-[calc(100vh-80px)] fixed left-0 top-20 overflow-y-auto">
+            <!-- Admin Profile -->
+            <div class="p-6 border-b border-[#7a6655]">
+                <div class="flex items-center gap-3">
+                    <img 
+                        src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face" 
+                        alt="Admin User" 
+                        class="w-12 h-12 rounded-full object-cover border-2 border-[#c17c5f]"
+                    />
+                    <div>
+                        <h3 class="text-white font-semibold text-sm">Admin User</h3>
+                        <span class="inline-block bg-[#c17c5f] text-white text-xs px-2 py-1 rounded-full mt-1">Administrator</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Navigation Menu -->
+            <nav class="p-4 mt-4">
+                <ul class="space-y-1">
+                    <li>
+                        <a href="/adminDashboard" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-tachometer-alt w-5"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/adminUsersManagement" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-users w-5"></i>
+                            <span>User Management</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/adminArtisanApproval" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-user-check w-5"></i>
+                            <span>Artisan Approvals</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/adminProducts" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-box w-5"></i>
+                            <span>Products</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/adminOrderManagment" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-shopping-bag w-5"></i>
+                            <span>Orders</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/adminAuction" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-gavel w-5"></i>
+                            <span>Auctions</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/adminRefund" class="sidebar-link active flex items-center gap-3 text-white px-4 py-3 rounded-lg">
+                            <i class="fas fa-undo w-5"></i>
+                            <span>Refunds</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/adminReview" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-star w-5"></i>
+                            <span>Review Moderation</span>
+                        </a>
+                    </li>
+                    
+                </ul>
+            </nav>
+            
+            <!-- Systems Log Section -->
+            <div class="p-4 mt-2 border-t border-[#7a6655]">
+                <ul class="space-y-1">
+                    <li>
+                        <a href="/adminReports" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-history w-5"></i>
+                            <span>Reports</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 ml-64 p-8">
+            <!-- Page Header -->
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-[#5c4a3d] mb-2">Refunds Management</h1>
+                <p class="text-[#8b7355]">Review and process all refund requests across the platform.</p>
+            </div>
+
+            <!-- Summary Stats Bar -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <!-- Pending Review -->
+                <div class="bg-white rounded-xl card-shadow p-6">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-clock text-2xl text-amber-600"></i>
+                        </div>
+                        <span class="text-amber-600 text-xs font-semibold flex items-center gap-1">
+                            <i class="fas fa-exclamation-circle"></i>
+                            Needs Attention
+                        </span>
+                    </div>
+                    <h3 class="text-[#8b7355] text-sm font-medium mb-1">Pending Review</h3>
+                    <p class="text-3xl font-bold text-[#5c4a3d]" th:text="${pendingCount}">12</p>
+                </div>
+
+                <!-- Escalated by Artisan -->
+                <div class="bg-white rounded-xl card-shadow p-6">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-arrow-up text-2xl text-purple-600"></i>
+                        </div>
+                        <span class="text-purple-600 text-xs font-semibold flex items-center gap-1">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Urgent
+                        </span>
+                    </div>
+                    <h3 class="text-[#8b7355] text-sm font-medium mb-1">Escalated by Artisan</h3>
+                    <p class="text-3xl font-bold text-[#5c4a3d]" th:text="${escalatedCount}">5</p>
+                </div>
+
+                <!-- Approved This Month -->
+                <div class="bg-white rounded-xl card-shadow p-6">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-check-circle text-2xl text-green-600"></i>
+                        </div>
+                        <span class="text-xs font-semibold flex items-center gap-1"
+                              th:classappend="${approvedWeekUp} ? 'text-green-600' : 'text-red-500'">
+                            <i class="fas" th:classappend="${approvedWeekUp} ? 'fa-arrow-up' : 'fa-arrow-down'"></i>
+                            <span th:text="${approvedWeekChangeLabel}">0% this week</span>
+                        </span>
+                    </div>
+                    <h3 class="text-[#8b7355] text-sm font-medium mb-1">Approved This Month</h3>
+                    <p class="text-3xl font-bold text-[#5c4a3d]" th:text="${approvedCount}">0</p>
+                </div>
+
+                <!-- Rejected This Month -->
+                <div class="bg-white rounded-xl card-shadow p-6">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="w-12 h-12 bg-red-50 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-times-circle text-2xl text-red-600"></i>
+                        </div>
+                        <span class="text-xs font-semibold flex items-center gap-1"
+                              th:classappend="${rejectedWeekUp} ? 'text-red-500' : 'text-green-600'">
+                            <i class="fas" th:classappend="${rejectedWeekUp} ? 'fa-arrow-up' : 'fa-arrow-down'"></i>
+                            <span th:text="${rejectedWeekChangeLabel}">0% this week</span>
+                        </span>
+                    </div>
+                    <h3 class="text-[#8b7355] text-sm font-medium mb-1">Rejected This Month</h3>
+                    <p class="text-3xl font-bold text-[#5c4a3d]" th:text="${rejectedCount}">0</p>
+                </div>
+            </div>
+
+            <!-- Tab Bar -->
+            <div class="bg-white rounded-t-xl card-shadow border-b border-[#e5e0d8] px-6 pt-4">
+                <div class="flex items-center gap-2 overflow-x-auto">
+                    <button class="tab-button active px-5 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap" onclick="switchTab('all')">
+                        All Requests
+                    </button>
+                    <button class="tab-button px-5 py-2.5 rounded-lg text-sm font-medium text-[#8b7355] whitespace-nowrap" onclick="switchTab('pending')">
+                        Pending
+                    </button>
+                    <button class="tab-button px-5 py-2.5 rounded-lg text-sm font-medium text-[#8b7355] whitespace-nowrap" onclick="switchTab('escalated')">
+                        Escalated
+                    </button>
+                    <button class="tab-button px-5 py-2.5 rounded-lg text-sm font-medium text-[#8b7355] whitespace-nowrap" onclick="switchTab('approved')">
+                        Approved
+                    </button>
+                    <button class="tab-button px-5 py-2.5 rounded-lg text-sm font-medium text-[#8b7355] whitespace-nowrap" onclick="switchTab('rejected')">
+                        Rejected
+                    </button>
+                </div>
+            </div>
+
+            <!-- Refunds Table -->
+            <div class="bg-white rounded-b-xl card-shadow overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-[#f5ebe0]">
+                            <tr>
+                                <th class="text-left text-sm font-semibold text-[#5c4a3d] px-6 py-4">Refund ID</th>
+                                <th class="text-left text-sm font-semibold text-[#5c4a3d] px-6 py-4">Order ID</th>
+                                <th class="text-left text-sm font-semibold text-[#5c4a3d] px-6 py-4">Customer</th>
+                                <th class="text-left text-sm font-semibold text-[#5c4a3d] px-6 py-4">Artisan</th>
+                                <th class="text-left text-sm font-semibold text-[#5c4a3d] px-6 py-4">Product</th>
+                                <th class="text-left text-sm font-semibold text-[#5c4a3d] px-6 py-4">Refund Amount</th>
+                                <th class="text-left text-sm font-semibold text-[#5c4a3d] px-6 py-4">Request Date</th>
+                                <th class="text-left text-sm font-semibold text-[#5c4a3d] px-6 py-4">Artisan Decision</th>
+                                <th class="text-left text-sm font-semibold text-[#5c4a3d] px-6 py-4">Admin Status</th>
+                                <th class="text-left text-sm font-semibold text-[#5c4a3d] px-6 py-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-[#e5e0d8]">
+                            <!-- Loop through real refundItems -->
+                            <tr th:each="item : ${refundItems}" class="table-row-hover" th:data-id="${item.orderItemId}" th:data-admin-status="${item.adminRefundStatus}" th:data-artisan-status="${item.refundStatus}">
+                                <td class="px-6 py-4">
+                                    <span class="font-mono font-semibold text-[#5c4a3d]" th:text="'#REF-' + ${item.orderItemId}">#REF-0000</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="font-mono text-[#8b7355]" th:text="'#ORD-' + ${item.order.orderId}">#ORD-0000</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <img 
+                                            th:src="${item.order.customer.profilePicture != null ? item.order.customer.profilePicture : 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" 
+                                            alt="Customer" 
+                                            class="w-10 h-10 rounded-full object-cover"
+                                        />
+                                        <span class="font-medium text-[#5c4a3d]" th:text="${item.order.customer.name}">Customer Name</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <img 
+                                            th:src="${item.product.artisan.profilePicture != null ? item.product.artisan.profilePicture : 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" 
+                                            alt="Artisan" 
+                                            class="w-10 h-10 rounded-full object-cover"
+                                        />
+                                        <span class="font-medium text-[#5c4a3d]" th:text="${item.product.artisan.shopName != null ? item.product.artisan.shopName : item.product.artisan.name}">Artisan Name</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-2">
+                                        <img 
+                                            th:src="${item.product.imageUrl != null ? item.product.imageUrl : 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" 
+                                            alt="Product" 
+                                            class="w-10 h-10 rounded-lg object-cover"
+                                        />
+                                        <span class="text-[#5c4a3d]" th:text="${item.product.title}">Product Title</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="font-semibold text-[#5c4a3d]" th:text="${#numbers.formatDecimal(item.order.orderItems.size() == 1 ? item.order.totalAmount : item.price * item.quantity, 1, 3) + ' BD'}">BD 0.000</span>
+                                    <div th:if="${item.order.orderItems.size() == 1 and item.order.totalAmount > (item.price * item.quantity)}" class="text-[10px] text-green-600 font-medium mt-0.5">+ Shipping</div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-[#8b7355]" th:text="${#temporals.format(item.order.date, 'MMM dd, yyyy')}">Mar 18, 2025</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span th:if="${item.refundStatus == 'PENDING'}" class="status-badge bg-gray-100 text-gray-700">
+                                        <i class="fas fa-clock"></i> Awaiting Response
+                                    </span>
+                                    <span th:if="${item.refundStatus == 'APPROVED'}" class="status-badge bg-green-100 text-green-700">
+                                        <i class="fas fa-check-circle"></i> Approved
+                                    </span>
+                                    <span th:if="${item.refundStatus == 'DECLINED'}" class="status-badge bg-red-100 text-red-700">
+                                        <i class="fas fa-times-circle"></i> Declined
+                                    </span>
+                                    <span th:if="${item.refundStatus == 'ESCALATED'}" class="status-badge bg-purple-100 text-purple-700">
+                                        <i class="fas fa-arrow-up"></i> Escalated
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span th:if="${item.adminRefundStatus == 'PENDING' or item.adminRefundStatus == null}" class="status-badge bg-amber-100 text-amber-700">
+                                        <i class="fas fa-clock"></i> Pending
+                                    </span>
+                                    <span th:if="${item.adminRefundStatus == 'APPROVED'}" class="status-badge bg-green-100 text-green-700">
+                                        <i class="fas fa-check-double"></i> Approved
+                                    </span>
+                                    <span th:if="${item.adminRefundStatus == 'REJECTED'}" class="status-badge bg-red-100 text-red-700">
+                                        <i class="fas fa-times-circle"></i> Rejected
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <button th:onclick="'toggleReviewPanel(' + ${item.orderItemId} + ')'" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors">
+                                        Review
+                                    </button>
+                                </td>
+                            </tr>
+
+                            <!-- Review Panel for each item -->
+                            <tr th:each="item : ${refundItems}" th:id="'review-' + ${item.orderItemId}" class="review-panel hidden">
+                                <td colspan="10" class="px-6 py-4 bg-[#faf8f5] border-y border-[#e5e0d8]">
+                                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 p-4">
+                                        <!-- Left Column - Details -->
+                                        <div class="space-y-4">
+                                            <h4 class="font-bold text-[#5c4a3d] text-base flex items-center gap-2">
+                                                <i class="fas fa-file-alt text-amber-600"></i>
+                                                Refund Details
+                                            </h4>
+                                            <div>
+                                                <p class="text-xs font-semibold text-[#8b7355] mb-2 uppercase tracking-wider">Customer's Reason</p>
+                                                <blockquote class="bg-white border-l-4 border-amber-400 p-4 italic text-[#5c4a3d] text-sm shadow-sm rounded-r-lg" th:text="${item.refundReason}">
+                                                    Customer reason details...
+                                                </blockquote>
+                                            </div>
+
+                                            <div th:if="${item.refundImages != null and !item.refundImages.isEmpty()}">
+                                                <p class="text-xs font-semibold text-[#8b7355] mb-2 uppercase tracking-wider flex items-center gap-2">
+                                                    <i class="fas fa-paperclip"></i>
+                                                    Photo Evidence
+                                                </p>
+                                                <div class="flex gap-3">
+                                                    <div class="relative group cursor-pointer" onclick="openLightboxDirectFromImage(this)">
+                                                        <img 
+                                                            th:src="${item.refundImages}" 
+                                                            alt="Evidence photo" 
+                                                            class="w-20 h-20 rounded-lg object-cover border-2 border-white shadow-md"
+                                                        />
+                                                        <div class="absolute inset-0 bg-black bg-opacity-50 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                            <i class="fas fa-expand text-white text-lg"></i>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div th:if="${item.refundImages == null or item.refundImages.isEmpty()}">
+                                                <p class="text-xs text-[#8b7355] italic">No photo evidence attached.</p>
+                                            </div>
+
+                                            <div class="flex justify-between items-center bg-white rounded-lg p-4 shadow-sm border border-[#e5e0d8]">
+                                                <div class="flex flex-col">
+                                                    <span class="text-sm font-semibold text-[#8b7355]">Requested Refund Amount:</span>
+                                                    <span th:if="${item.order.orderItems.size() == 1 and item.order.totalAmount > (item.price * item.quantity)}" class="text-xs text-green-600 mt-1"><i class="fas fa-truck text-[10px] mr-1"></i>Includes Delivery Fee</span>
+                                                </div>
+                                                <span class="text-lg font-bold text-amber-600" th:text="${#numbers.formatDecimal(item.order.orderItems.size() == 1 ? item.order.totalAmount : item.price * item.quantity, 1, 3) + ' BD'}">BD 0.000</span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Right Column - Response & Decisions -->
+                                        <div class="space-y-4">
+                                            <h4 class="font-bold text-[#5c4a3d] text-base flex items-center gap-2">
+                                                <i class="fas fa-palette text-[#c17c5f]"></i>
+                                                Artisan's Response
+                                            </h4>
+                                            <div class="bg-white rounded-lg p-4 shadow-sm border border-[#e5e0d8] space-y-3">
+                                                <div class="flex items-center justify-between">
+                                                    <span class="text-sm font-semibold text-[#8b7355]">Artisan Decision:</span>
+                                                    <span th:if="${item.refundStatus == 'PENDING'}" class="status-badge bg-gray-100 text-gray-700">Awaiting Response</span>
+                                                    <span th:if="${item.refundStatus == 'APPROVED'}" class="status-badge bg-green-100 text-green-700">Accepted</span>
+                                                    <span th:if="${item.refundStatus == 'DECLINED'}" class="status-badge bg-red-100 text-red-700">Declined</span>
+                                                    <span th:if="${item.refundStatus == 'ESCALATED'}" class="status-badge bg-purple-100 text-purple-700">Escalated</span>
+                                                </div>
+                                                <div th:if="${item.refundStatus == 'DECLINED' and item.artisanRefusalReason != null}" class="bg-red-50 p-3 rounded-lg border-l-4 border-red-300">
+                                                    <p class="text-xs font-semibold text-red-700 mb-1">Refusal Reason:</p>
+                                                    <p class="text-sm text-red-800 italic" th:text="${item.artisanRefusalReason}">Reason details...</p>
+                                                </div>
+                                            </div>
+
+                                            <!-- Admin Action Section (Only show if Admin Status is PENDING) -->
+                                            <div class="mt-6 pt-6 border-t border-[#e5e0d8]" th:if="${item.adminRefundStatus == 'PENDING' or item.adminRefundStatus == null}">
+                                                <h4 class="font-bold text-[#5c4a3d] text-base mb-3 flex items-center gap-2">
+                                                    <i class="fas fa-gavel text-amber-600"></i>
+                                                    Admin Decision
+                                                </h4>
+
+                                                <div class="mb-4">
+                                                    <label class="block text-xs font-semibold text-[#8b7355] mb-2 uppercase tracking-wider">
+                                                        Admin Note <span class="text-red-500">*</span>
+                                                    </label>
+                                                    <textarea 
+                                                        th:id="'adminNote-' + ${item.orderItemId}"
+                                                        rows="3" 
+                                                        placeholder="Explain your decision reasoning (required before approving or rejecting)..." 
+                                                        class="w-full border border-[#e5e0d8] rounded-xl px-4 py-3 focus:border-[#c17c5f] focus:outline-none text-[#5c4a3d] placeholder-[#b8a99a] resize-none bg-white text-sm"
+                                                        th:oninput="'enableActionButtonsDirect(' + ${item.orderItemId} + ')'"
+                                                    ></textarea>
+                                                </div>
+
+                                                <div class="flex items-center gap-4">
+                                                    <button 
+                                                        th:id="'approveBtn-' + ${item.orderItemId}"
+                                                        th:onclick="'handleAdminDecisionDirect(\'approve\', ' + ${item.orderItemId} + ')'" 
+                                                        disabled
+                                                        class="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2"
+                                                    >
+                                                        <i class="fas fa-check-circle"></i>
+                                                        Approve Refund
+                                                    </button>
+                                                    <button 
+                                                        th:id="'rejectBtn-' + ${item.orderItemId}"
+                                                        th:onclick="'handleAdminDecisionDirect(\'reject\', ' + ${item.orderItemId} + ')'" 
+                                                        disabled
+                                                        class="flex-1 border-2 border-red-500 text-red-500 hover:bg-red-50 disabled:border-gray-300 disabled:text-gray-400 disabled:cursor-not-allowed font-medium py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2"
+                                                    >
+                                                        <i class="fas fa-times-circle"></i>
+                                                        Reject Refund
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            <!-- If Admin has already decided -->
+                                            <div class="mt-6 pt-6 border-t border-[#e5e0d8]" th:if="${item.adminRefundStatus != 'PENDING' and item.adminRefundStatus != null}">
+                                                <h4 class="font-bold text-[#5c4a3d] text-base mb-2 flex items-center gap-2">
+                                                    <i class="fas fa-gavel text-gray-500"></i>
+                                                    Admin Decision Details
+                                                </h4>
+                                                <div class="bg-white rounded-lg p-4 border border-[#e5e0d8] space-y-2">
+                                                    <p class="text-sm text-gray-700">
+                                                        Status: <span class="font-bold text-[#c17c5f]" th:text="${item.adminRefundStatus}">APPROVED</span>
+                                                    </p>
+                                                    <div th:if="${item.adminNote != null}" class="bg-gray-50 p-3 rounded-lg border-l-4 border-gray-400 mt-1">
+                                                        <p class="text-xs font-semibold text-gray-600 mb-1">Decision Note:</p>
+                                                        <p class="text-sm text-gray-700 italic" th:text="${item.adminNote}">Note text...</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- Empty State -->
+                            <tr th:if="${refundItems == null or refundItems.isEmpty()}">
+                                <td colspan="10" class="px-6 py-12 text-center text-[#8b7355] italic">
+                                    <div class="flex flex-col items-center justify-center gap-2">
+                                        <i class="fas fa-undo-alt text-4xl text-[#c17c5f] opacity-50"></i>
+                                        <span>No refund requests found.</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div th:replace="~{fragments/pager :: pager(${pager}, 'refund requests')}"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        /* Sidebar handled by adminDashboard.js */
+
+        // User profile logout dropdown
+        /* User menu handled by adminDashboard.js */
+
+        // Tab switching
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active', 'bg-[#c17c5f]', 'text-white');
+                btn.classList.add('text-[#8b7355]');
+            });
+
+            // Get target button
+            const targetBtn = event.currentTarget;
+            targetBtn.classList.add('active', 'bg-[#c17c5f]', 'text-white');
+            targetBtn.classList.remove('text-[#8b7355]');
+
+            const rows = document.querySelectorAll('tbody tr.table-row-hover');
+            rows.forEach(row => {
+                const orderItemId = row.getAttribute('data-id');
+                const reviewPanel = document.getElementById('review-' + orderItemId);
+                
+                // Close any open review panels
+                if (reviewPanel) {
+                    reviewPanel.classList.add('hidden');
+                    reviewPanel.classList.remove('open');
+                }
+
+                const adminStatus = row.getAttribute('data-admin-status');
+                const artisanStatus = row.getAttribute('data-artisan-status');
+
+                let show = false;
+                if (tab === 'all') {
+                    show = true;
+                } else if (tab === 'pending') {
+                    show = (adminStatus === 'PENDING');
+                } else if (tab === 'escalated') {
+                    show = (artisanStatus === 'ESCALATED');
+                } else if (tab === 'approved') {
+                    show = (adminStatus === 'APPROVED');
+                } else if (tab === 'rejected') {
+                    show = (adminStatus === 'REJECTED');
+                }
+
+                if (show) {
+                    row.classList.remove('hidden');
+                } else {
+                    row.classList.add('hidden');
+                }
+            });
+        }
+
+        // Toggle review panel
+        function toggleReviewPanel(refundId) {
+            const panel = document.getElementById('review-' + refundId);
+            const isOpen = !panel.classList.contains('hidden');
+
+            // Close all other panels first
+            document.querySelectorAll('.review-panel').forEach(p => {
+                if (p.id !== 'review-' + refundId) {
+                    p.classList.add('hidden');
+                }
+            });
+
+            // Toggle current panel
+            if (isOpen) {
+                panel.classList.add('hidden');
+            } else {
+                panel.classList.remove('hidden');
+            }
+        }
+
+        function enableActionButtonsDirect(refundId) {
+            const note = document.getElementById('adminNote-' + refundId).value.trim();
+            const approveBtn = document.getElementById('approveBtn-' + refundId);
+            const rejectBtn = document.getElementById('rejectBtn-' + refundId);
+
+            if (note.length > 0) {
+                approveBtn.disabled = false;
+                rejectBtn.disabled = false;
+            } else {
+                approveBtn.disabled = true;
+                rejectBtn.disabled = true;
+            }
+        }
+
+        async function handleAdminDecisionDirect(decision, refundId) {
+            const note = document.getElementById('adminNote-' + refundId).value.trim();
+            if (!note) {
+                showNotification('Please add an admin note before making a decision.', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/orders/items/${refundId}/admin-refund/decision`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        decision: decision.toUpperCase(),
+                        note: note
+                    })
+                });
+
+                if (response.ok) {
+                    showNotification(`Refund ${decision}ed successfully. Both parties have been notified.`, 'success');
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
+                } else {
+                    const errMsg = await response.text();
+                    showNotification('Error: ' + errMsg, 'error');
+                }
+            } catch (error) {
+                console.error('Error submitting admin decision:', error);
+                showNotification('An error occurred while submitting decision.', 'error');
+            }
+        }
+
+        function openLightboxDirectFromImage(imgEl) {
+            const src = imgEl.querySelector('img').src;
+            const lightbox = document.createElement('div');
+            lightbox.id = 'lightbox';
+            lightbox.className = 'fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center cursor-pointer';
+            lightbox.onclick = () => lightbox.remove();
+
+            const img = document.createElement('img');
+            img.src = src;
+            img.className = 'max-w-full max-h-full w-auto h-auto object-contain p-4';
+            img.onclick = (e) => e.stopPropagation();
+
+            lightbox.appendChild(img);
+            document.body.appendChild(lightbox);
+        }
+
+        // Show notification toast
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+
+            let bgColor = '#c17c5f';
+            if (type === 'success') {
+                bgColor = '#16a34a';
+            } else if (type === 'error') {
+                bgColor = '#dc2626';
+            }
+
+            notification.className = 'fixed bottom-4 right-4 text-white px-6 py-3 rounded-xl shadow-lg z-50 transition-opacity duration-300';
+            notification.style.backgroundColor = bgColor;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 3000);
+        }
+    </script>
+    <script>
+        if (window.initAuthGuard) {
+            initAuthGuard({
+                redirectTo: "/login",
+                message: "Administrator access required. Please login."
+            });
+        }
+    </script>
+    <script src="/admin-paging.js"></script>
+    <script src="/adminDashboard.js"></script>
+</body>
+</html>
+
+

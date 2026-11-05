@@ -1,5 +1,5 @@
 // ============================================================
-// my-wishlist.js — ArtsyVibe My Wishlist Page
+// my-wishlist.js: ArtsyVibe My Wishlist Page
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -90,22 +90,37 @@ document.addEventListener('DOMContentLoaded', () => {
     // ----------------------------------------------------------
     // 3. Add to cart from wishlist
     // ----------------------------------------------------------
-    window.addToCart = function (button) {
+    window.addToCart = async function (button) {
+        const row = button.closest('tr');
+        const productId = row?.dataset?.id;
+        const userEmail = sessionStorage.getItem('userEmail');
+        const loggedIn = sessionStorage.getItem('isLoggedIn') === 'true' || sessionStorage.getItem('loggedIn') === 'true';
+
+        if (!loggedIn || !userEmail) {
+            showToast('Please login to add items to your cart', 'error');
+            return;
+        }
+        if (!productId) return;
+
         const originalHTML = button.innerHTML;
-        button.innerHTML = '<i class="fas fa-check mr-1"></i>Added!';
-        button.classList.remove('bg-[#c17c5f]');
-        button.classList.add('bg-green-600');
         button.disabled = true;
-
-        // Update cart badge
-        incrementCartCount();
-
-        setTimeout(() => {
-            button.innerHTML = originalHTML;
-            button.classList.remove('bg-green-600');
-            button.classList.add('bg-[#c17c5f]');
+        try {
+            if (!window.addProductToCart) throw new Error('Cart unavailable');
+            await window.addProductToCart(productId, 1);
+            button.innerHTML = '<i class="fas fa-check mr-1"></i>Added!';
+            button.classList.remove('bg-[#c17c5f]');
+            button.classList.add('bg-green-600');
+            showToast('Added to cart', 'success');
+            setTimeout(() => {
+                button.innerHTML = originalHTML;
+                button.classList.remove('bg-green-600');
+                button.classList.add('bg-[#c17c5f]');
+                button.disabled = false;
+            }, 1200);
+        } catch (e) {
+            showToast(e.message || 'Could not add to cart', 'error');
             button.disabled = false;
-        }, 1500);
+        }
     };
 
     // ----------------------------------------------------------
@@ -130,16 +145,43 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (error) {
             console.error('Error loading wishlist:', error);
+            updateWishlistCount();
             checkEmptyState();
         }
     }
 
+    const CATEGORY_ICONS = {
+        ceramics: 'fa-mug-hot', jewelry: 'fa-gem', textiles: 'fa-tshirt', paintings: 'fa-palette',
+        woodwork: 'fa-tree', glasswork: 'fa-wine-glass'
+    };
+
+    /** One filter pill per category present in the wishlist, so every item can be filtered. */
+    function buildCategoryPills(products) {
+        const container = document.getElementById('wishlist-category-pills');
+        if (!container) return;
+        container.querySelectorAll('[data-dynamic-pill]').forEach(p => p.remove());
+        const categories = [...new Set(products.map(p => (p.category || '').trim().toLowerCase()).filter(Boolean))].sort();
+        categories.forEach(category => {
+            const button = document.createElement('button');
+            button.className = 'filter-pill px-5 py-2 rounded-full border-2 font-medium';
+            button.setAttribute('data-dynamic-pill', '');
+            const icon = document.createElement('i');
+            icon.className = 'fas ' + (CATEGORY_ICONS[category] || 'fa-tag') + ' mr-2';
+            button.appendChild(icon);
+            button.appendChild(document.createTextNode(category.charAt(0).toUpperCase() + category.slice(1)));
+            button.addEventListener('click', () => window.filterWishlist(category, button));
+            container.appendChild(button);
+        });
+    }
+
     function renderWishlist(products) {
+        buildCategoryPills(products || []);
         const tbody = document.querySelector('tbody');
         if (!tbody) return;
 
         tbody.innerHTML = '';
         if (products.length === 0) {
+            updateWishlistCount();
             checkEmptyState();
             return;
         }
@@ -153,21 +195,21 @@ document.addEventListener('DOMContentLoaded', () => {
             row.innerHTML = `
                 <td class="py-4 px-6">
                     <div class="flex items-center gap-3">
-                        <img src="${product.imageUrl}" alt="${product.title}" class="w-16 h-16 object-cover rounded-lg">
+                        <img src="${safeUrl(product.imageUrl, '/images/Logo.png')}" alt="${escapeHtml(product.title)}" class="w-16 h-16 object-cover rounded-lg">
                         <div>
-                            <p class="font-semibold text-[#5c4a3d]">${product.title}</p>
-                            <p class="text-sm text-[#8b7355]">${product.description.substring(0, 50)}...</p>
+                            <p class="font-semibold text-[#5c4a3d]">${escapeHtml(product.title)}</p>
+                            <p class="text-sm text-[#8b7355]">${escapeHtml((product.description || '').substring(0, 50))}...</p>
                         </div>
                     </div>
                 </td>
                 <td class="py-4 px-6">
-                    <p class="text-[#5c4a3d] font-medium">${product.artisanName || 'ArtsyVibe Artisan'}</p>
+                    <p class="text-[#5c4a3d] font-medium">${escapeHtml(product.artisanName || 'ArtsyVibe Artisan')}</p>
                 </td>
                 <td class="py-4 px-6">
-                    <span class="text-[#8b7355]">${product.category}</span>
+                    <span class="text-[#8b7355]">${escapeHtml(product.category)}</span>
                 </td>
                 <td class="py-4 px-6">
-                    <span class="font-bold text-[#c17c5f]">${product.price.toFixed(3)} BD</span>
+                    <span class="font-bold text-[#c17c5f]">${Number(product.price).toFixed(3)} BD</span>
                 </td>
                 <td class="py-4 px-6">
                     <div class="flex items-center gap-2">
@@ -215,21 +257,6 @@ function checkEmptyState() {
 }
 
 // ============================================================
-// Cart badge helper
-// ============================================================
-
-function incrementCartCount() {
-    const badges = document.querySelectorAll('.fa-shopping-cart + span, .fa-shopping-cart ~ span');
-    let newCount = parseInt(sessionStorage.getItem('cartCount') ?? '0', 10) + 1;
-    sessionStorage.setItem('cartCount', newCount);
-
-    document.querySelectorAll('.fa-shopping-cart').forEach(icon => {
-        const badge = icon.parentElement?.querySelector('span');
-        if (badge) badge.textContent = newCount;
-    });
-}
-
-// ============================================================
 // "Add All to Cart" button injection
 // ============================================================
 
@@ -243,14 +270,34 @@ function buildAddAllButton() {
     btn.innerHTML = '<i class="fas fa-shopping-cart mr-2"></i>Add All to Cart';
     header.appendChild(btn);
 
-    btn.addEventListener('click', () => {
-        const addBtns = document.querySelectorAll('.wishlist-item:not([style*="none"]) .add-to-cart-btn');
-        if (addBtns.length === 0) {
+    btn.addEventListener('click', async () => {
+        const rows = document.querySelectorAll('.wishlist-item:not([style*="none"])');
+        const userEmail = sessionStorage.getItem('userEmail');
+        const loggedIn = sessionStorage.getItem('isLoggedIn') === 'true' || sessionStorage.getItem('loggedIn') === 'true';
+        if (!loggedIn || !userEmail) {
+            showToast('Please login to add items to your cart', 'error');
+            return;
+        }
+        if (rows.length === 0) {
             showToast('No items to add.', 'info');
             return;
         }
-        addBtns.forEach(b => b.click());
-        showToast(`${addBtns.length} item(s) added to cart!`, 'success');
+        if (!window.addProductToCart) {
+            showToast('Cart unavailable', 'error');
+            return;
+        }
+        btn.disabled = true;
+        try {
+            for (const row of rows) {
+                const pid = row.dataset?.id;
+                if (pid) await window.addProductToCart(pid, 1);
+            }
+            showToast(`${rows.length} item(s) added to cart!`, 'success');
+        } catch (e) {
+            showToast(e.message || 'Some items could not be added', 'error');
+        } finally {
+            btn.disabled = false;
+        }
     });
 }
 

@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="/app-core.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Notifications - Artisan Co-op</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #faf9f6;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Playfair Display', serif;
+        }
+
+        .terracotta {
+            color: #c17c5f;
+        }
+
+        .bg-terracotta {
+            background-color: #c17c5f;
+        }
+
+        .bg-terracotta-dark {
+            background-color: #a5664d;
+        }
+
+        .hover\:bg-terracotta-dark:hover {
+            background-color: #a5664d;
+        }
+
+        .border-terracotta {
+            border-color: #c17c5f;
+        }
+
+        .text-earth {
+            color: #8b7355;
+        }
+
+        .bg-earth {
+            background-color: #8b7355;
+        }
+
+        .card-shadow {
+            box-shadow: 0 4px 6px -1px rgba(139, 115, 85, 0.1), 0 2px 4px -1px rgba(139, 115, 85, 0.06);
+        }
+
+        .card-shadow:hover {
+            box-shadow: 0 10px 15px -3px rgba(139, 115, 85, 0.15), 0 4px 6px -2px rgba(139, 115, 85, 0.1);
+        }
+
+        .sidebar-link {
+            transition: background-color 0.2s ease, color 0.2s ease;
+            color: #d4c5b5;
+        }
+        
+        .sidebar-link:hover {
+            background-color: rgba(255, 255, 255, 0.18);
+            color: #ffffff;
+        }
+        
+        .sidebar-link:hover i,
+        .sidebar-link:hover span {
+            color: #ffffff;
+        }
+        
+        .sidebar-link.active {
+            background-color: rgba(255, 255, 255, 0.25);
+            border-left: 3px solid #ffffff;
+            color: #ffffff;
+        }
+        
+        .sidebar-link.active i,
+        .sidebar-link.active span {
+            color: #ffffff;
+        }
+        
+        .user-menu {
+            position: relative;
+        }
+        
+        .user-menu-dropdown {
+            position: absolute;
+            right: 0;
+            top: calc(100% + 0.5rem);
+            width: 200px;
+            background: #ffffff;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-radius: 1rem;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+            display: none;
+            z-index: 50;
+        }
+        
+        .user-menu-dropdown.show {
+            display: block;
+        }
+        
+        .user-menu-item {
+            display: block;
+            padding: 0.85rem 1rem;
+            color: #5c4a3d;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            border-radius: 0.75rem;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+        
+        .user-menu-item:hover {
+            background-color: #f5ebe0;
+        }
+        
+        .user-menu-item.logout:hover {
+            color: #b91c1c;
+            background-color: #fee2e2;
+        }
+        
+        .chevron-icon {
+            transition: transform 0.3s ease;
+        }
+        
+        .chevron-icon.rotated {
+            transform: rotate(180deg);
+        }
+
+        .tab-button {
+            transition: all 0.2s ease;
+        }
+
+        .tab-button.active {
+            background-color: #c17c5f;
+            color: white;
+        }
+
+        /* Notification card styles */
+        .notification-card {
+            transition: all 0.2s ease;
+        }
+
+        .notification-card:hover {
+            box-shadow: 0 10px 15px -3px rgba(139, 115, 85, 0.15), 0 4px 6px -2px rgba(139, 115, 85, 0.1);
+        }
+
+        .notification-card.unread {
+            background-color: #f8fafc;
+        }
+
+        .notification-card.urgent {
+            border-left: 4px solid #dc2626;
+        }
+
+        .unread-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #3b82f6;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        /* Icon containers */
+        .icon-urgent {
+            background-color: #fee2e2;
+            color: #dc2626;
+        }
+
+        .icon-auction {
+            background-color: #ffedd5;
+            color: #c2410c;
+        }
+
+        .icon-approval {
+            background-color: #dcfce7;
+            color: #15803d;
+        }
+
+        .icon-system {
+            background-color: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .icon-refund {
+            background-color: #fae8ff;
+            color: #a21caf;
+        }
+
+        .icon-review {
+            background-color: #fef3c7;
+            color: #d97706;
+        }
+
+        .icon-milestone {
+            background-color: #cffafe;
+            color: #0e7490;
+        }
+    </style>
+    <script src="/authguard.js"></script>
+</head>
+<body class="min-h-screen flex flex-col">
+    <!-- Top Navigation Bar -->
+    <nav class="bg-[#faf9f6] border-b border-[#e5e0d8] py-4 px-6 sticky top-0 z-50">
+        <div class="w-full flex items-center justify-between">
+            <div class="flex items-center">
+                <a href="/adminDashboard" class="flex items-center gap-3 group">
+                    <!-- Logo -->
+                    <img src="/images/Logo.png" alt="ArtsyVibe Logo"
+                        class="h-10 w-auto object-contain"
+                        style="filter: drop-shadow(0 0 0.5px rgba(193, 124, 95, 1));">
+
+                    <!-- Brand Name -->
+                    <span class="text-2xl font-semibold" 
+                        style="font-family: 'Playfair Display', serif;">
+                        ArtsyVibe
+                    </span>
+                </a>
+            </div>
+            
+            <!-- Right Side - Notifications and User -->
+            <div class="flex items-center space-x-4">
+                 <!-- Notification Bell -->
+                <a href="/adminNotification"><button class="relative p-2 text-[#8b7355] hover:text-[#c17c5f] transition-colors">
+                    <i class="fas fa-bell text-xl"></i>
+                    <span class="absolute top-0 right-0 w-5 h-5 bg-red-500 rounded-full border-2 border-[#faf9f6] text-white text-xs flex items-center justify-center font-semibold">5</span>
+                </button></a>
+                
+                <!-- User Profile -->
+                <div class="user-menu flex items-center space-x-3 pl-4 border-l border-[#e5e0d8]">
+                    <button id="userMenuButton" type="button" class="flex items-center gap-3 text-left focus:outline-none">
+                        <img 
+                            src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face" 
+                            alt="Admin User" 
+                            class="w-10 h-10 rounded-full object-cover border-2 border-[#c17c5f]"
+                        />
+                        <div class="hidden md:block">
+                            <p class="font-semibold text-[#5c4a3d] text-sm">Admin User</p>
+                            <p class="text-xs text-[#8b7355]">admin@artisancoop.com</p>
+                        </div>
+                        <i id="chevronIcon" class="chevron-icon fas fa-chevron-down text-[#8b7355] text-xs hidden md:block"></i>
+                    </button>
+                    <div id="userMenuDropdown" class="user-menu-dropdown">
+                        <button id="logoutButton" class="user-menu-item logout w-full text-left">
+                            <i class="fas fa-sign-out-alt mr-3"></i>Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area with Sidebar -->
+    <div class="flex flex-1">
+        <!-- Left Sidebar -->
+        <aside class="w-64 bg-[#5c4a3d] min-h-[calc(100vh-80px)] fixed left-0 top-20 overflow-y-auto">
+            <!-- Admin Profile -->
+            <div class="p-6 border-b border-[#7a6655]">
+                <div class="flex items-center gap-3">
+                    <img 
+                        src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face" 
+                        alt="Admin User" 
+                        class="w-12 h-12 rounded-full object-cover border-2 border-[#c17c5f]"
+                    />
+                    <div>
+                        <h3 class="text-white font-semibold text-sm">Admin User</h3>
+                        <span class="inline-block bg-[#c17c5f] text-white text-xs px-2 py-1 rounded-full mt-1">Administrator</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Navigation Menu -->
+            <nav class="p-4 mt-4">
+                <ul class="space-y-1">
+                    <li>
+                        <a href="/adminDashboard" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-tachometer-alt w-5"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/adminUsersManagement" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-users w-5"></i>
+                            <span>User Management</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/adminArtisanApproval" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-user-check w-5"></i>
+                            <span>Artisan Approvals</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/adminProducts" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-box w-5"></i>
+                            <span>Products</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/adminOrderManagment" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-shopping-bag w-5"></i>
+                            <span>Orders</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/adminAuction" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-gavel w-5"></i>
+                            <span>Auctions</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/adminRefund" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-undo w-5"></i>
+                            <span>Refunds</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/adminReview" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-star w-5"></i>
+                            <span>Review Moderation</span>
+                        </a>
+                    </li>
+                    
+                </ul>
+            </nav>
+            
+            <!-- Systems Log Section -->
+            <div class="p-4 mt-2 border-t border-[#7a6655]">
+                <ul class="space-y-1">
+                    <li>
+                        <a href="/adminReports" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-history w-5"></i>
+                            <span>Reports</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 ml-64 p-8">
+            <!-- Page Header -->
+            <div class="mb-8">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-3xl font-bold text-[#5c4a3d] mb-2">Notifications</h1>
+                        <p class="text-[#8b7355]">Stay on top of platform alerts and actions requiring your attention.</p>
+                    </div>
+                    <button onclick="markAllAsRead()" class="text-[#c17c5f] hover:text-[#a5664d] font-medium text-sm flex items-center gap-2">
+                        <i class="fas fa-check-double"></i>
+                        Mark All as Read
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tab Bar -->
+            <div class="bg-white rounded-t-xl card-shadow border-b border-[#e5e0d8] px-6 pt-4 mb-0">
+                <div class="flex items-center gap-2 overflow-x-auto">
+                    <button class="tab-button active px-5 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap flex items-center gap-2" onclick="switchTab(event, 'all')">
+                        All
+                        <span data-tab-count="all" class="bg-[#c17c5f] text-white text-xs px-2 py-0.5 rounded-full">0</span>
+                    </button>
+                    <button class="tab-button px-5 py-2.5 rounded-lg text-sm font-medium text-[#8b7355] whitespace-nowrap flex items-center gap-2" onclick="switchTab(event, 'urgent')">
+                        Urgent
+                        <span data-tab-count="urgent" class="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">0</span>
+                    </button>
+                    <button class="tab-button px-5 py-2.5 rounded-lg text-sm font-medium text-[#8b7355] whitespace-nowrap flex items-center gap-2" onclick="switchTab(event, 'refunds')">
+                        Refunds
+                        <span data-tab-count="refunds" class="bg-purple-500 text-white text-xs px-2 py-0.5 rounded-full">0</span>
+                    </button>
+                    <button class="tab-button px-5 py-2.5 rounded-lg text-sm font-medium text-[#8b7355] whitespace-nowrap flex items-center gap-2" onclick="switchTab(event, 'approvals')">
+                        Approvals
+                        <span data-tab-count="approvals" class="bg-green-500 text-white text-xs px-2 py-0.5 rounded-full">0</span>
+                    </button>
+                    <button class="tab-button px-5 py-2.5 rounded-lg text-sm font-medium text-[#8b7355] whitespace-nowrap flex items-center gap-2" onclick="switchTab(event, 'reports')">
+                        Reports
+                        <span data-tab-count="reports" class="bg-blue-500 text-white text-xs px-2 py-0.5 rounded-full">0</span>
+                    </button>
+                    <button class="tab-button px-5 py-2.5 rounded-lg text-sm font-medium text-[#8b7355] whitespace-nowrap flex items-center gap-2" onclick="switchTab(event, 'system')">
+                        System
+                        <span data-tab-count="system" class="bg-gray-500 text-white text-xs px-2 py-0.5 rounded-full">0</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Notifications List -->
+            <div class="bg-white rounded-b-xl card-shadow p-6">
+                <div id="notifications-list" class="space-y-4"></div>
+                <div id="empty-state" class="hidden text-center py-20 text-[#8b7355]">
+                    <p class="text-xl font-semibold">No notifications yet.</p>
+                    <p class="mt-2">Your admin alert feed is empty. System alerts, review requests, and administrator tasks will appear here.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        /* Sidebar handled by adminDashboard.js */
+
+        // User profile logout dropdown
+        /* User menu handled by adminDashboard.js */
+
+        // Tab switching
+        function switchTab(event, tab) {
+            const buttons = document.querySelectorAll('.tab-button');
+            buttons.forEach(btn => {
+                btn.classList.remove('active', 'bg-[#c17c5f]', 'text-white');
+                btn.classList.add('text-[#8b7355]');
+            });
+
+            const activeButton = event.currentTarget || event.target.closest('.tab-button');
+            if (activeButton) {
+                activeButton.classList.add('active', 'bg-[#c17c5f]', 'text-white');
+                activeButton.classList.remove('text-[#8b7355]');
+            }
+
+            const notifications = document.querySelectorAll('.notification-card');
+            let visibleCount = 0;
+            notifications.forEach(notification => {
+                const categories = (notification.getAttribute('data-categories') || '').split(' ');
+                const matches = tab === 'all' || categories.includes(tab);
+                notification.style.display = matches ? 'flex' : 'none';
+                if (matches) visibleCount++;
+            });
+
+            const emptyState = document.getElementById('empty-state');
+            if (visibleCount === 0) {
+                emptyState?.classList.remove('hidden');
+            } else {
+                emptyState?.classList.add('hidden');
+            }
+        }
+
+        // Mark all as read
+        async function markAllAsRead() {
+            const userId = sessionStorage.getItem('userId');
+            if (!userId) {
+                showNotification('Unable to mark notifications read: missing user data.', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/notifications/read-all/${userId}`, { method: 'PUT' });
+                if (!response.ok) {
+                    throw new Error('Failed to update notifications');
+                }
+
+                document.querySelectorAll('.notification-card.unread').forEach(card => {
+                    card.classList.remove('unread');
+                    card.classList.add('read');
+                    card.dataset.read = 'true';
+                    const dot = card.querySelector('.unread-dot');
+                    if (dot) {
+                        const spacer = document.createElement('div');
+                        spacer.className = 'w-2 mt-1.5';
+                        dot.replaceWith(spacer);
+                    }
+                });
+
+                updateBadgeCount(0);
+                showNotification('All notifications marked as read', 'success');
+            } catch (error) {
+                console.error(error);
+                showNotification('Unable to mark all notifications as read', 'error');
+            }
+        }
+
+        async function fetchNotifications() {
+            const userId = sessionStorage.getItem('userId');
+            if (!userId) {
+                console.warn('Missing admin userId in sessionStorage');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/notifications/${userId}`);
+                if (!response.ok) {
+                    throw new Error('Failed to load notifications');
+                }
+
+                const notifications = await response.json();
+                renderNotifications(notifications);
+                const unreadCount = notifications.filter(n => !n.read && !n.isRead).length;
+                updateBadgeCount(unreadCount);
+            } catch (error) {
+                console.error(error);
+                showNotification('Unable to load notifications', 'error');
+            }
+        }
+
+        /** Which tabs a notification type belongs to (a type can be in several, e.g. urgent + refunds). */
+        function categoriesFor(type) {
+            const t = (type || '').toUpperCase();
+            const categories = [];
+            if (t.startsWith('REFUND')) categories.push('refunds');
+            if (t === 'ARTISAN_APPROVAL' || t === 'PRODUCT_VERIFICATION') categories.push('approvals');
+            if (t === 'REVIEW_FLAGGED' || t.startsWith('REPORT')) categories.push('reports');
+            if (t === 'REFUND_ESCALATED' || t === 'REFUND_ADMIN_REVIEW' || t === 'REVIEW_FLAGGED') categories.push('urgent');
+            if (categories.length === 0) categories.push('system');
+            return categories;
+        }
+
+        function updateTabCounts(notifications) {
+            const counts = { all: notifications.length, urgent: 0, refunds: 0, approvals: 0, reports: 0, system: 0 };
+            notifications.forEach(n => categoriesFor(n.type).forEach(c => { counts[c] = (counts[c] || 0) + 1; }));
+            document.querySelectorAll('[data-tab-count]').forEach(el => {
+                el.textContent = counts[el.getAttribute('data-tab-count')] || 0;
+            });
+        }
+
+        function renderNotifications(notifications) {
+            updateTabCounts(notifications || []);
+            const notificationsList = document.getElementById('notifications-list');
+            const emptyState = document.getElementById('empty-state');
+            if (!notificationsList) return;
+
+            if (!notifications || notifications.length === 0) {
+                notificationsList.innerHTML = '';
+                emptyState?.classList.remove('hidden');
+                return;
+            }
+
+            emptyState?.classList.add('hidden');
+            notificationsList.innerHTML = notifications.map(notification => {
+                const read = notification.read || notification.isRead;
+                const type = notification.type || 'GENERAL';
+                const theme = getNotificationTheme(type);
+                const title = escapeHtml(notification.title || 'Notification');
+                const message = escapeHtml(notification.message || '');
+                const timestamp = new Date(notification.timestamp).toLocaleString();
+                const link = escapeHtml(notification.link || '');
+
+                return `
+                    <div class="notification-card ${read ? 'read' : 'unread'} rounded-xl p-5 flex items-start gap-4" 
+                         data-type="${escapeHtml(type.toLowerCase())}" data-categories="${categoriesFor(type).join(' ')}" 
+                         data-id="${notification.id}" 
+                         data-link="${link}" 
+                         data-read="${read}">
+                        <div class="w-12 h-12 ${theme.iconClass} rounded-lg flex items-center justify-center flex-shrink-0">
+                            <i class="fas ${theme.icon} text-xl"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-start justify-between gap-4">
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <h3 class="font-bold text-[#5c4a3d]">${title}</h3>
+                                        ${read ? '' : '<span class="unread-dot"></span>'}
+                                    </div>
+                                    <p class="text-[#8b7355] text-sm">${message}</p>
+                                    <p class="text-xs text-[#8b7355] mt-2"><i class="far fa-clock mr-1"></i>${timestamp}</p>
+                                </div>
+                                <button onclick="window.handleNotificationAction(event, this.closest('.notification-card'))" class="${theme.buttonClass} text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap">
+                                    ${link ? 'View Details' : 'Open'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>`;
+            }).join('');
+        }
+
+        function getNotificationTheme(type) {
+            const normalized = type.toUpperCase();
+            if (normalized.includes('REFUND') || normalized.includes('ESCALATED')) {
+                return { icon: 'fa-undo', iconClass: 'icon-refund', buttonClass: 'bg-purple-600 hover:bg-purple-700' };
+            }
+            if (normalized.includes('ARTISAN') || normalized.includes('APPROVAL')) {
+                return { icon: 'fa-user-check', iconClass: 'icon-approval', buttonClass: 'bg-green-600 hover:bg-green-700' };
+            }
+            if (normalized.includes('REVIEW')) {
+                return { icon: 'fa-flag', iconClass: 'icon-review', buttonClass: 'bg-amber-600 hover:bg-amber-700' };
+            }
+            if (normalized.includes('AUCTION')) {
+                return { icon: 'fa-gavel', iconClass: 'icon-auction', buttonClass: 'bg-red-600 hover:bg-red-700' };
+            }
+            if (normalized.includes('SYSTEM') || normalized.includes('REPORT')) {
+                return { icon: 'fa-chart-line', iconClass: 'icon-system', buttonClass: 'bg-[#c17c5f] hover:bg-[#a5664d]' };
+            }
+            return { icon: 'fa-bell', iconClass: 'icon-system', buttonClass: 'bg-[#5c4a3d] hover:bg-[#7a6655]' };
+        }
+
+        function escapeHtml(text) {
+            return String(text)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        window.handleNotificationAction = async function(event, card) {
+            if (event) {
+                event.stopPropagation();
+            }
+            if (!card) return;
+            const id = card.dataset.id;
+            const link = card.dataset.link;
+            await markNotificationRead(id, card);
+            if (link) {
+                window.location.href = link;
+            } else {
+                showNotification('Opening notification details...', 'info');
+            }
+        };
+
+        async function markNotificationRead(id, card) {
+            if (!id || !card || card.dataset.read === 'true') return;
+            try {
+                const response = await fetch(`/api/notifications/${id}/read`, { method: 'PUT' });
+                if (!response.ok) {
+                    throw new Error('Failed to mark notification read');
+                }
+                card.dataset.read = 'true';
+                card.classList.remove('unread');
+                card.classList.add('read');
+                const dot = card.querySelector('.unread-dot');
+                if (dot) {
+                    const spacer = document.createElement('div');
+                    spacer.className = 'w-2 mt-1.5';
+                    dot.replaceWith(spacer);
+                }
+                const unread = document.querySelectorAll('.notification-card.unread').length;
+                updateBadgeCount(unread);
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        function updateBadgeCount(count) {
+            const numeric = Number(count) || 0;
+            sessionStorage.setItem('notificationCount', String(numeric));
+            if (typeof window.updateNotificationBadge === 'function') {
+                window.updateNotificationBadge();
+            }
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            let bgColor = '#c17c5f';
+            if (type === 'success') {
+                bgColor = '#16a34a';
+            } else if (type === 'error') {
+                bgColor = '#dc2626';
+            } else if (type === 'warning') {
+                bgColor = '#d97706';
+            }
+
+            notification.className = 'fixed bottom-4 right-4 text-white px-6 py-3 rounded-xl shadow-lg z-50 transition-opacity duration-300';
+            notification.style.backgroundColor = bgColor;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 3000);
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchNotifications);
+    </script>
+    <script>
+        if (window.initAuthGuard) {
+            initAuthGuard({
+                redirectTo: "/login",
+                message: "Administrator access required. Please login."
+            });
+        }
+    </script>
+    <script src="/adminDashboard.js"></script>
+</body>
+</html>
+

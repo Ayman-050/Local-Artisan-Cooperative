@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
     <head>
+    <script src="/app-core.js"></script>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Settings - Artisan Co-op</title>
@@ -206,7 +207,7 @@
     <body class="min-h-screen flex flex-col">
         <!-- Top Navigation Bar -->
     <nav class="bg-[#faf9f6] border-b border-[#e5e0d8] py-4 px-6 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto flex items-center justify-between">
+        <div class="w-full flex items-center justify-between">
             <div class="flex items-center">
                 <a href="/artisanDashboard" class="flex items-center gap-3 group">
                     <!-- Logo -->
@@ -225,31 +226,33 @@
             <!-- Right Side - Notifications and User -->
             <div class="flex items-center space-x-4">
                 <!-- Notification Bell -->
-                <button class="relative p-2 text-[#8b7355] hover:text-[#c17c5f] transition-colors">
-                    <i class="fas fa-bell text-xl"></i>
-                    <span class="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-[#faf9f6]"></span>
-                </button>
+                <a id="notifications-link" href="/artisanNotification" class="relative">
+                    <button class="relative p-2 text-[#8b7355] hover:text-[#c17c5f] transition-colors">
+                        <i class="fas fa-bell text-xl"></i>
+                        <span class="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-[#faf9f6]"></span>
+                    </button>
+                </a>
 
-                <!-- User Profile -->
+                                                <!-- User Profile -->
                 <div class="user-menu flex items-center space-x-3 pl-4 border-l border-[#e5e0d8]">
                     <button id="userMenuButton" type="button" class="flex items-center gap-3 text-left focus:outline-none">
                         <img 
-                            src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=40&h=40&fit=crop&crop=face" 
-                            alt="Elena Martinez" 
+                            th:src="${artisan != null ? artisan.profilePicture : 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" 
+                            th:alt="${artisan != null ? artisan.name : 'User'}" 
                             class="w-10 h-10 rounded-full object-cover border-2 border-[#c17c5f]"
                         />
                         <div class="hidden md:block">
-                            <p class="font-semibold text-[#5c4a3d] text-sm">Elena Martinez</p>
-                            <p class="text-xs text-[#8b7355]">elena@artisan.com</p>
+                            <p class="font-semibold text-[#5c4a3d] text-sm" th:text="${artisan != null ? artisan.name : 'User'}">Elena Martinez</p>
+                            <p class="text-xs text-[#8b7355]" th:text="${artisan != null ? artisan.email : 'email@artisan.com'}">elena@artisan.com</p>
                         </div>
                         <i id="chevronIcon" class="chevron-icon fas fa-chevron-down text-[#8b7355] text-xs hidden md:block"></i>
                     </button>
                     <div id="userMenuDropdown" class="user-menu-dropdown">
-                        <button id="logoutButton" class="user-menu-item logout w-full text-left">
+                        <button id="logoutButton" type="button" class="user-menu-item logout w-full text-left">
                             <i class="fas fa-sign-out-alt mr-2"></i> Logout
                         </button>
                     </div>
-        </div>
+                </div>
     </nav>
 
         <!-- Main Content Area with Sidebar -->
@@ -260,13 +263,13 @@
             <div class="p-6 border-b border-[#7a6655]">
                 <div class="flex items-center gap-4">
                     <img 
-                        src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face" 
-                        alt="Elena Martinez" 
+                        th:src="${artisan != null ? artisan.profilePicture : 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" 
+                        th:alt="${artisan != null ? artisan.name : 'User'}" 
                         class="w-14 h-14 rounded-full object-cover border-2 border-[#c17c5f]"
                     />
                     <div>
-                        <h3 class="text-white font-semibold">Elena Martinez</h3>
-                        <p class="text-[#d4c5b5] text-sm">Ceramics Artist</p>
+                        <h3 class="text-white font-semibold" th:text="${artisan != null ? artisan.name : 'User'}">Elena Martinez</h3>
+                        <p class="text-[#d4c5b5] text-sm" th:text="${artisan != null ? artisan.shopName : 'Shop'}">Ceramics Artist</p>
                     </div>
                 </div>
             </div>
@@ -275,31 +278,31 @@
             <nav class="p-4">
                 <ul class="space-y-1">
                     <li>
-                        <a href="artisan-dashboard.html" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                        <a href="/artisanDashboard" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
                             <i class="fas fa-chart-line w-5"></i>
                             <span>Dashboard</span>
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                        <a href="/artisanProducts" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
                             <i class="fas fa-box w-5"></i>
                             <span>My Products</span>
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                        <a href="/artisanAuction" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
                             <i class="fas fa-gavel w-5"></i>
                             <span>My Auctions</span>
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                        <a href="/artisanOrders" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
                             <i class="fas fa-receipt w-5"></i>
                             <span>Orders</span>
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                        <a href="/artisanAnalytics" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
                             <i class="fas fa-chart-bar w-5"></i>
                             <span>Analytics</span>
                         </a>
@@ -311,7 +314,7 @@
             <div class="p-4 mt-8 border-t border-[#7a6655]">
                 <ul class="space-y-1">
                     <li>
-                        <a href="#" class="sidebar-link active flex items-center gap-3 text-white px-4 py-3 rounded-lg">
+                        <a id="settingsLink" href="/artisanSettings" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
                             <i class="fas fa-cog w-5"></i>
                             <span>Settings</span>
                         </a>
@@ -341,16 +344,22 @@
                     <div class="flex flex-col md:flex-row gap-8">
                         <!-- Avatar Upload -->
                         <div class="flex flex-col items-center">
-                            <img
-                                src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&h=200&fit=crop&crop=face"
+                                                        <img
+                                id="artisanProfileImg"
+                                th:src="${artisan != null ? artisan.profilePicture : 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}"
+                                th:alt="${artisan != null ? artisan.name : 'Profile Photo'}"
                                 alt="Profile Photo"
-                                class="w-32 h-32 rounded-full object-cover border-4 border-[#e5e0d8] mb-4"
+                                class="w-32 h-32 rounded-full object-cover border-4 border-[#e5e0d8] mb-4 cursor-pointer hover:opacity-90 transition-opacity"
+                                onclick="document.getElementById('artisan-profile-file-input').click()"
                             />
                             <button
+                                type="button"
+                                onclick="document.getElementById('artisan-profile-file-input').click()"
                                 class="text-[#c17c5f] hover:text-[#a5664d] font-medium text-sm transition-colors"
                             >
                                 Change Photo
                             </button>
+                            <input type="file" id="artisan-profile-file-input" accept="image/*" class="hidden" />
                         </div>
 
                         <!-- Form Fields -->
@@ -362,7 +371,8 @@
                                 >
                                 <input
                                     type="text"
-                                    value="Elena Martinez"
+                                    id="artisan-name"
+                                    th:value="${artisan != null ? artisan.name : ''}"
                                     class="form-input w-full px-4 py-3 rounded-xl border border-[#e5e0d8] text-[#5c4a3d] bg-white"
                                 />
                             </div>
@@ -374,8 +384,10 @@
                                 >
                                 <input
                                     type="email"
-                                    value="elena@artisan.com"
-                                    class="form-input w-full px-4 py-3 rounded-xl border border-[#e5e0d8] text-[#5c4a3d] bg-white"
+                                    id="artisan-email"
+                                    th:value="${artisan != null ? artisan.email : ''}"
+                                    class="form-input w-full px-4 py-3 rounded-xl border border-[#e5e0d8] text-[#5c4a3d] bg-[#f5f2eb]"
+                                    readonly
                                 />
                             </div>
 
@@ -386,7 +398,8 @@
                                 >
                                 <input
                                     type="tel"
-                                    value="+973 3312 3456"
+                                    id="artisan-phone"
+                                    th:value="${artisan != null ? artisan.phone : ''}"
                                     placeholder="+973 XXXX XXXX"
                                     class="form-input w-full px-4 py-3 rounded-xl border border-[#e5e0d8] text-[#5c4a3d] bg-white placeholder-[#b8a99a]"
                                 />
@@ -395,16 +408,19 @@
                             <div>
                                 <label
                                     class="block text-[#5c4a3d] font-semibold mb-2"
-                                    >Specialty/Title</label
+                                    >Shop Name</label
                                 >
                                 <input
                                     type="text"
-                                    value="Ceramics Artist"
+                                    id="artisan-shopName"
+                                    th:value="${artisan != null ? artisan.shopName : ''}"
                                     class="form-input w-full px-4 py-3 rounded-xl border border-[#e5e0d8] text-[#5c4a3d] bg-white"
                                 />
                             </div>
 
                             <button
+                                type="button"
+                                onclick="saveProfileSettings()"
                                 class="bg-[#c17c5f] hover:bg-[#a5664d] text-white px-6 py-3 rounded-xl font-semibold transition-colors shadow-lg"
                             >
                                 Save Profile
@@ -427,7 +443,8 @@
                             >
                             <input
                                 type="text"
-                                value="Elena's Ceramics Studio"
+                                id="shop-info-name"
+                                th:value="${artisan != null ? artisan.shopName : ''}"
                                 class="form-input w-full px-4 py-3 rounded-xl border border-[#e5e0d8] text-[#5c4a3d] bg-white"
                             />
                         </div>
@@ -439,10 +456,10 @@
                             >
                             <textarea
                                 rows="4"
+                                id="shop-info-biography"
+                                th:text="${artisan != null ? artisan.biography : ''}"
                                 class="form-input w-full px-4 py-3 rounded-xl border border-[#e5e0d8] text-[#5c4a3d] bg-white resize-none"
-                            >
-Passionate ceramics artist with over 10 years of experience creating handcrafted pottery. Each piece is uniquely designed and made with love in my home studio. I specialize in functional ware and decorative pieces inspired by nature.</textarea
-                            >
+                            ></textarea>
                         </div>
 
                         <div>
@@ -455,9 +472,12 @@ Passionate ceramics artist with over 10 years of experience creating handcrafted
                             >
                                 <div class="mb-4">
                                     <img
+                                        id="shopBannerImg"
+                                        th:src="${artisan != null and artisan.shopBanner != null ? artisan.shopBanner : 'https://images.unsplash.com/photo-1459411552884-841db9b3cc2a?w=800&h=300&fit=crop'}"
                                         src="https://images.unsplash.com/photo-1459411552884-841db9b3cc2a?w=800&h=300&fit=crop"
                                         alt="Shop Banner"
-                                        class="w-full h-48 object-cover rounded-lg"
+                                        class="w-full h-48 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                                        onclick="document.getElementById('shop-banner-file-input').click()"
                                     />
                                 </div>
                                 <div class="flex items-center justify-center">
@@ -470,6 +490,7 @@ Passionate ceramics artist with over 10 years of experience creating handcrafted
                                         </span>
                                         <input
                                             type="file"
+                                            id="shop-banner-file-input"
                                             accept="image/*"
                                             class="hidden"
                                         />
@@ -479,6 +500,8 @@ Passionate ceramics artist with over 10 years of experience creating handcrafted
                         </div>
 
                         <button
+                            type="button"
+                            onclick="saveShopSettings()"
                             class="bg-[#c17c5f] hover:bg-[#a5664d] text-white px-6 py-3 rounded-xl font-semibold transition-colors shadow-lg"
                         >
                             Save Shop Info
@@ -492,92 +515,11 @@ Passionate ceramics artist with over 10 years of experience creating handcrafted
                         My Addresses
                     </h2>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <!-- Address Card 1 - Default -->
-                        <div
-                            class="border border-[#e5e0d8] rounded-xl p-4 relative"
-                        >
-                            <div class="absolute top-4 right-4 flex gap-2">
-                                <button
-                                    class="text-[#8b7355] hover:text-[#c17c5f] transition-colors p-1"
-                                >
-                                    <i class="fas fa-pen text-sm"></i>
-                                </button>
-                                <button
-                                    class="text-[#8b7355] hover:text-red-500 transition-colors p-1"
-                                >
-                                    <i class="fas fa-trash text-sm"></i>
-                                </button>
-                            </div>
-                            <div class="flex items-start gap-3 mb-2">
-                                <div
-                                    class="w-10 h-10 bg-[#f5ebe0] rounded-lg flex items-center justify-center flex-shrink-0"
-                                >
-                                    <i
-                                        class="fas fa-map-marker-alt text-[#c17c5f]"
-                                    ></i>
-                                </div>
-                                <div>
-                                    <div class="flex items-center gap-2 mb-1">
-                                        <h3
-                                            class="font-semibold text-[#5c4a3d]"
-                                        >
-                                            Studio
-                                        </h3>
-                                        <span
-                                            class="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full font-medium"
-                                            >Default</span
-                                        >
-                                    </div>
-                                    <p class="text-sm text-[#8b7355]">
-                                        Block 312, Road 2815<br />Seef District,
-                                        Manama<br />Bahrain
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Address Card 2 -->
-                        <div
-                            class="border border-[#e5e0d8] rounded-xl p-4 relative"
-                        >
-                            <div class="absolute top-4 right-4 flex gap-2">
-                                <button
-                                    class="text-[#8b7355] hover:text-[#c17c5f] transition-colors p-1"
-                                >
-                                    <i class="fas fa-pen text-sm"></i>
-                                </button>
-                                <button
-                                    class="text-[#8b7355] hover:text-red-500 transition-colors p-1"
-                                >
-                                    <i class="fas fa-trash text-sm"></i>
-                                </button>
-                            </div>
-                            <div class="flex items-start gap-3 mb-2">
-                                <div
-                                    class="w-10 h-10 bg-[#f5ebe0] rounded-lg flex items-center justify-center flex-shrink-0"
-                                >
-                                    <i
-                                        class="fas fa-map-marker-alt text-[#c17c5f]"
-                                    ></i>
-                                </div>
-                                <div>
-                                    <h3
-                                        class="font-semibold text-[#5c4a3d] mb-1"
-                                    >
-                                        Home
-                                    </h3>
-                                    <p class="text-sm text-[#8b7355]">
-                                        Building 45, Road 1204<br />Juffair,
-                                        Manama<br />Bahrain
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="addresses-grid">
                         <!-- Add New Address Card -->
                         <div
-                            onclick="openModal()"
+                            id="add-address-card"
+                            onclick="openAddAddressModal()"
                             class="border-2 border-dashed border-[#e5e0d8] rounded-xl p-4 flex flex-col items-center justify-center cursor-pointer hover:border-[#c17c5f] hover:bg-[#f5ebe0] transition-all min-h-[120px]"
                         >
                             <div
@@ -788,6 +730,7 @@ Passionate ceramics artist with over 10 years of experience creating handcrafted
                     class="flex items-center justify-between p-6 border-b border-[#e5e0d8] sticky top-0 bg-white rounded-t-2xl"
                 >
                     <h3
+                        id="modal-title"
                         class="text-xl font-bold text-[#5c4a3d]"
                         style="font-family: &quot;Playfair Display&quot;, serif"
                     >
@@ -811,6 +754,7 @@ Passionate ceramics artist with over 10 years of experience creating handcrafted
                                     >Address Label</label
                                 >
                                 <input
+                                    id="address-label"
                                     type="text"
                                     placeholder="e.g., Home, Studio, Warehouse"
                                     class="form-input w-full px-4 py-3 rounded-xl border border-[#e5e0d8] text-[#5c4a3d] bg-white placeholder-[#b8a99a]"
@@ -824,6 +768,7 @@ Passionate ceramics artist with over 10 years of experience creating handcrafted
                                     >Street Address</label
                                 >
                                 <input
+                                    id="address-street"
                                     type="text"
                                     placeholder="Building number, Road number"
                                     class="form-input w-full px-4 py-3 rounded-xl border border-[#e5e0d8] text-[#5c4a3d] bg-white placeholder-[#b8a99a]"
@@ -838,6 +783,7 @@ Passionate ceramics artist with over 10 years of experience creating handcrafted
                                         >City</label
                                     >
                                     <input
+                                        id="address-city"
                                         type="text"
                                         placeholder="Manama"
                                         class="form-input w-full px-4 py-3 rounded-xl border border-[#e5e0d8] text-[#5c4a3d] bg-white placeholder-[#b8a99a]"
@@ -850,6 +796,7 @@ Passionate ceramics artist with over 10 years of experience creating handcrafted
                                         >ZIP Code</label
                                     >
                                     <input
+                                        id="address-zip"
                                         type="text"
                                         placeholder="12345"
                                         class="form-input w-full px-4 py-3 rounded-xl border border-[#e5e0d8] text-[#5c4a3d] bg-white placeholder-[#b8a99a]"
@@ -863,6 +810,7 @@ Passionate ceramics artist with over 10 years of experience creating handcrafted
                                     >Country</label
                                 >
                                 <select
+                                    id="address-country"
                                     class="form-input w-full px-4 py-3 rounded-xl border border-[#e5e0d8] text-[#5c4a3d] bg-white"
                                     required
                                 >
@@ -881,6 +829,7 @@ Passionate ceramics artist with over 10 years of experience creating handcrafted
                             <div>
                                 <label class="flex items-center cursor-pointer">
                                     <input
+                                        id="address-default"
                                         type="checkbox"
                                         class="w-5 h-5 rounded border-[#e5e0d8] text-[#c17c5f] focus:ring-[#c17c5f]"
                                     />
@@ -916,24 +865,36 @@ Passionate ceramics artist with over 10 years of experience creating handcrafted
         </div>
 
         <script>
-            // Sidebar navigation active state handling
-            document.querySelectorAll(".sidebar-link").forEach((link) => {
-                link.addEventListener("click", function (e) {
-                    // Remove active state from all links
-                    document.querySelectorAll(".sidebar-link").forEach((l) => {
-                        l.classList.remove("active");
-                        l.classList.remove("text-white");
-                        l.classList.add("text-[#d4c5b5]");
-                    });
+            /* Sidebar active state handled by dynamic script below */
 
-                    // Add active state to clicked link
-                    this.classList.add("active");
-                    this.classList.remove("text-[#d4c5b5]");
-                });
-            });
+                        // --- Address Management ---
+            let currentEditAddressId = null;
 
-            // Modal functions
-            function openModal() {
+            function getUserEmail() {
+                return sessionStorage.getItem('userEmail') || '';
+            }
+
+            function openAddAddressModal() {
+                currentEditAddressId = null;
+                document.getElementById("modal-title").textContent = "Add New Address";
+                document.getElementById("address-form").reset();
+                document.getElementById("address-default").checked = false;
+                
+                const modal = document.getElementById("address-modal");
+                modal.classList.remove("hidden");
+                modal.classList.add("flex");
+            }
+
+            function openEditAddressModal(addr) {
+                currentEditAddressId = addr.id;
+                document.getElementById("modal-title").textContent = "Edit Address";
+                document.getElementById("address-label").value = addr.label || '';
+                document.getElementById("address-street").value = addr.street || '';
+                document.getElementById("address-city").value = addr.city || '';
+                document.getElementById("address-zip").value = addr.zip || '';
+                document.getElementById("address-country").value = getCountryCode(addr.country);
+                document.getElementById("address-default").checked = addr.default || false;
+
                 const modal = document.getElementById("address-modal");
                 modal.classList.remove("hidden");
                 modal.classList.add("flex");
@@ -944,15 +905,189 @@ Passionate ceramics artist with over 10 years of experience creating handcrafted
                 modal.classList.add("hidden");
                 modal.classList.remove("flex");
                 document.getElementById("address-form").reset();
+                currentEditAddressId = null;
             }
 
-            // Save address
-            function saveAddress(event) {
-                event.preventDefault();
-                // In a real application, you would submit the form data to a server
-                showNotification("Address saved successfully!");
-                closeModal();
+            function getCountryCode(countryName) {
+                const map = {
+                    'Saudi Arabia / Ø§Ù„Ù…Ù…Ù„ÙƒØ© Ø§Ù„Ø¹Ø±Ø¨ÙŠØ© Ø§Ù„Ø³Ø¹ÙˆØ¯ÙŠØ©': 'SA',
+                    'Saudi Arabia': 'SA',
+                    'United Arab Emirates / Ø§Ù„Ø¥Ù…Ø§Ø±Ø§Øª Ø§Ù„Ø¹Ø±Ø¨ÙŠØ© Ø§Ù„Ù…ØªØ­Ø¯Ø©': 'AE',
+                    'United Arab Emirates': 'AE',
+                    'Egypt / Ù…ØµØ±': 'EG',
+                    'Egypt': 'EG',
+                    'Qatar / Ù‚Ø·Ø±': 'QA',
+                    'Qatar': 'QA',
+                    'Kuwait / Ø§Ù„ÙƒÙˆÙŠØª': 'KW',
+                    'Kuwait': 'KW',
+                    'Oman / Ø³Ù„Ø·Ù†Ø© Ø¹Ù…Ø§Ù†': 'OM',
+                    'Oman': 'OM',
+                    'Bahrain / Ø§Ù„Ø¨Ø­Ø±ÙŠÙ†': 'BH',
+                    'Bahrain': 'BH',
+                    'Jordan / Ø§Ù„Ø£Ø±Ø¯Ù†': 'JO',
+                    'Morocco / Ø§Ù„Ù…ØºØ±Ø¨': 'MA',
+                    'Algeria / Ø§Ù„Ø¬Ø²Ø§Ø¦Ø±': 'DZ',
+                    'Iraq / Ø§Ù„Ø¹Ø±Ø§Ù‚': 'IQ',
+                    'Lebanon / Ù„Ø¨Ù†Ø§Ù†': 'LB',
+                };
+                return map[countryName] ?? countryName ?? '';
             }
+
+            function escapeHtml(str) {
+                return String(str).replace(/[&<>"']/g, c =>
+                    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+            }
+
+            function addressCardHtml(addr) {
+                const defaultBadge = addr.default ? `
+                    <span class="bg-[#e6f4ea] text-[#137333] text-xs px-2.5 py-1 rounded-full font-semibold border border-[#ceead6]">Default</span>
+                ` : '';
+
+                return `
+                    <div class="border border-[#e5e0d8] rounded-xl p-5 relative address-card bg-white shadow-sm hover:shadow-md transition-shadow" data-id="${addr.id}">
+                        <div class="absolute top-5 right-5 flex gap-2">
+                            <button
+                                class="text-[#8b7355] hover:text-[#c17c5f] transition-colors p-1"
+                                onclick="editAddress(${addr.id})"
+                                title="Edit Address"
+                            >
+                                <i class="fas fa-pen text-sm"></i>
+                            </button>
+                            <button
+                                class="text-[#8b7355] hover:text-red-500 transition-colors p-1"
+                                onclick="deleteAddress(${addr.id})"
+                                title="Delete Address"
+                            >
+                                <i class="fas fa-trash text-sm"></i>
+                            </button>
+                        </div>
+                        <div class="flex items-start gap-4">
+                            <div
+                                class="w-12 h-12 bg-[#f5ebe0] rounded-xl flex items-center justify-center flex-shrink-0"
+                            >
+                                <i class="fas fa-map-marker-alt text-[#c17c5f] text-lg"></i>
+                            </div>
+                            <div class="pr-12">
+                                <div class="flex items-center gap-2 mb-2 flex-wrap">
+                                    <h3 class="font-bold text-[#5c4a3d] text-base">${escapeHtml(addr.label)}</h3>
+                                    ${defaultBadge}
+                                </div>
+                                <p class="text-sm text-[#8b7355] leading-relaxed">
+                                    ${escapeHtml(addr.street)}<br />
+                                    ${escapeHtml(addr.city)}, ${escapeHtml(addr.zip)}<br />
+                                    ${escapeHtml(addr.country)}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Cache of loaded addresses
+            let loadedAddressesList = [];
+
+            function loadAddresses() {
+                const email = getUserEmail();
+                if (!email) return;
+
+                fetch(`/api/addresses?email=${encodeURIComponent(email)}`)
+                    .then(r => r.json())
+                    .then(addresses => {
+                        loadedAddressesList = addresses;
+                        const grid = document.getElementById('addresses-grid');
+                        if (!grid) return;
+
+                        // Remove existing address cards, leaving only the "Add New Address" dashed card
+                        grid.querySelectorAll('.address-card').forEach(card => card.remove());
+
+                        // Render each address card before the Add card
+                        const addCard = document.getElementById('add-address-card');
+                        addresses.forEach(addr => {
+                            if (addCard) {
+                                addCard.insertAdjacentHTML('beforebegin', addressCardHtml(addr));
+                            }
+                        });
+                    })
+                    .catch(err => console.error('Failed to load addresses', err));
+            }
+
+            window.editAddress = function(id) {
+                const addr = loadedAddressesList.find(a => a.id === id);
+                if (addr) {
+                    openEditAddressModal(addr);
+                }
+            };
+
+            window.deleteAddress = function(id) {
+                if (!confirm("Are you sure you want to delete this address?")) return;
+
+                fetch(`/api/addresses/${id}`, {
+                    method: 'DELETE'
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification("Address deleted successfully!");
+                        loadAddresses();
+                    } else {
+                        showNotification("Failed to delete address.");
+                    }
+                })
+                .catch(err => {
+                    console.error('Failed to delete address', err);
+                    showNotification("Failed to delete address.");
+                });
+            };
+
+            window.saveAddress = function(event) {
+                event.preventDefault();
+
+                const email = getUserEmail();
+                if (!email) {
+                    showNotification("Error: User email not found. Please log in again.");
+                    return;
+                }
+
+                const label = document.getElementById("address-label").value.trim();
+                const street = document.getElementById("address-street").value.trim();
+                const city = document.getElementById("address-city").value.trim();
+                const zip = document.getElementById("address-zip").value.trim();
+                const countrySelect = document.getElementById("address-country");
+                const country = countrySelect.options[countrySelect.selectedIndex].text;
+                const isDefault = document.getElementById("address-default").checked;
+
+                const payload = {
+                    userEmail: email,
+                    label: label,
+                    street: street,
+                    city: city,
+                    zip: zip,
+                    country: country,
+                    default: isDefault
+                };
+
+                const method = currentEditAddressId ? 'PUT' : 'POST';
+                const url = currentEditAddressId ? `/api/addresses/${currentEditAddressId}` : '/api/addresses';
+
+                fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                })
+                .then(r => r.json())
+                .then(data => {
+                    showNotification(currentEditAddressId ? "Address updated successfully!" : "Address added successfully!");
+                    closeModal();
+                    loadAddresses();
+                })
+                .catch(err => {
+                    console.error('Failed to save address', err);
+                    showNotification("Failed to save address.");
+                });
+            };
+
+            // Initialize loaded addresses
+            loadAddresses();
 
             // Show notification
             function showNotification(message) {
@@ -972,13 +1107,185 @@ Passionate ceramics artist with over 10 years of experience creating handcrafted
             }
 
             // Close modal when clicking outside
-            document
-                .getElementById("address-modal")
-                .addEventListener("click", function (e) {
+            document.getElementById("address-modal").addEventListener("click", function (e) {
                     if (e.target === this) {
                         closeModal();
                     }
                 });
+
+            // Profile Picture Upload Handler
+            document.getElementById('artisan-profile-file-input')?.addEventListener('change', function () {
+                if (!this.files.length) return;
+                const file = this.files[0];
+                
+                // Max size check: 2MB
+                const maxBytes = 2 * 1024 * 1024;
+                if (file.size > maxBytes) {
+                    showNotification("Profile picture must be 2MB or smaller.");
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const imageUrl = e.target.result;
+                    
+                    // Update preview immediately
+                    const img = document.getElementById('artisanProfileImg');
+                    if (img) img.src = imageUrl;
+
+                    // Save to database permanently
+                    const userEmail = sessionStorage.getItem('userEmail');
+                    if (userEmail) {
+                        fetch('/api/user/update-profile-picture', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ email: userEmail, imageUrl: imageUrl })
+                        })
+                        .then(r => r.json())
+                        .then(data => {
+                            if (data.success) {
+                                showNotification("Profile picture updated permanently!");
+                                // Update session storage
+                                sessionStorage.setItem('userProfile', JSON.stringify(data.user));
+                                
+                                // Sync other images on the page (top-right, sidebar)
+                                const profilePicture = data.user.profilePicture || imageUrl;
+                                document.querySelectorAll('aside img.rounded-full, .user-menu img.rounded-full').forEach((img) => {
+                                    img.src = profilePicture;
+                                });
+                            } else {
+                                showNotification("Failed to update profile picture.");
+                            }
+                        })
+                        .catch(err => {
+                            console.error('Failed to update profile picture', err);
+                            showNotification("Failed to save profile picture to server.");
+                        });
+                    }
+                };
+                reader.readAsDataURL(file);
+            });
+
+            // Save Profile Settings (Name, Phone, Shop Name)
+            window.saveProfileSettings = function() {
+                const email = sessionStorage.getItem('userEmail');
+                const name = document.getElementById('artisan-name').value.trim();
+                const phone = document.getElementById('artisan-phone').value.trim();
+                const shopName = document.getElementById('artisan-shopName').value.trim();
+
+                if (!email) {
+                    showNotification("Please log in again.");
+                    return;
+                }
+
+                fetch('/api/user/update-artisan-settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: email,
+                        name: name,
+                        phone: phone,
+                        shopName: shopName
+                    })
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification("Profile settings saved successfully!");
+                        // Sync other shop name field if present
+                        const shopInfoNameInput = document.getElementById('shop-info-name');
+                        if (shopInfoNameInput) shopInfoNameInput.value = shopName;
+                    } else {
+                        showNotification("Failed to save profile settings.");
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    showNotification("Error saving profile settings.");
+                });
+            };
+
+            // Save Shop Settings (Shop Name, Biography)
+            window.saveShopSettings = function() {
+                const email = sessionStorage.getItem('userEmail');
+                const shopName = document.getElementById('shop-info-name').value.trim();
+                const biography = document.getElementById('shop-info-biography').value.trim();
+
+                if (!email) {
+                    showNotification("Please log in again.");
+                    return;
+                }
+
+                fetch('/api/user/update-artisan-settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: email,
+                        shopName: shopName,
+                        biography: biography
+                    })
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification("Shop information saved successfully!");
+                        // Sync other shop name field if present
+                        const artisanShopNameInput = document.getElementById('artisan-shopName');
+                        if (artisanShopNameInput) artisanShopNameInput.value = shopName;
+                    } else {
+                        showNotification("Failed to save shop settings.");
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    showNotification("Error saving shop settings.");
+                });
+            };
+
+            // Shop Banner Upload Handler
+            document.getElementById('shop-banner-file-input')?.addEventListener('change', function () {
+                if (!this.files.length) return;
+                const file = this.files[0];
+                
+                // Max size check: 2MB
+                const maxBytes = 2 * 1024 * 1024;
+                if (file.size > maxBytes) {
+                    showNotification("Banner image must be 2MB or smaller.");
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const bannerUrl = e.target.result;
+                    
+                    // Update preview immediately
+                    const img = document.getElementById('shopBannerImg');
+                    if (img) img.src = bannerUrl;
+
+                    // Save to database permanently
+                    const userEmail = sessionStorage.getItem('userEmail');
+                    if (userEmail) {
+                        fetch('/api/user/update-shop-banner', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ email: userEmail, bannerUrl: bannerUrl })
+                        })
+                        .then(r => r.json())
+                        .then(data => {
+                            if (data.success) {
+                                showNotification("Shop banner updated permanently!");
+                            } else {
+                                showNotification("Failed to update shop banner.");
+                            }
+                        })
+                        .catch(err => {
+                            console.error('Failed to update shop banner', err);
+                            showNotification("Failed to save banner to server.");
+                        });
+                    }
+                };
+                reader.readAsDataURL(file);
+            });
 
         // User profile logout dropdown
         const userMenuButton = document.getElementById('userMenuButton');
@@ -1007,9 +1314,38 @@ Passionate ceramics artist with over 10 years of experience creating handcrafted
         logoutButton.addEventListener('click', () => {
             const confirmed = window.confirm('Are you sure you want to logout?');
             if (confirmed) {
-                window.location.href = 'index.html';
+                if (typeof window.artisanLogout === 'function') {
+                    window.artisanLogout();
+                } else {
+                    window.location.href = '/login';
+                }
             }
         });
         </script>
-    </body>
+        <script src="/artisan-common.js"></script>
+
+    <script>
+        // Dynamic sidebar active state: highlights the link matching the current page URL
+        (function() {
+            var path = window.location.pathname.toLowerCase();
+            document.querySelectorAll('.sidebar-link').forEach(function(link) {
+                link.classList.remove('active', 'text-white');
+                link.classList.add('text-[#d4c5b5]');
+                var href = (link.getAttribute('href') || '').toLowerCase().replace(/^\//, '');
+                if (href && path.includes(href)) {
+                    link.classList.add('active', 'text-white');
+                    link.classList.remove('text-[#d4c5b5]');
+                }
+            });
+            // Special case: artisanOrderDetail should highlight Orders
+            if (path.includes('artisanorderdetail')) {
+                var ordersLink = document.querySelector('a[href="/artisanOrders"]');
+                if (ordersLink) {
+                    ordersLink.classList.add('active', 'text-white');
+                    ordersLink.classList.remove('text-[#d4c5b5]');
+                }
+            }
+        })();
+    </script>
+</body>
 </html>

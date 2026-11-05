@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script src="/app-core.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>All Products - Artisan Co-op</title>
@@ -120,6 +121,16 @@
             border-color: #c17c5f;
         }
 
+        /* Custom radio: the real input is visually hidden; style the circle next to it. */
+        .custom-radio:checked + div {
+            border-color: #c17c5f;
+            background: radial-gradient(circle, #c17c5f 0 40%, #fff 45%);
+        }
+        .custom-radio:focus-visible + div {
+            outline: 2px solid #c17c5f;
+            outline-offset: 2px;
+        }
+
         .custom-radio:checked {
             border-color: #c17c5f;
         }
@@ -140,52 +151,59 @@
 <body class="min-h-screen flex flex-col">
     <!-- Navigation Bar -->
     <nav class="bg-[#faf9f6] border-b border-[#e5e0d8] py-4 px-6 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto flex items-center justify-between">
-            
-            <div class="flex items-center">
+        <div class="max-w-7xl mx-auto flex items-center gap-4 lg:gap-6 min-h-[2.75rem]">
+            <!-- Brand -->
+            <div class="flex items-center shrink-0 min-w-0">
                 <a href="/" class="flex items-center gap-3 group">
-                    <!-- Logo -->
-                    <img src="/images/Logo.png" alt="ArtsyVibe Logo"
-                        class="h-10 w-auto object-contain"
+                    <img src="/images/Logo.png" alt="ArtsyVibe Logo" class="h-10 w-auto object-contain shrink-0"
                         style="filter: drop-shadow(0 0 0.5px rgba(193, 124, 95, 1));">
-
-                    <!-- Brand Name -->
-                    <span class="text-2xl font-semibold" 
+                    <span class="text-xl sm:text-2xl font-semibold whitespace-nowrap truncate max-w-[10rem] sm:max-w-none"
                         style="font-family: 'Playfair Display', serif;">
                         ArtsyVibe
                     </span>
                 </a>
             </div>
 
-            <!-- Center Links -->
-            <div class="hidden md:flex items-center space-x-8">
-                <a href="/" class="text-[#8b7355] hover:text-[#c17c5f] transition-colors font-medium">Home</a>
-                <a href="/products" class="text-[#c17c5f] font-semibold">Products</a>
-                <a href="/auctions" class="text-[#8b7355] hover:text-[#c17c5f] transition-colors font-medium">Auctions</a>
+            <!-- Center links -->
+            <div class="hidden md:flex flex-1 min-w-0 items-center justify-center gap-6 lg:gap-8 px-2">
+                <a href="/" class="text-[#8b7355] hover:text-[#c17c5f] transition-colors font-medium whitespace-nowrap shrink-0">Home</a>
+                <a href="/products"
+                    class="text-[#c17c5f] font-semibold whitespace-nowrap shrink-0">Products</a>
+                <a href="/auctions"
+                    class="text-[#8b7355] hover:text-[#c17c5f] transition-colors font-medium whitespace-nowrap shrink-0">Auctions</a>
             </div>
 
-            <div class="flex items-center space-x-4">
-                <div id="login-button-wrapper" class="flex items-center">
-                    <a href="/login" class="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-[#c17c5f] to-[#a5664d] text-white text-sm font-semibold shadow-lg shadow-[#c17c5f]/20 transition-all hover:from-[#b06b4f] hover:to-[#8f5d3f]">
+            <!-- Actions -->
+            <div class="flex items-center justify-end gap-3 sm:gap-4 shrink-0 ml-auto">
+                <div id="login-button-wrapper" class="flex items-center hidden">
+                    <a href="/login"
+                        class="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-[#c17c5f] to-[#a5664d] text-white text-sm font-semibold shadow-lg shadow-[#c17c5f]/20 transition-all hover:from-[#b06b4f] hover:to-[#8f5d3f]">
                         <i class="fas fa-sign-in-alt"></i>
                         Login
                     </a>
                 </div>
 
                 <div id="user-section" class="hidden flex items-center space-x-4">
-                    <a href="/profile" class="flex flex-col items-center text-[#8b7355] hover:text-[#c17c5f] transition-colors">
+                    <a href="/profile" id="user-menu-button"
+                        class="flex flex-col items-center text-[#8b7355] hover:text-[#c17c5f] transition-colors">
                         <i class="fas fa-user-circle text-2xl"></i>
-                        <p id="nav-user-name" class="hidden md:block text-[10px] font-semibold text-[#5c4a3d] mt-0.5">John Doe</p>
+                        <p id="nav-user-name" class="hidden md:block text-[10px] font-semibold text-[#5c4a3d] mt-0.5">
+                            John Doe</p>
                     </a>
-                    <a id="notifications-link" href="/notifications" class="text-[#8b7355] hover:text-[#c17c5f] transition-colors relative">
+
+                    <a id="notifications-link" href="/notifications"
+                        class="text-[#8b7355] hover:text-[#c17c5f] transition-colors relative">
                         <i class="fas fa-bell text-xl"></i>
-                        <span id="notification-badge" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">4</span>
+                        <span id="notification-badge"
+                            class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">4</span>
                     </a>
                 </div>
 
-                <a id="cart-link" href="/cart" class="text-[#8b7355] hover:text-[#c17c5f] transition-colors relative">
+                <a id="cart-link" href="/cart" class="text-[#8b7355] hover:text-[#c17c5f] transition-colors relative shrink-0">
                     <i class="fas fa-shopping-cart text-xl"></i>
-                    <span class="absolute -top-2 -right-2 bg-[#c17c5f] text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">3</span>
+                    <span id="cart-badge"
+                        class="absolute -top-2 -right-2 bg-[#c17c5f] text-white text-xs rounded-full w-5 h-5 items-center justify-center"
+                        style="display: none;">0</span>
                 </a>
             </div>
         </div>
@@ -261,14 +279,7 @@
                 <!-- Price Range Slider -->
                 <div class="mb-6">
                     <h3 class="text-lg font-semibold text-[#5c4a3d] mb-3">Price Range</h3>
-                    <div class="px-2">
-                        <input type="range" min="0" max="1000" value="500" class="w-full" id="priceRange">
-                        <div class="flex justify-between mt-2 text-sm text-[#8b7355]">
-                            <span>0 BD</span>
-                            <span class="font-semibold text-[#c17c5f]" id="priceValue">500 BD</span>
-                            <span>1000 BD</span>
-                        </div>
-                    </div>
+                    <div class="px-2" id="priceRangeControl"></div>
                 </div>
             </div>
         </aside>
@@ -298,23 +309,34 @@
                 <div th:each="product : ${products}" 
                      class="product-card bg-white rounded-xl overflow-hidden card-shadow relative" 
                      th:attr="data-category=${#strings.toLowerCase(product.category)}, data-price=${product.price}, data-id=${product.id}">
-                    
+
                     <button class="wishlist-btn absolute top-3 right-3 z-10 w-10 h-10 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center text-[#8b7355] hover:text-[#ef4444] transition-all shadow-sm">
                         <i class="far fa-heart text-lg"></i>
                     </button>
-                    
+
                     <div class="relative">
-                        <img th:src="${product.imageUrl}" th:alt="${product.title}" class="w-full h-56 object-cover">
+                        <img th:src="${product.imageUrl}" th:alt="${product.title}" 
+                             class="w-full h-56 object-cover"
+                             th:classappend="${product.stockQuantity <= 0 or product.status == 'out of stock' ? 'opacity-60 grayscale-[35%]' : ''}">
+                        <!-- Out of Stock Badge -->
+                        <span th:if="${product.stockQuantity <= 0 or product.status == 'out of stock'}" 
+                              class="absolute top-3 left-3 bg-red-600 text-white px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-md z-10">
+                            Out of Stock
+                        </span>
                     </div>
-                    
+
                     <div class="p-5">
-                        <h3 class="text-lg font-semibold text-[#5c4a3d] mb-1" th:text="${product.title}">Product Title</h3>
+                        <div class="flex justify-between items-start mb-1 gap-2">
+                            <h3 class="text-lg font-semibold text-[#5c4a3d] truncate" th:text="${product.title}">Product Title</h3>
+                            <span th:if="${product.stockQuantity <= 0 or product.status == 'out of stock'}" class="text-xs text-red-500 font-bold uppercase shrink-0 mt-1">(Out of stock)</span>
+                        </div>
                         <p class="text-[#8b7355] text-sm mb-3" th:text="'by ' + ${product.artisanName}">by Artisan Name</p>
-                        <div class="flex items-center justify-between">
-                            <span class="text-xl font-bold text-[#c17c5f]" th:text="${#numbers.formatDecimal(product.price, 1, 2)} + ' BD'">0.00 BD</span>
-                            <a th:href="@{/ProductDetailsStandard(id=${product.id})}" class="bg-[#c17c5f] hover:bg-[#a5664d] text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm">
-                                View Details
-                            </a>
+                            <div class="flex items-center justify-between">
+                                <span class="text-xl font-bold text-[#c17c5f]" th:text="${#numbers.formatDecimal(product.price, 1, 2)} + ' BD'">0.00 BD</span>
+                                <a th:href="@{/ProductDetailsStandard(id=${product.id})}" class="bg-[#c17c5f] hover:bg-[#a5664d] text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm">
+                                    View Details
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -323,17 +345,10 @@
     </div>
 
     <script src="/authguard.js"></script>
+    <script src="/price-range.js"></script>
     <script src="/products.js"></script>
     
     <script>
-        // Price range slider functionality
-        const priceRange = document.getElementById('priceRange');
-        const priceValue = document.getElementById('priceValue');
-
-        priceRange.addEventListener('input', function() {
-            priceValue.textContent = this.value + ' BD';
-        });
-
         // Custom checkbox functionality
         const checkboxes = document.querySelectorAll('.custom-checkbox');
         checkboxes.forEach(checkbox => {
@@ -351,7 +366,3 @@
     </script>
 </body>
 </html>
-
-
-
-

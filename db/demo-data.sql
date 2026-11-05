@@ -1,9 +1,11 @@
 -- ============================================================
--- ArtsyVibe seed data
--- Runs automatically on every startup via:
---   spring.sql.init.mode=always
---   spring.jpa.defer-datasource-initialization=true
--- ddl-auto=create wipes tables first, so no duplicate-key risk.
+-- ArtsyVibe demo data (OPTIONAL, run manually)
+--
+-- The schema is created by Flyway when the app starts. To load demo data into an EMPTY
+-- database, start the app once (so Flyway creates the tables), then run:
+--     psql "$DATABASE_URL" -f db/demo-data.sql
+-- All demo accounts use the password: password123
+-- Do not run this against a database with real data.
 -- ============================================================
 
 -- ── 1. Product categories ────────────────────────────────────
@@ -20,13 +22,13 @@ INSERT INTO product_categories (category_id, name) OVERRIDING SYSTEM VALUE VALUE
 -- Artisans: IDs 2-4
 -- Customers: IDs 5-7
 INSERT INTO users (user_id, name, email, password, role, profile_picture) OVERRIDING SYSTEM VALUE VALUES
-  (1,  'Alice Admin',   'alice@artsyvibe.com',   '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HCGKK2p9J4G1R59dY6d5W', 'ADMIN', 'https://cdn-icons-png.flaticon.com/512/149/149071.png'),
-  (2,  'Elena Craft',   'elena@artsyvibe.com',   '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HCGKK2p9J4G1R59dY6d5W', 'ARTISAN', 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face'),
-  (3,  'Marco Pottery', 'marco@artsyvibe.com',   '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HCGKK2p9J4G1R59dY6d5W', 'ARTISAN', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face'),
-  (4,  'Zara Weaves',   'zara@artsyvibe.com',    '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HCGKK2p9J4G1R59dY6d5W', 'ARTISAN', 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=face'),
-  (5,  'John Doe',      'john@example.com',      '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HCGKK2p9J4G1R59dY6d5W', 'CUSTOMER', 'https://cdn-icons-png.flaticon.com/512/149/149071.png'),
-  (6,  'Sarah Miller',  'sarah@example.com',     '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HCGKK2p9J4G1R59dY6d5W', 'CUSTOMER', 'https://cdn-icons-png.flaticon.com/512/149/149071.png'),
-  (7,  'Tom Brown',     'tom@example.com',       '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HCGKK2p9J4G1R59dY6d5W', 'CUSTOMER', 'https://cdn-icons-png.flaticon.com/512/149/149071.png');
+  (1,  'Alice Admin',   'alice@artsyvibe.com',   '$2a$10$FIVPPbrxrRXHIsD.jIwtkOYaWLhZ1YYpu2mtAzbi2aUlceQT728wu', 'ADMIN', 'https://cdn-icons-png.flaticon.com/512/149/149071.png'),
+  (2,  'Elena Craft',   'elena@artsyvibe.com',   '$2a$10$FIVPPbrxrRXHIsD.jIwtkOYaWLhZ1YYpu2mtAzbi2aUlceQT728wu', 'ARTISAN', 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face'),
+  (3,  'Marco Pottery', 'marco@artsyvibe.com',   '$2a$10$FIVPPbrxrRXHIsD.jIwtkOYaWLhZ1YYpu2mtAzbi2aUlceQT728wu', 'ARTISAN', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face'),
+  (4,  'Zara Weaves',   'zara@artsyvibe.com',    '$2a$10$FIVPPbrxrRXHIsD.jIwtkOYaWLhZ1YYpu2mtAzbi2aUlceQT728wu', 'ARTISAN', 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=face'),
+  (5,  'John Doe',      'john@example.com',      '$2a$10$FIVPPbrxrRXHIsD.jIwtkOYaWLhZ1YYpu2mtAzbi2aUlceQT728wu', 'CUSTOMER', 'https://cdn-icons-png.flaticon.com/512/149/149071.png'),
+  (6,  'Sarah Miller',  'sarah@example.com',     '$2a$10$FIVPPbrxrRXHIsD.jIwtkOYaWLhZ1YYpu2mtAzbi2aUlceQT728wu', 'CUSTOMER', 'https://cdn-icons-png.flaticon.com/512/149/149071.png'),
+  (7,  'Tom Brown',     'tom@example.com',       '$2a$10$FIVPPbrxrRXHIsD.jIwtkOYaWLhZ1YYpu2mtAzbi2aUlceQT728wu', 'CUSTOMER', 'https://cdn-icons-png.flaticon.com/512/149/149071.png');
 
 
 -- ── 3. Admins (joined subtable) ──────────────────────────────
@@ -56,8 +58,8 @@ OVERRIDING SYSTEM VALUE VALUES
   (7,  'Gold-Leaf Pendant Necklace',  '18 k gold-plated pendant on a 45 cm sterling silver chain. Inspired by geometric Islamic patterns.',                   95.00,  'jewelry',   'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=600', 18, 'Zara Weaves',   false, '2025-02-15', 4, 2),
   (8,  'Abstract Canvas Print',       'Acrylic abstract in terracotta and indigo on stretched canvas, 50×70 cm. Ready to hang.',                               220.00, 'paintings', 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=600', 3,  'Elena Craft',   false, '2025-02-20', 2, 5),
   (9,  'Natural Linen Table Runner',  'Hand-loomed linen table runner, 40×180 cm. Natural undyed fabric with fringed ends.',                                  78.00,  'textiles',  'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=600', 10, 'Zara Weaves',   false, '2025-03-01', 4, 3),
-  (10, 'Walnut Cheese Board Set',     'Solid walnut board with engraved floral border, paired with two hand-forged cheese knives.',                            145.00, 'woodwork',  'https://images.unsplash.com/photo-1541585452919-45b8f1a7069d?w=600', 6,  'Marco Pottery', false, '2025-03-05', 3, 4),
-  (11, 'Speckled Stoneware Vase',     'Tall 30 cm vase in warm speckled glaze. Perfect for dried or fresh florals.',                                           62.00,  'ceramics',  'https://images.unsplash.com/photo-1490312278390-ab64016b5873?w=600', 9,  'Marco Pottery', false, '2025-03-10', 3, 1),
+  (10, 'Walnut Cheese Board Set',     'Solid walnut board with engraved floral border, paired with two hand-forged cheese knives.',                            145.00, 'woodwork',  'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=600', 6,  'Marco Pottery', false, '2025-03-05', 3, 4),
+  (11, 'Speckled Stoneware Vase',     'Tall 30 cm vase in warm speckled glaze. Perfect for dried or fresh florals.',                                           62.00,  'ceramics',  'https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=600', 9,  'Marco Pottery', false, '2025-03-10', 3, 1),
   (12, 'Macramé Boho Throw Blanket', 'Hand-knotted macramé throw in cream and rust, 130×170 cm. 100% recycled cotton.',                                      135.00, 'textiles',  'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=600', 7,  'Zara Weaves',   false, '2025-03-15', 4, 3);
 
 -- ── 7. Auction products ───────────────────────────────────────
@@ -73,12 +75,12 @@ OVERRIDING SYSTEM VALUE VALUES
 -- ── 8. Auctions ───────────────────────────────────────────────
 INSERT INTO auctions (id, product_id, starting_bid, current_highest_bid, highest_bidder_name, start_time, end_time, status, admin_id)
 OVERRIDING SYSTEM VALUE VALUES
-  (1, 13, 150.00, 210.00, 'Sarah Miller', '2025-05-01 10:00:00', '2025-05-20 20:00:00', 'active',   1),
-  (2, 14, 200.00, 275.00, 'John Doe',     '2025-05-03 10:00:00', '2025-05-22 20:00:00', 'active',   1),
-  (3, 15, 180.00, 180.00, NULL,           '2025-05-05 10:00:00', '2025-05-25 20:00:00', 'active',   1),
-  (4, 16, 500.00, 620.00, 'Tom Brown',    '2025-04-15 10:00:00', '2025-05-10 20:00:00', 'ended',    1),
-  (5, 17, 120.00, 195.00, 'Sarah Miller', '2025-04-20 10:00:00', '2025-05-12 20:00:00', 'active',   1),
-  (6, 18, 300.00, 300.00, NULL,           '2025-05-10 10:00:00', '2025-06-01 20:00:00', 'upcoming', 1);
+  (1, 13, 150.00, 210.00, 'Sarah Miller', '2026-05-01 10:00:00', '2026-05-25 20:00:00', 'LIVE',     1),
+  (2, 14, 200.00, 275.00, 'John Doe',     '2026-05-03 10:00:00', '2026-05-28 20:00:00', 'LIVE',     1),
+  (3, 15, 180.00, 180.00, NULL,           '2026-05-05 10:00:00', '2026-05-30 20:00:00', 'LIVE',     1),
+  (4, 16, 500.00, 620.00, 'Tom Brown',    '2026-04-01 10:00:00', '2026-04-20 20:00:00', 'ENDED',    1),
+  (5, 17, 120.00, 195.00, 'Sarah Miller', '2026-04-10 10:00:00', '2026-05-01 20:00:00', 'ENDED',    1),
+  (6, 18, 300.00, 300.00, NULL,           '2026-05-20 10:00:00', '2026-06-15 20:00:00', 'UPCOMING', 1);
 
 -- ── 9. Bids ───────────────────────────────────────────────────
 INSERT INTO bids (bid_id, bid_amount, bid_time, customer_id, auction_id) OVERRIDING SYSTEM VALUE VALUES
@@ -130,7 +132,7 @@ INSERT INTO reviews (review_id, rating, comment, date, customer_id, product_id) 
   (3, 4, 'The tapestry is even more beautiful in person. Delivery was quick.',                         '2025-04-02', 5, 3),
   (4, 5, 'My new favourite serving board. The grain is beautiful and it wipes clean easily.',          '2025-04-25', 7, 10),
   (5, 4, 'Great mug set, the smoke glaze is really unique. One mug had a tiny chip on the base.',     '2025-04-10', 6, 6),
-  (6, 5, 'The linen runner is exactly what I wanted — natural, elegant, and good quality.',            '2025-05-03', 6, 9);
+  (6, 5, 'The linen runner is exactly what I wanted: natural, elegant, and good quality.',            '2025-05-03', 6, 9);
 
 -- ── 14. Wishlists ─────────────────────────────────────────────
 INSERT INTO wishlists (wishlist_id, date_created, customer_id) OVERRIDING SYSTEM VALUE VALUES
@@ -162,3 +164,12 @@ SELECT setval('payments_payment_id_seq',            (SELECT MAX(payment_id)  FRO
 SELECT setval('reviews_review_id_seq',              (SELECT MAX(review_id)   FROM reviews));
 SELECT setval('wishlists_wishlist_id_seq',          (SELECT MAX(wishlist_id) FROM wishlists));
 SELECT setval('wishlist_items_wishlist_item_id_seq',(SELECT MAX(wishlist_item_id) FROM wishlist_items));
+
+-- ── Fill columns the inserts above leave empty (the app treats a NULL status as "not active") ──
+UPDATE users SET status = 'active' WHERE status IS NULL;
+UPDATE users SET join_date = CURRENT_TIMESTAMP WHERE join_date IS NULL;
+UPDATE products SET status = 'active' WHERE status IS NULL AND stock_quantity > 0;
+UPDATE products SET status = 'out of stock' WHERE status IS NULL;
+UPDATE reviews SET status = 'active' WHERE status IS NULL;
+UPDATE reviews SET auto_flagged = FALSE WHERE auto_flagged IS NULL;
+UPDATE auctions SET flagged = FALSE WHERE flagged IS NULL;

@@ -1,5 +1,5 @@
 // ============================================================
-// index.js — ArtsyVibe Home Page
+// index.js: ArtsyVibe Home Page
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ----------------------------------------------------------
-    // 2. Category cards — navigate to products page filtered by category
+    // 2. Category cards: navigate to products page filtered by category
     // ----------------------------------------------------------
     const categoryCards = document.querySelectorAll('.category-card');
     categoryCards.forEach(card => {
@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.key === 'Enter') newsletterBtn?.click();
     });
 
-    // 5. Badges initialization (Login state handled by authguard.js)
+    // 6. Badges initialization (Login state handled by authguard.js)
     // ----------------------------------------------------------
     if (window.updateNotificationBadge) updateNotificationBadge();
     if (window.updateCartBadge) updateCartBadge();

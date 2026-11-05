@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script src="/app-core.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shopping Cart &amp; Checkout - Artisan Co-op</title>
@@ -64,7 +65,7 @@
         }
         .cart-item:hover { background-color: #fdf8f5; }
 
-        /* Cart item image — wider square */
+        /* Cart item image: wider square */
         .cart-item-img {
             width: 90px;
             height: 90px;
@@ -100,50 +101,59 @@
 
     <!-- Navigation Bar -->
     <nav class="bg-[#faf9f6] border-b border-[#e5e0d8] py-4 px-6 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto flex items-center justify-between">
-            
-            <div class="flex items-center">
+        <div class="max-w-7xl mx-auto flex items-center gap-4 lg:gap-6 min-h-[2.75rem]">
+            <!-- Brand -->
+            <div class="flex items-center shrink-0 min-w-0">
                 <a href="/" class="flex items-center gap-3 group">
-                    <!-- Logo -->
-                    <img src="/images/Logo.png" alt="ArtsyVibe Logo"
-                        class="h-10 w-auto object-contain"
+                    <img src="/images/Logo.png" alt="ArtsyVibe Logo" class="h-10 w-auto object-contain shrink-0"
                         style="filter: drop-shadow(0 0 0.5px rgba(193, 124, 95, 1));">
-
-                    <!-- Brand Name -->
-                    <span class="text-2xl font-semibold" 
+                    <span class="text-xl sm:text-2xl font-semibold whitespace-nowrap truncate max-w-[10rem] sm:max-w-none"
                         style="font-family: 'Playfair Display', serif;">
                         ArtsyVibe
                     </span>
                 </a>
             </div>
 
-            <div class="hidden md:flex items-center space-x-8">
-                <a href="/" class="text-[#8b7355] hover:text-[#c17c5f] transition-colors font-medium">Home</a>
-                <a href="/products" class="text-[#8b7355] hover:text-[#c17c5f] transition-colors font-medium">Products</a>
-                <a href="/auctions" class="text-[#8b7355] hover:text-[#c17c5f] transition-colors font-medium">Auctions</a>
+            <!-- Center links -->
+            <div class="hidden md:flex flex-1 min-w-0 items-center justify-center gap-6 lg:gap-8 px-2">
+                <a href="/" class="text-[#8b7355] hover:text-[#c17c5f] transition-colors font-medium whitespace-nowrap shrink-0">Home</a>
+                <a href="/products"
+                    class="text-[#8b7355] hover:text-[#c17c5f] transition-colors font-medium whitespace-nowrap shrink-0">Products</a>
+                <a href="/auctions"
+                    class="text-[#8b7355] hover:text-[#c17c5f] transition-colors font-medium whitespace-nowrap shrink-0">Auctions</a>
             </div>
 
-            <div class="flex items-center space-x-4">
-                <div id="login-button-wrapper" class="flex items-center">
-                    <a href="/login" class="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-[#c17c5f] to-[#a5664d] text-white text-sm font-semibold shadow-lg shadow-[#c17c5f]/20 transition-all hover:from-[#b06b4f] hover:to-[#8f5d3f]">
+            <!-- Actions -->
+            <div class="flex items-center justify-end gap-3 sm:gap-4 shrink-0 ml-auto">
+                <div id="login-button-wrapper" class="flex items-center hidden">
+                    <a href="/login"
+                        class="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-[#c17c5f] to-[#a5664d] text-white text-sm font-semibold shadow-lg shadow-[#c17c5f]/20 transition-all hover:from-[#b06b4f] hover:to-[#8f5d3f]">
                         <i class="fas fa-sign-in-alt"></i>
                         Login
                     </a>
                 </div>
 
                 <div id="user-section" class="hidden flex items-center space-x-4">
-                    <a href="/profile" class="flex flex-col items-center text-[#8b7355] hover:text-[#c17c5f] transition-colors">
+                    <a href="/profile" id="user-menu-button"
+                        class="flex flex-col items-center text-[#8b7355] hover:text-[#c17c5f] transition-colors">
                         <i class="fas fa-user-circle text-2xl"></i>
-                        <p id="nav-user-name" class="hidden md:block text-[10px] font-semibold text-[#5c4a3d] mt-0.5">John Doe</p>
+                        <p id="nav-user-name" class="hidden md:block text-[10px] font-semibold text-[#5c4a3d] mt-0.5">
+                            John Doe</p>
                     </a>
-                    <a id="notifications-link" href="/notifications" class="text-[#8b7355] hover:text-[#c17c5f] transition-colors relative">
+
+                    <a id="notifications-link" href="/notifications"
+                        class="text-[#8b7355] hover:text-[#c17c5f] transition-colors relative">
                         <i class="fas fa-bell text-xl"></i>
-                        <span id="notification-badge" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">4</span>
+                        <span id="notification-badge"
+                            class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">4</span>
                     </a>
                 </div>
 
-                <a id="cart-link" href="/cart" class="text-[#8b7355] hover:text-[#c17c5f] transition-colors relative">
+                <a id="cart-link" href="/cart" class="text-[#8b7355] hover:text-[#c17c5f] transition-colors relative shrink-0">
                     <i class="fas fa-shopping-cart text-xl"></i>
+                    <span id="cart-badge"
+                        class="absolute -top-2 -right-2 bg-[#c17c5f] text-white text-xs rounded-full w-5 h-5 items-center justify-center"
+                        style="display: none;">0</span>
                 </a>
             </div>
         </div>
@@ -186,7 +196,7 @@
                     <div class="mt-4 pt-4 border-t-2 border-[#e5e0d8] space-y-2">
                         <div class="flex justify-between text-[#8b7355]">
                             <span>Subtotal</span>
-                            <span id="items-subtotal">259.00 BD</span>
+                            <span id="items-subtotal">0.00 BD</span>
                         </div>
                         <div class="flex justify-between text-[#8b7355]" id="shipping-cost-row">
                             <span id="shipping-label">Shipping</span>
@@ -194,7 +204,7 @@
                         </div>
                         <div class="flex justify-between items-center pt-2 border-t border-[#e5e0d8]">
                             <span class="text-lg font-semibold text-[#5c4a3d]">Total</span>
-                            <span class="text-2xl font-bold text-[#c17c5f]" id="cart-total">261.00 BD</span>
+                            <span class="text-2xl font-bold text-[#c17c5f]" id="cart-total">2.00 BD</span>
                         </div>
                         <a href="/products" class="inline-flex items-center text-[#8b7355] hover:text-[#c17c5f] transition-colors font-medium mt-2">
                             <i class="fas fa-arrow-left mr-2"></i>Back to Shopping
@@ -338,7 +348,7 @@
                     <!-- Confirm Button -->
                     <button id="confirm-btn"
                         class="w-full bg-[#c17c5f] hover:bg-[#a5664d] text-white px-6 py-4 rounded-xl font-bold text-lg transition-colors shadow-lg flex items-center justify-center">
-                        <i class="fas fa-check-circle mr-3"></i>Confirm Order (261.00 BD)
+                        <i class="fas fa-check-circle mr-3"></i>Confirm Order (2.00 BD)
                     </button>
 
                     <p class="text-center text-sm text-[#8b7355]">
@@ -389,6 +399,7 @@
     </script>
 </body>
 </html>
+
 
 
 

@@ -1,5 +1,5 @@
 // ============================================================
-// my-profile.js — ArtsyVibe My Profile Page
+// my-profile.js: ArtsyVibe My Profile Page
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ----------------------------------------------------------
-    // 1. Role — toggle artisan section
+    // 1. Role: toggle artisan section
     // ----------------------------------------------------------
     const userProfileStr = sessionStorage.getItem('userProfile');
     const userEmail = sessionStorage.getItem('userEmail');
@@ -68,16 +68,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         // Update form inputs
-        const personalInfoSection = document.querySelector('section:first-of-type');
-        if (personalInfoSection) {
-            const nameInput = personalInfoSection.querySelector('input[type="text"]');
-            const emailInput = personalInfoSection.querySelector('input[type="email"]');
-            const phoneInput = personalInfoSection.querySelector('input[type="tel"]');
-            
-            if (nameInput) nameInput.value = userProfile.name || '';
-            if (emailInput) emailInput.value = userProfile.email || '';
-            if (phoneInput) phoneInput.value = userProfile.phone || '';
-        }
+        const nameInput = document.getElementById('fullName');
+        const emailInput = document.getElementById('emailAddress');
+        const phoneInput = document.getElementById('phoneNumber');
+        if (nameInput) nameInput.value = userProfile.name || '';
+        if (emailInput) emailInput.value = userProfile.email || '';
+        if (phoneInput) phoneInput.value = userProfile.phone || '';
         
         // Update shop info if artisan
         if (userRole === 'ARTISAN') {
@@ -90,7 +86,40 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (shopNameInput) shopNameInput.value = userProfile.shopName || '';
                 if (bioTextarea) bioTextarea.value = userProfile.biography || '';
             }
+
+            const customerTabs = document.getElementById('customer-account-tabs');
+            if (customerTabs) {
+                customerTabs.innerHTML = `
+                    <div class="flex flex-wrap gap-2">
+                        <a href="/artisanDashboard?id=${sessionStorage.getItem('userId') || ''}" class="px-4 py-2 bg-[#faf9f6] text-[#8b7355] hover:text-[#c17c5f] rounded-lg font-medium transition-colors">
+                            <i class="fas fa-chart-line mr-2"></i>Artisan Dashboard
+                        </a>
+                        <a href="/profile" class="px-4 py-2 bg-[#c17c5f] text-white rounded-lg font-medium transition-colors">
+                            <i class="fas fa-user mr-2"></i>My Profile
+                        </a>
+                    </div>`;
+            }
+
+            const cartLink = document.getElementById('cart-link');
+            if (cartLink) cartLink.classList.add('hidden');
+
+            const notificationsLink = document.getElementById('notifications-link');
+            if (notificationsLink) notificationsLink.href = '/artisanNotification?id=' + (sessionStorage.getItem('userId') || '');
         }
+
+        const statsSection = document.getElementById('profile-stats-section');
+        const totalOrdersEl = document.getElementById('total-orders');
+        const totalSpentEl = document.getElementById('total-spent');
+        if (userRole === 'CUSTOMER') {
+            statsSection?.classList.remove('hidden');
+            const orders = userProfile.totalOrders ?? 0;
+            const spent = userProfile.totalSpent ?? 0;
+            if (totalOrdersEl) totalOrdersEl.textContent = orders > 0 ? String(orders) : '-';
+            if (totalSpentEl) totalSpentEl.textContent = spent > 0 ? Number(spent).toFixed(3) + ' BD' : '-';
+        } else {
+            statsSection?.classList.add('hidden');
+        }
+
         setRole(userRole.toLowerCase());
     }
 
@@ -114,6 +143,11 @@ document.addEventListener('DOMContentLoaded', () => {
     cameraBtn?.querySelector('input[type="file"]')?.addEventListener('change', function () {
         if (!this.files.length) return;
         const file = this.files[0];
+        if (file.size > 2 * 1024 * 1024) {
+            showToast('Profile picture must be 2MB or smaller.', 'error');
+            this.value = '';
+            return;
+        }
         const reader = new FileReader();
         reader.onload = (e) => {
             const imageUrl = e.target.result;
@@ -128,9 +162,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email: userEmail, imageUrl: imageUrl })
                 })
-                .then(r => r.json())
+                .then(r => r.json().catch(() => ({})))
                 .then(data => {
-                    if (data.success) {
+                    if (!data.success) {
+                        showToast(data.message || 'Failed to save profile picture.', 'error');
+                        return;
+                    }
+                    {
                         showToast('Profile picture updated permanently!', 'success');
                         // Update session storage and UI
                         sessionStorage.setItem('userProfile', JSON.stringify(data.user));
@@ -145,6 +183,30 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
         reader.readAsDataURL(file);
+    });
+
+    // Remove photo: the server falls back to the default avatar when imageUrl is empty.
+    document.getElementById('remove-profile-picture')?.addEventListener('click', () => {
+        if (!confirm('Remove your profile photo?')) return;
+        fetch('/api/user/update-profile-picture', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ imageUrl: '' })
+        })
+            .then(r => r.json().catch(() => ({})))
+            .then(data => {
+                if (!data.success) {
+                    showToast(data.message || 'Could not remove the photo.', 'error');
+                    return;
+                }
+                showToast('Profile photo removed.', 'success');
+                sessionStorage.setItem('userProfile', JSON.stringify(data.user));
+                renderProfileData(data.user);
+                const img = document.querySelector('.w-40.h-40.rounded-full');
+                if (img) img.src = data.user.profilePicture;
+                if (window.updateNavAuthState) window.updateNavAuthState();
+            })
+            .catch(() => showToast('Could not remove the photo.', 'error'));
     });
 
     // ----------------------------------------------------------
@@ -210,20 +272,48 @@ window.setRole = function (role) {
 // ============================================================
 
 window.savePersonalInfo = function () {
-    const section = document.querySelector('section:first-of-type');
-    const inputs  = section?.querySelectorAll('input');
-    let   valid   = true;
+    // Collect form data
+    const nameInput = document.getElementById('fullName');
+    const emailInput = document.getElementById('emailAddress');
+    const phoneInput = document.getElementById('phoneNumber');
+    const name = nameInput?.value.trim() || '';
+    const email = emailInput?.value.trim() || sessionStorage.getItem('userEmail') || '';
+    const phone = phoneInput?.value.trim() || '';
 
-    inputs?.forEach(input => {
-        if (!input.value.trim()) { valid = false; }
-    });
-
-    if (!valid) {
-        showToast('Please fill in all required fields.', 'error');
+    if (!name || !email || !phone) {
+        showToast('Please fill in all personal information fields before saving.', 'error');
         return;
     }
 
-    showToast('Personal information saved successfully!', 'success');
+    // Prepare payload
+    const payload = { name, email, phone };
+
+    // Send request to backend
+    console.log('Saving personal info payload:', payload);
+    fetch('/api/user/update-profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    })
+        .then(r => r.json().catch(() => ({ success: false })))
+        .then(data => {
+            if (data.success) {
+                showToast('Personal information saved successfully!', 'success');
+                if (data.user) {
+                    sessionStorage.setItem('userProfile', JSON.stringify(data.user));
+                    sessionStorage.setItem('userEmail', data.user.email || email);
+                    sessionStorage.setItem('userName', data.user.name || name);
+                    renderProfileData(data.user);
+                }
+            } else {
+                showToast(data.message || 'Failed to save personal information.', 'error');
+            }
+        })
+
+        .catch(err => {
+            console.error('Save personal info error:', err);
+            showToast('Could not reach the server. Please try again.', 'error');
+        });
 };
 
 // ============================================================
@@ -231,30 +321,47 @@ window.savePersonalInfo = function () {
 // ============================================================
 
 window.updatePassword = function () {
-    const security = document.querySelectorAll('section')[1];
-    const pwds     = security?.querySelectorAll('input[type="password"]');
-    if (!pwds || pwds.length < 3) return;
+    // Collect password fields
+    const currentPwd = document.querySelector('section:nth-of-type(2) input[type="password"]:nth-of-type(1)').value;
+    const newPwd = document.querySelector('section:nth-of-type(2) input[type="password"]:nth-of-type(2)').value;
+    const confirmPwd = document.querySelector('section:nth-of-type(2) input[type="password"]:nth-of-type(3)').value;
 
-    const [current, newPwd, confirm] = pwds;
-
-    if (!current.value) {
+    if (!currentPwd) {
         showToast('Please enter your current password.', 'error');
-        current.focus();
         return;
     }
-    if (newPwd.value.length < 8) {
+    if (newPwd.length < 8) {
         showToast('New password must be at least 8 characters.', 'error');
-        newPwd.focus();
         return;
     }
-    if (newPwd.value !== confirm.value) {
+    if (newPwd !== confirmPwd) {
         showToast('New passwords do not match.', 'error');
-        confirm.focus();
         return;
     }
 
-    showToast('Password updated successfully!', 'success');
-    [current, newPwd, confirm].forEach(i => i.value = '');
+    const payload = {
+        email: sessionStorage.getItem('userEmail'),
+        oldPassword: currentPwd,
+        newPassword: newPwd
+    };
+
+    fetch('/api/auth/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                showToast('Password updated successfully!', 'success');
+                // Clear fields
+                document.querySelectorAll('section:nth-of-type(2) input[type="password"]').forEach(i => i.value = '');
+            } else {
+                showToast(data.message || 'Failed to update password.', 'error');
+            }
+        })
+        .catch(() => showToast('Error updating password.', 'error'));
+
 };
 
 // ============================================================
@@ -269,18 +376,50 @@ window.saveShopInfo = function () {
 // Delete Account
 // ============================================================
 
-window.deleteAccount = function () {
-    const message = 'Are you sure you want to delete your account? This action cannot be undone.';
-    const userEmail = sessionStorage.getItem('userEmail');
+/** Small modal with a masked password field. Resolves to the password, or null if cancelled. */
+function askPassword(title) {
+    return new Promise(resolve => {
+        const overlay = document.createElement('div');
+        overlay.className = 'fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4';
+        overlay.innerHTML = `
+            <form class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl">
+                <h3 class="text-lg font-bold text-[#5c4a3d] mb-2"></h3>
+                <p class="text-sm text-[#8b7355] mb-4">Enter your password to confirm.</p>
+                <input type="password" autocomplete="current-password" required
+                       class="w-full px-4 py-2 border border-[#e5e0d8] rounded-lg mb-4 focus:outline-none focus:border-[#c17c5f]">
+                <div class="flex justify-end gap-2">
+                    <button type="button" data-cancel class="px-4 py-2 rounded-lg text-[#8b7355] hover:bg-[#faf9f6]">Cancel</button>
+                    <button type="submit" class="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white font-medium">Delete account</button>
+                </div>
+            </form>`;
+        overlay.querySelector('h3').textContent = title;
+        const form = overlay.querySelector('form');
+        const input = overlay.querySelector('input');
+        const close = value => { overlay.remove(); resolve(value); };
+        form.addEventListener('submit', e => { e.preventDefault(); close(input.value); });
+        overlay.querySelector('[data-cancel]').addEventListener('click', () => close(null));
+        document.body.appendChild(overlay);
+        input.focus();
+    });
+}
 
-    if (!userEmail) {
-        showToast('User email not found. Please log in again.', 'error');
+window.deleteAccount = async function () {
+    const message = 'Are you sure you want to delete your account? This action cannot be undone.';
+
+    if (!confirm(message)) {
+        showToast('Account deletion cancelled.', 'info');
         return;
     }
-
-    if (confirm(message)) {
-        fetch(`/api/auth/delete-account?email=${encodeURIComponent(userEmail)}`, {
-            method: 'DELETE'
+    const password = await askPassword('Delete your account');
+    if (!password) {
+        showToast('Account deletion cancelled.', 'info');
+        return;
+    }
+    {
+        fetch('/api/auth/delete-account', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password })
         })
         .then(response => response.json())
         .then(data => {
@@ -303,23 +442,34 @@ window.deleteAccount = function () {
             console.error('Error deleting account:', error);
             showToast('An error occurred while deleting your account.', 'error');
         });
-    } else {
-        showToast('Account deletion cancelled.', 'info');
     }
 };
 
 window.logout = function () {
-    sessionStorage.removeItem('loggedIn');
-    sessionStorage.removeItem('isLoggedIn');
-    sessionStorage.removeItem('userEmail');
-    sessionStorage.removeItem('userName');
-    sessionStorage.removeItem('postLoginNext');
-    showToast('You have been logged out.', 'success');
-    setTimeout(() => window.location.href = '/login', 1000);
+    const email = sessionStorage.getItem('userEmail');
+    const doLogout = () => {
+        sessionStorage.removeItem('loggedIn');
+        sessionStorage.removeItem('isLoggedIn');
+        sessionStorage.removeItem('userEmail');
+        sessionStorage.removeItem('userName');
+        sessionStorage.removeItem('cartCount');
+        sessionStorage.removeItem('postLoginNext');
+        showToast('You have been logged out.', 'success');
+        setTimeout(() => window.location.href = '/login', 1000);
+    };
+    if (email) {
+        fetch('/api/auth/logout', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email })
+        }).finally(doLogout);
+    } else {
+        doLogout();
+    }
 };
 
 // ============================================================
-// Address Management — DB-backed
+// Address Management: DB-backed
 // ============================================================
 
 function getUserEmail() {

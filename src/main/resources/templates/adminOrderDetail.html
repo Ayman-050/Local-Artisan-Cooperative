@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <script src="/app-core.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Detail - Admin - Artisan Co-op</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #faf9f6;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Playfair Display', serif;
+        }
+
+        .terracotta {
+            color: #c17c5f;
+        }
+
+        .bg-terracotta {
+            background-color: #c17c5f;
+        }
+
+        .bg-terracotta-dark {
+            background-color: #a5664d;
+        }
+
+        .hover\:bg-terracotta-dark:hover {
+            background-color: #a5664d;
+        }
+
+        .border-terracotta {
+            border-color: #c17c5f;
+        }
+
+        .text-earth {
+            color: #8b7355;
+        }
+
+        .bg-earth {
+            background-color: #8b7355;
+        }
+
+        .card-shadow {
+            box-shadow: 0 4px 6px -1px rgba(139, 115, 85, 0.1), 0 2px 4px -1px rgba(139, 115, 85, 0.06);
+        }
+
+        .card-shadow:hover {
+            box-shadow: 0 10px 15px -3px rgba(139, 115, 85, 0.15), 0 4px 6px -2px rgba(139, 115, 85, 0.1);
+        }
+
+        .sidebar-link {
+            transition: background-color 0.2s ease, color 0.2s ease;
+            color: #d4c5b5;
+        }
+        
+        .sidebar-link:hover {
+            background-color: rgba(255, 255, 255, 0.18);
+            color: #ffffff;
+        }
+        
+        .sidebar-link:hover i,
+        .sidebar-link:hover span {
+            color: #ffffff;
+        }
+        
+        .sidebar-link.active {
+            background-color: rgba(255, 255, 255, 0.25);
+            border-left: 3px solid #ffffff;
+            color: #ffffff;
+        }
+        
+        .sidebar-link.active i,
+        .sidebar-link.active span {
+            color: #ffffff;
+        }
+        
+        .user-menu {
+            position: relative;
+        }
+        
+        .user-menu-dropdown {
+            position: absolute;
+            right: 0;
+            top: calc(100% + 0.5rem);
+            width: 200px;
+            background: #ffffff;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-radius: 1rem;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+            display: none;
+            z-index: 50;
+        }
+        
+        .user-menu-dropdown.show {
+            display: block;
+        }
+        
+        .user-menu-item {
+            display: block;
+            padding: 0.85rem 1rem;
+            color: #5c4a3d;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            border-radius: 0.75rem;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+        
+        .user-menu-item:hover {
+            background-color: #f5ebe0;
+        }
+        
+        .user-menu-item.logout:hover {
+            color: #b91c1c;
+            background-color: #fee2e2;
+        }
+        
+        .chevron-icon {
+            transition: transform 0.3s ease;
+        }
+        
+        .chevron-icon.rotated {
+            transform: rotate(180deg);
+        }
+
+        .timeline-step {
+            position: relative;
+            padding-left: 2.5rem;
+        }
+
+        .timeline-step::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: #e5e0d8;
+        }
+
+        .timeline-step:last-child::before {
+            bottom: auto;
+            height: 50%;
+        }
+
+        .timeline-step:first-child::before {
+            top: 50%;
+        }
+
+        .timeline-icon {
+            position: absolute;
+            left: -0.625rem;
+            top: 0;
+            width: 1.5rem;
+            height: 1.5rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+        }
+
+        .timeline-step.completed .timeline-icon {
+            background-color: #c17c5f;
+            color: white;
+        }
+
+        .timeline-step.current .timeline-icon {
+            background-color: #fef3c7;
+            color: #c17c5f;
+            border: 2px solid #c17c5f;
+        }
+
+        .timeline-step.pending .timeline-icon {
+            background-color: #f5f5f4;
+            color: #a8a29e;
+        }
+
+        .timeline-step.completed::before {
+            background-color: #c17c5f;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+    </style>
+    <script src="/authguard.js"></script>
+</head>
+<body class="min-h-screen flex flex-col">
+    <!-- Top Navigation Bar -->
+    <nav class="bg-[#faf9f6] border-b border-[#e5e0d8] py-4 px-6 sticky top-0 z-50">
+        <div class="w-full flex items-center justify-between">
+            <div class="flex items-center">
+                <a href="/adminDashboard" class="flex items-center gap-3 group">
+                    <!-- Logo -->
+                    <img src="/images/Logo.png" alt="ArtsyVibe Logo"
+                        class="h-10 w-auto object-contain"
+                        style="filter: drop-shadow(0 0 0.5px rgba(193, 124, 95, 1));">
+                    
+                    <!-- Brand Name -->
+                    <span class="text-2xl font-semibold" 
+                        style="font-family: 'Playfair Display', serif;">
+                        ArtsyVibe
+                    </span>
+                </a>
+            </div>
+            
+            <!-- Right Side - Notifications and User -->
+            <div class="flex items-center space-x-4">
+                 <!-- Notification Bell -->
+                <a href="/adminNotification"><button class="relative p-2 text-[#8b7355] hover:text-[#c17c5f] transition-colors">
+                    <i class="fas fa-bell text-xl"></i>
+                    <span class="absolute top-0 right-0 w-5 h-5 bg-red-500 rounded-full border-2 border-[#faf9f6] text-white text-xs flex items-center justify-center font-semibold">5</span>
+                </button></a>
+                
+                <!-- User Profile -->
+                <div class="user-menu flex items-center space-x-3 pl-4 border-l border-[#e5e0d8]">
+                    <button id="userMenuButton" type="button" class="flex items-center gap-3 text-left focus:outline-none">
+                        <img 
+                            src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face" 
+                            alt="Admin User" 
+                            class="w-10 h-10 rounded-full object-cover border-2 border-[#c17c5f]"
+                        />
+                        <div class="hidden md:block">
+                            <p class="font-semibold text-[#5c4a3d] text-sm">Admin User</p>
+                            <p class="text-xs text-[#8b7355]">admin@artisancoop.com</p>
+                        </div>
+                        <i id="chevronIcon" class="chevron-icon fas fa-chevron-down text-[#8b7355] text-xs hidden md:block"></i>
+                    </button>
+                    <div id="userMenuDropdown" class="user-menu-dropdown">
+                        <button id="logoutButton" class="user-menu-item logout w-full text-left">
+                            <i class="fas fa-sign-out-alt mr-3"></i>Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area with Sidebar -->
+    <div class="flex flex-1">
+        <!-- Left Sidebar -->
+        <aside class="w-64 bg-[#5c4a3d] min-h-[calc(100vh-80px)] fixed left-0 top-20 overflow-y-auto">
+            <!-- Admin Profile -->
+            <div class="p-6 border-b border-[#7a6655]">
+                <div class="flex items-center gap-3">
+                    <img 
+                        src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face" 
+                        alt="Admin User" 
+                        class="w-12 h-12 rounded-full object-cover border-2 border-[#c17c5f]"
+                    />
+                    <div>
+                        <h3 class="text-white font-semibold text-sm">Admin User</h3>
+                        <span class="inline-block bg-[#c17c5f] text-white text-xs px-2 py-1 rounded-full mt-1">Administrator</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Navigation Menu -->
+            <nav class="p-4 mt-4">
+                <ul class="space-y-1">
+                    <li>
+                        <a href="/adminDashboard" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-tachometer-alt w-5"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/adminUsersManagement" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-users w-5"></i>
+                            <span>User Management</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/adminArtisanApproval" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-user-check w-5"></i>
+                            <span>Artisan Approvals</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/adminProducts" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-box w-5"></i>
+                            <span>Products</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/adminOrderManagment" class="sidebar-link active flex items-center gap-3 text-white px-4 py-3 rounded-lg">
+                            <i class="fas fa-shopping-bag w-5"></i>
+                            <span>Orders</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/adminAuction" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-gavel w-5"></i>
+                            <span>Auctions</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/adminRefund" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-undo w-5"></i>
+                            <span>Refunds</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/adminReview" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-star w-5"></i>
+                            <span>Review Moderation</span>
+                        </a>
+                    </li>
+                    
+                </ul>
+            </nav>
+            
+            <!-- Systems Log Section -->
+            <div class="p-4 mt-2 border-t border-[#7a6655]">
+                <ul class="space-y-1">
+                    <li>
+                        <a href="/adminReports" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-history w-5"></i>
+                            <span>Reports</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 ml-64 p-8">
+            <!-- Back Link -->
+            <a href="/adminOrderManagment" class="inline-flex items-center gap-2 text-[#8b7355] hover:text-[#c17c5f] transition-colors mb-6">
+                <i class="fas fa-arrow-left"></i>
+                <span>Back to Orders</span>
+            </a>
+
+            <!-- Page Header -->
+            <div class="flex items-center justify-between mb-8" th:if="${order != null}">
+                <div>
+                    <h1 class="text-3xl font-bold text-[#5c4a3d] mb-1" th:text="'Order #ORD-' + ${order.orderId}">Order #ORD-1</h1>
+                    <p class="text-[#8b7355]" th:text="${order.date}">-</p>
+                </div>
+                <span th:text="${order.status}" th:classappend="${
+                    #strings.equalsIgnoreCase(order.status,'delivered') ? 'bg-green-100 text-green-700' :
+                    #strings.equalsIgnoreCase(order.status,'processing') ? 'bg-blue-100 text-blue-700' :
+                    #strings.equalsIgnoreCase(order.status,'shipped') ? 'bg-purple-100 text-purple-700' :
+                    #strings.equalsIgnoreCase(order.status,'pending') ? 'bg-gray-100 text-gray-700' :
+                    'bg-amber-100 text-amber-700'}" class="status-badge text-sm px-4 py-2">Status</span>
+            </div>
+            <div th:unless="${order != null}" class="bg-red-50 border border-red-200 rounded-xl p-6 mb-8">
+                <p class="text-red-600 font-medium">Order not found.</p>
+            </div>
+
+            <!-- Two Column Layout -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Left Column (Wider) -->
+                <div class="lg:col-span-2 space-y-6">
+                    <!-- Order Items Card -->
+                    <div class="bg-white rounded-xl card-shadow overflow-hidden">
+                        <div class="p-6 border-b border-[#e5e0d8]">
+                            <h2 class="text-xl font-semibold text-[#5c4a3d]">Order Items</h2>
+                        </div>
+                        <div class="p-6">
+                            <table class="w-full">
+                                <thead>
+                                    <tr class="text-left text-sm text-[#8b7355] border-b border-[#e5e0d8]">
+                                        <th class="pb-3 font-medium">Product</th>
+                                        <th class="pb-3 font-medium text-center">Quantity</th>
+                                        <th class="pb-3 font-medium text-right">Unit Price</th>
+                                        <th class="pb-3 font-medium text-right">Subtotal</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-[#e5e0d8]">
+                                    <tr th:each="item : ${orderItems}">
+                                        <td class="py-4">
+                                            <div class="flex items-center gap-3">
+                                                <div class="relative w-16 h-16 rounded-lg overflow-hidden bg-gray-200 flex-shrink-0">
+                                                    <img th:src="${item.product != null and item.product.imageUrl != null ? item.product.imageUrl : 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" th:alt="${item.product != null ? item.product.title : 'Product'}" class="w-full h-full object-cover"/>
+                                                </div>
+                                                <div>
+                                                    <p class="font-medium text-[#5c4a3d]" th:text="${item.product != null ? item.product.title : 'Unknown Product'}">Product</p>
+                                                    <p class="text-sm text-[#8b7355]" th:text="${item.product != null ? item.product.category : ''}">Category</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="py-4 text-center text-[#5c4a3d]" th:text="${item.quantity}">1</td>
+                                        <td class="py-4 text-right text-[#5c4a3d]" th:text="'BD ' + ${#numbers.formatDecimal(item.price, 1, 3)}">BD 0.000</td>
+                                        <td class="py-4 text-right font-medium text-[#5c4a3d]" th:text="'BD ' + ${#numbers.formatDecimal(item.price * item.quantity, 1, 3)}">BD 0.000</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <!-- Order Totals -->
+                            <div class="mt-6 pt-6 border-t border-[#e5e0d8] space-y-2" th:if="${order != null}">
+                                <div class="flex justify-between text-lg font-semibold text-[#5c4a3d] pt-2">
+                                    <span>Total Amount</span>
+                                    <span th:text="'BD ' + ${#numbers.formatDecimal(order.totalAmount, 1, 3)}">BD 0.000</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Order Timeline Card -->
+                    <div class="bg-white rounded-xl card-shadow overflow-hidden">
+                        <div class="p-6 border-b border-[#e5e0d8]">
+                            <h2 class="text-xl font-semibold text-[#5c4a3d]">Order Timeline</h2>
+                        </div>
+                        <div class="p-6">
+                            <div class="space-y-6" th:if="${order != null}">
+                                <!-- Step 1: Order Placed -->
+                                <div class="timeline-step completed">
+                                    <div class="timeline-icon"><i class="fas fa-check"></i></div>
+                                    <div>
+                                        <h4 class="font-semibold text-[#5c4a3d]">Order Placed</h4>
+                                        <p class="text-sm text-[#8b7355] mt-1" th:text="${order.date}">-</p>
+                                        <p class="text-sm text-[#8b7355]">Customer placed the order successfully</p>
+                                    </div>
+                                </div>
+                                <!-- Step 2: Processing -->
+                                <div th:classappend="${#strings.equalsIgnoreCase(order.status,'processing') ? 'current' : (#strings.equalsIgnoreCase(order.status,'pending') ? 'pending' : 'completed')}" class="timeline-step">
+                                    <div class="timeline-icon"><i class="fas fa-box-open"></i></div>
+                                    <div>
+                                        <h4 class="font-semibold text-[#5c4a3d]">Processing</h4>
+                                        <p class="text-sm text-[#8b7355]">Artisan is preparing the order</p>
+                                    </div>
+                                </div>
+                                <!-- Step 3: Shipped -->
+                                <div th:classappend="${#strings.equalsIgnoreCase(order.status,'shipped') ? 'current' : (#lists.contains({'pending','processing'}, #strings.toLowerCase(order.status)) ? 'pending' : 'completed')}" class="timeline-step">
+                                    <div class="timeline-icon"><i class="fas fa-shipping-fast"></i></div>
+                                    <div>
+                                        <h4 class="font-semibold text-[#5c4a3d]">Shipped</h4>
+                                        <p class="text-sm text-[#8b7355]">Order dispatched for delivery</p>
+                                    </div>
+                                </div>
+                                <!-- Step 4: Delivered -->
+                                <div th:classappend="${#strings.equalsIgnoreCase(order.status,'delivered') or #strings.toLowerCase(order.status).contains('refund') ? 'completed' : 'pending'}" class="timeline-step">
+                                    <div class="timeline-icon"><i class="fas fa-home"></i></div>
+                                    <div>
+                                        <h4 class="font-semibold text-[#5c4a3d]">Delivered</h4>
+                                        <p class="text-sm text-[#8b7355]">Package delivered to customer</p>
+                                    </div>
+                                </div>
+                                <!-- Step 5: Refund (shown only if refund status) -->
+                                <div th:if="${#strings.toLowerCase(order.status).contains('refund')}" th:classappend="${#strings.equalsIgnoreCase(order.status,'refund approved') or #strings.equalsIgnoreCase(order.status,'refund declined') ? 'completed' : 'current'}" class="timeline-step">
+                                    <div class="timeline-icon"><i class="fas fa-undo"></i></div>
+                                    <div>
+                                        <h4 class="font-semibold text-[#5c4a3d]" th:text="${order.status}">Refund</h4>
+                                        <p class="text-sm text-[#8b7355]">Refund process initiated</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column (Narrower) -->
+                <div class="space-y-6">
+                    <!-- Customer Information Card -->
+                    <div class="bg-white rounded-xl card-shadow overflow-hidden">
+                        <div class="p-6 border-b border-[#e5e0d8]">
+                            <h2 class="text-xl font-semibold text-[#5c4a3d]">Customer Information</h2>
+                        </div>
+                        <div class="p-6">
+                            <div class="flex items-center gap-4 mb-4">
+                                <img th:if="${customer != null}" th:src="${customer.profilePicture != null ? customer.profilePicture : 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" th:alt="${customer.name}" class="w-14 h-14 rounded-full object-cover border-2 border-[#c17c5f]"/>
+                                <div class="w-14 h-14 rounded-full bg-[#c17c5f] flex items-center justify-center text-white text-xl font-semibold" th:unless="${customer != null}">?</div>
+                                <div>
+                                    <h3 class="font-semibold text-[#5c4a3d]" th:text="${customer != null ? customer.name : 'Unknown Customer'}">Customer</h3>
+                                    <p class="text-sm text-[#8b7355]" th:text="${customer != null ? customer.email : '-'}">email</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 text-[#8b7355]" th:if="${customer != null}">
+                                <i class="fas fa-phone"></i>
+                                <span class="text-sm" th:text="${customer.phone != null ? customer.phone : 'N/A'}">phone</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Artisan Information Card -->
+                    <div class="bg-white rounded-xl card-shadow overflow-hidden">
+                        <div class="p-6 border-b border-[#e5e0d8]">
+                            <h2 class="text-xl font-semibold text-[#5c4a3d]">Artisan Information</h2>
+                        </div>
+                        <div class="p-6">
+                            <div class="flex items-center gap-4 mb-4">
+                                <img th:if="${artisan != null}" th:src="${artisan.profilePicture != null ? artisan.profilePicture : 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" th:alt="${artisan.name}" class="w-14 h-14 rounded-full object-cover border-2 border-[#c17c5f]"/>
+                                <div class="w-14 h-14 rounded-full bg-[#8b7355] flex items-center justify-center text-white text-xl font-semibold" th:unless="${artisan != null}">?</div>
+                                <div>
+                                    <h3 class="font-semibold text-[#5c4a3d]" th:text="${artisan != null ? artisan.name : 'Unknown Artisan'}">Artisan</h3>
+                                    <p class="text-sm text-[#8b7355]" th:text="${artisan != null and artisan.shopName != null ? artisan.shopName : 'Independent Artisan'}">Shop</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 text-[#8b7355]" th:if="${artisan != null}">
+                                <i class="fas fa-envelope"></i>
+                                <span class="text-sm" th:text="${artisan.email}">email</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Shipping Address Card -->
+                    <div class="bg-white rounded-xl card-shadow overflow-hidden">
+                        <div class="p-6 border-b border-[#e5e0d8]">
+                            <h2 class="text-xl font-semibold text-[#5c4a3d]">Shipping Address</h2>
+                        </div>
+                        <div class="p-6">
+                            <div class="flex items-start gap-3">
+                                <i class="fas fa-map-marker-alt text-[#c17c5f] mt-1"></i>
+                                <div class="text-[#5c4a3d] text-sm leading-relaxed" th:if="${order != null}">
+                                    <p th:text="${order.shippingAddress != null ? order.shippingAddress : 'No shipping address provided.'}">Address</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Information Card -->
+                    <div class="bg-white rounded-xl card-shadow overflow-hidden">
+                        <div class="p-6 border-b border-[#e5e0d8]">
+                            <h2 class="text-xl font-semibold text-[#5c4a3d]">Payment Information</h2>
+                        </div>
+                        <div class="p-6 space-y-3" th:if="${payment != null}">
+                            <div class="flex justify-between items-center">
+                                <span class="text-[#8b7355]">Payment Method</span>
+                                <span class="font-medium text-[#5c4a3d]" th:text="${payment.paymentMethod != null ? payment.paymentMethod : 'N/A'}">-</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-[#8b7355]">Payment Status</span>
+                                <span th:text="${payment.status != null ? payment.status : 'Unknown'}" th:classappend="${#strings.equalsIgnoreCase(payment.status,'paid') ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium">-</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-[#8b7355]">Transaction ID</span>
+                                <span class="text-sm text-[#8b7355]" th:text="${payment.transactionDetails != null ? payment.transactionDetails : 'N/A'}">-</span>
+                            </div>
+                            <div class="pt-3 border-t border-[#e5e0d8]">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-[#8b7355]">Amount Paid</span>
+                                    <span class="font-semibold text-[#5c4a3d]" th:text="'BD ' + ${#numbers.formatDecimal(payment.amount, 1, 3)}">BD 0.000</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-6" th:unless="${payment != null}">
+                            <p class="text-sm text-[#8b7355]">No payment record found for this order.</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        /* Sidebar handled by adminDashboard.js */
+
+        // User profile logout dropdown
+        /* User menu handled by adminDashboard.js */
+
+        // Evidence photos for lightbox
+        const evidencePhotos = [
+            'https://images.unsplash.com/photo-1596464716127-f2a82984de30?w=800&h=600&fit=crop',
+            'https://images.unsplash.com/photo-1578749556920-d1e28f1fa5c9?w=800&h=600&fit=crop',
+            'https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=800&h=600&fit=crop'
+        ];
+
+        // Open lightbox with image
+        function openLightbox(index) {
+            const lightbox = document.createElement('div');
+            lightbox.id = 'lightbox';
+            lightbox.className = 'fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center cursor-pointer';
+            lightbox.onclick = closeLightbox;
+
+            const img = document.createElement('img');
+            img.src = evidencePhotos[index];
+            img.alt = 'Evidence photo';
+            img.className = 'max-w-full max-h-full w-auto h-auto object-contain p-4';
+            img.onclick = (e) => e.stopPropagation();
+
+            const closeBtn = document.createElement('button');
+            closeBtn.className = 'absolute top-4 right-4 text-white hover:text-gray-300 transition-colors';
+            closeBtn.innerHTML = '<i class="fas fa-times text-3xl"></i>';
+            closeBtn.onclick = (e) => {
+                e.stopPropagation();
+                closeLightbox();
+            };
+
+            lightbox.appendChild(closeBtn);
+            lightbox.appendChild(img);
+            document.body.appendChild(lightbox);
+        }
+
+        // Close lightbox
+        function closeLightbox() {
+            const lightbox = document.getElementById('lightbox');
+            if (lightbox) {
+                lightbox.style.opacity = '0';
+                lightbox.style.transition = 'opacity 0.2s ease';
+                setTimeout(() => {
+                    lightbox.remove();
+                }, 200);
+            }
+        }
+
+        // Handle admin action
+        function handleAdminAction(action) {
+            const internalNote = document.getElementById('internalNote').value.trim();
+
+            if (action === 'approve') {
+                showNotification('Refund approved. Customer will be notified and funds will be returned.', 'success');
+            } else if (action === 'reject') {
+                if (!internalNote) {
+                    showNotification('Please add an internal note explaining the rejection reason.', 'error');
+                    return;
+                }
+                showNotification('Refund rejected. Customer and artisan have been notified.', 'info');
+            } else if (action === 'contact') {
+                showNotification('Opening communication channel with both parties...', 'info');
+            }
+        }
+
+        // Save internal note
+        function saveInternalNote() {
+            const note = document.getElementById('internalNote').value.trim();
+
+            if (!note) {
+                showNotification('Please enter a note before saving.', 'error');
+                return;
+            }
+
+            showNotification('Internal note saved successfully.', 'success');
+        }
+
+        // Show notification toast
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+
+            // Determine color based on type
+            let bgColor = '#c17c5f'; // terracotta for info
+            if (type === 'success') {
+                bgColor = '#16a34a'; // green for success
+            } else if (type === 'error') {
+                bgColor = '#dc2626'; // red for error
+            }
+
+            notification.className = 'fixed bottom-4 right-4 text-white px-6 py-3 rounded-xl shadow-lg z-50 transition-opacity duration-300';
+            notification.style.backgroundColor = bgColor;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 3000);
+        }
+    </script>
+    <script>
+        if (window.initAuthGuard) {
+            initAuthGuard({
+                redirectTo: "/login",
+                message: "Administrator access required. Please login."
+            });
+        }
+    </script>
+    <script src="/adminDashboard.js"></script>
+</body>
+</html>
+
+

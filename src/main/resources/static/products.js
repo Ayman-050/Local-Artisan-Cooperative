@@ -89,11 +89,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchInput = document.querySelector('input[placeholder="Search..."]');
     const sortSelect = document.querySelector('select');
 
+    // Min/max price filter; the upper bound covers the most expensive product shown.
+    const highestPrice = Math.max(0, ...productCards.map(c => parseFloat(c.dataset.price) || 0));
+    const priceControlEl = document.getElementById('priceRangeControl');
+    const priceControl = priceControlEl && window.PriceRange
+        ? PriceRange.create(priceControlEl, { max: Math.ceil(highestPrice / 10) * 10 || 1000, onChange: () => applyFilters() })
+        : null;
+
     function applyFilters() {
         const searchTerm = searchInput?.value.trim().toLowerCase() || '';
         const selectedCategory = getSelectedCategoryValue();
         const showAuctionsOnly = auctionCheckbox?.checked || false;
-        const maxPrice = priceRange ? parseFloat(priceRange.value) : Infinity;
+        const range = priceControl ? priceControl.get() : { min: 0, max: Infinity };
 
         productCards.forEach(card => {
             const cardText = card.textContent.toLowerCase();
@@ -103,7 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const matchesSearch = !searchTerm || cardText.includes(searchTerm);
             const matchesCategory = selectedCategory === 'all' || cardCategory === selectedCategory || cardText.includes(selectedCategory);
             const matchesAuction = !showAuctionsOnly || card.dataset.auctionCard === 'true';
-            const matchesPrice = cardPrice <= maxPrice;
+            const matchesPrice = cardPrice >= range.min && cardPrice <= range.max;
 
             card.style.display = (matchesSearch && matchesCategory && matchesAuction && matchesPrice) ? 'block' : 'none';
         });
@@ -131,7 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (criteria === 'price-low')  return priceA - priceB;
             if (criteria === 'price-high') return priceB - priceA;
             if (criteria === 'name')       return nameA.localeCompare(nameB);
-            return 0; // 'featured' / 'newest' — keep original order
+            return 0; // 'featured' / 'newest': keep original order
         });
 
         // Re-append in sorted order; hidden cards go to the end
@@ -185,6 +192,33 @@ document.addEventListener('DOMContentLoaded', () => {
     updatePriceDisplay();
     applyFilters();
     updateLoginState();
+
+    document.addEventListener('click', async (event) => {
+        const btn = event.target.closest('.add-to-cart-quick-btn');
+        if (!btn) return;
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (window.requireLoginForAction && !window.requireLoginForAction('Login/Register first to add items to your cart.')) {
+            return;
+        }
+
+        const productId = btn.getAttribute('data-product-id');
+        if (!productId || !window.addProductToCart) return;
+
+        btn.disabled = true;
+        try {
+            await window.addProductToCart(productId, 1);
+            showToast('Added to cart!', 'success');
+
+            updateCartBadge(); 
+
+        } catch (err) {
+            showToast(err.message || 'Could not add to cart', 'error');
+        } finally {
+            btn.disabled = false;
+        }
+    });
 
     // --- 3. View Details Navigation ---
     document.addEventListener('click', function(event) {
@@ -326,5 +360,9 @@ function updateCartBadge() {
             if (!badge) return;
             const count = parseInt(sessionStorage.getItem('cartCount') ?? '0', 10);
             badge.textContent = count;
+
+            badge.style.display = count > 0 ? 'flex' : 'none';
         });
 }
+
+

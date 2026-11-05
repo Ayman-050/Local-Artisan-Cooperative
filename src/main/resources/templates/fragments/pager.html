@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<!--
+  Server-side pager. Usage: <div th:replace="~{fragments/pager :: pager(${pager}, 'users')}"></div>
+  The page links are rendered by /admin-paging.js (it keeps the current filter query parameters).
+-->
+<div th:fragment="pager(pager, noun)" id="serverPager"
+     class="flex items-center justify-between px-6 py-4 border-t border-[#e5e0d8]"
+     th:data-page="${pager.number}" th:data-total-pages="${pager.totalPages}">
+    <p class="text-sm text-[#8b7355]"
+       th:text="${pager.total == 0} ? ('No ' + ${noun} + ' found') : ('Showing ' + ${pager.from} + '–' + ${pager.to} + ' of ' + ${pager.total} + ' ' + ${noun})">
+        Showing 1–20 of 100
+    </p>
+    <nav class="flex items-center gap-2" data-server-pager-controls aria-label="Pagination"></nav>
+</div>
+</body>
+</html>

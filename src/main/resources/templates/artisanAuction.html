@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script src="/app-core.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Auctions - Artisan Co-op</title>
@@ -53,7 +54,7 @@
         .card-shadow:hover {
             box-shadow: 0 10px 15px -3px rgba(139, 115, 85, 0.15), 0 4px 6px -2px rgba(139, 115, 85, 0.1);
         }
-        
+
         .sidebar-link {
             transition: background-color 0.2s ease, color 0.2s ease;
             color: #d4c5b5;
@@ -202,14 +203,14 @@
 <body class="min-h-screen flex flex-col">
     <!-- Top Navigation Bar -->
     <nav class="bg-[#faf9f6] border-b border-[#e5e0d8] py-4 px-6 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto flex items-center justify-between">
+        <div class="w-full flex items-center justify-between">
             <div class="flex items-center">
                 <a href="/artisanDashboard" class="flex items-center gap-3 group">
                     <!-- Logo -->
                     <img src="/images/Logo.png" alt="ArtsyVibe Logo"
                         class="h-10 w-auto object-contain"
                         style="filter: drop-shadow(0 0 0.5px rgba(193, 124, 95, 1));">
-                    
+
                     <!-- Brand Name -->
                     <span class="text-2xl font-semibold" 
                         style="font-family: 'Playfair Display', serif;">
@@ -221,31 +222,33 @@
             <!-- Right Side - Notifications and User -->
             <div class="flex items-center space-x-4">
                 <!-- Notification Bell -->
-                <button class="relative p-2 text-[#8b7355] hover:text-[#c17c5f] transition-colors">
-                    <i class="fas fa-bell text-xl"></i>
-                    <span class="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-[#faf9f6]"></span>
-                </button>
+                <a id="notifications-link" href="/artisanNotification" class="relative">
+                    <button class="relative p-2 text-[#8b7355] hover:text-[#c17c5f] transition-colors">
+                        <i class="fas fa-bell text-xl"></i>
+                        <span class="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-[#faf9f6]"></span>
+                    </button>
+                </a>
 
-                <!-- User Profile -->
+                                                <!-- User Profile -->
                 <div class="user-menu flex items-center space-x-3 pl-4 border-l border-[#e5e0d8]">
                     <button id="userMenuButton" type="button" class="flex items-center gap-3 text-left focus:outline-none">
                         <img 
-                            src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=40&h=40&fit=crop&crop=face" 
-                            alt="Elena Martinez" 
+                            th:src="${artisan != null ? artisan.profilePicture : 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" 
+                            th:alt="${artisan != null ? artisan.name : 'User'}" 
                             class="w-10 h-10 rounded-full object-cover border-2 border-[#c17c5f]"
                         />
                         <div class="hidden md:block">
-                            <p class="font-semibold text-[#5c4a3d] text-sm">Elena Martinez</p>
-                            <p class="text-xs text-[#8b7355]">elena@artisan.com</p>
+                            <p class="font-semibold text-[#5c4a3d] text-sm" th:text="${artisan != null ? artisan.name : 'User'}">Elena Martinez</p>
+                            <p class="text-xs text-[#8b7355]" th:text="${artisan != null ? artisan.email : 'email@artisan.com'}">elena@artisan.com</p>
                         </div>
                         <i id="chevronIcon" class="chevron-icon fas fa-chevron-down text-[#8b7355] text-xs hidden md:block"></i>
                     </button>
                     <div id="userMenuDropdown" class="user-menu-dropdown">
-                        <button id="logoutButton" class="user-menu-item logout w-full text-left">
+                        <button id="logoutButton" type="button" class="user-menu-item logout w-full text-left">
                             <i class="fas fa-sign-out-alt mr-2"></i> Logout
                         </button>
                     </div>
-        </div>
+                </div>
     </nav>
 
     <!-- Main Content Area with Sidebar -->
@@ -256,13 +259,13 @@
             <div class="p-6 border-b border-[#7a6655]">
                 <div class="flex items-center gap-4">
                     <img 
-                        src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face" 
-                        alt="Elena Martinez" 
+                        th:src="${artisan != null ? artisan.profilePicture : 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" 
+                        th:alt="${artisan != null ? artisan.name : 'User'}" 
                         class="w-14 h-14 rounded-full object-cover border-2 border-[#c17c5f]"
                     />
                     <div>
-                        <h3 class="text-white font-semibold">Elena Martinez</h3>
-                        <p class="text-[#d4c5b5] text-sm">Ceramics Artist</p>
+                        <h3 class="text-white font-semibold" th:text="${artisan != null ? artisan.name : 'User'}">Elena Martinez</h3>
+                        <p class="text-[#d4c5b5] text-sm" th:text="${artisan != null ? artisan.shopName : 'Shop'}">Ceramics Artist</p>
                     </div>
                 </div>
             </div>
@@ -271,31 +274,31 @@
             <nav class="p-4">
                 <ul class="space-y-1">
                     <li>
-                        <a href="artisan-dashboard.html" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                        <a href="/artisanDashboard" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
                             <i class="fas fa-chart-line w-5"></i>
                             <span>Dashboard</span>
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                        <a href="/artisanProducts" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
                             <i class="fas fa-box w-5"></i>
                             <span>My Products</span>
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="sidebar-link active flex items-center gap-3 text-white px-4 py-3 rounded-lg">
+                        <a href="/artisanAuction" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
                             <i class="fas fa-gavel w-5"></i>
                             <span>My Auctions</span>
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                        <a href="/artisanOrders" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
                             <i class="fas fa-receipt w-5"></i>
                             <span>Orders</span>
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                        <a href="/artisanAnalytics" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
                             <i class="fas fa-chart-bar w-5"></i>
                             <span>Analytics</span>
                         </a>
@@ -307,7 +310,7 @@
             <div class="p-4 mt-8 border-t border-[#7a6655]">
                 <ul class="space-y-1">
                     <li>
-                        <a href="#" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                        <a id="settingsLink" href="/artisanSettings" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
                             <i class="fas fa-cog w-5"></i>
                             <span>Settings</span>
                         </a>
@@ -361,316 +364,33 @@
                                 <th class="text-left px-6 py-4 text-sm font-semibold text-[#5c4a3d]">End Time</th>
                                 <th class="text-left px-6 py-4 text-sm font-semibold text-[#5c4a3d]">Status</th>
                                 <th class="text-left px-6 py-4 text-sm font-semibold text-[#5c4a3d]">Highest Bidder</th>
-                                <th class="text-left px-6 py-4 text-sm font-semibold text-[#5c4a3d]">Actions</th>
+                                <!-- Actions Header Removed -->
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-[#e5e0d8]">
-                            <!-- Auction 1 - Active -->
-                            <tr class="table-row" data-status="active">
-                                <td class="px-6 py-4">
-                                    <img 
-                                        src="https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=80&h=80&fit=crop" 
-                                        alt="Handcrafted Ceramic Vase" 
-                                        class="w-16 h-16 rounded-lg object-cover"
-                                    />
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div>
-                                        <h3 class="font-semibold text-[#5c4a3d]">Handcrafted Ceramic Vase</h3>  
-                                        <p class="text-sm text-[#8b7355]">Ceramics</p>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 text-sm font-semibold text-[#8b7355]">50.00 BD</td>
-                                <td class="px-6 py-4 text-sm font-bold text-[#c17c5f]">125.00 BD</td>
-                                <td class="px-6 py-4 text-sm text-[#8b7355]">
-                                    <div class="flex items-center gap-1">
-                                        <i class="far fa-clock text-[#c17c5f]"></i>
-                                        <span>2h 34m</span>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <span class="status-badge status-active">Active</span>
-                                </td>
-                                <td class="px-6 py-4 text-sm text-[#8b7355]">
-                                    <div class="flex items-center gap-2">
-                                        <div class="w-6 h-6 bg-[#f5ebe0] rounded-full flex items-center justify-center">
-                                            <span class="text-xs font-semibold text-[#c17c5f]">JD</span>
-                                        </div>
-                                        <span>John D.</span>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center gap-2">
-                                        <button class="text-[#8b7355] hover:text-[#c17c5f] transition-colors p-2" onclick="openModal()">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button class="text-[#8b7355] hover:text-red-500 transition-colors p-2" onclick="confirmCancel()">
-                                            <i class="fas fa-times-circle"></i>
-                                        </button>
-                                    </div>
+                                                <tbody class="divide-y divide-[#e5e0d8]">
+                            <tr th:if="${auctions == null or auctions.isEmpty()}" class="table-row">
+                                <td colspan="7" class="px-6 py-12 text-center text-[#8b7355]">
+                                    <i class="fas fa-gavel text-4xl mb-3 text-[#d4c5b5] block"></i>
+                                    <p class="font-medium text-[#5c4a3d]">No auctions yet</p>
+                                    <p class="text-sm mt-1">Create an auction to list items for bidding.</p>
                                 </td>
                             </tr>
-
-                            <!-- Auction 2 - Active -->
-                            <tr class="table-row" data-status="active">
+                            <tr th:each="auction : ${auctions}" class="table-row"
+                                th:data-status="${auction.status != null and auction.status.equalsIgnoreCase('LIVE') ? 'active' : (auction.status != null and auction.status.equalsIgnoreCase('UPCOMING') ? 'upcoming' : 'ended')}">
                                 <td class="px-6 py-4">
-                                    <img 
-                                        src="https://images.unsplash.com/photo-1578749556920-d1e28f925f40?w=80&h=80&fit=crop" 
-                                        alt="Ceramic Bowl Set" 
-                                        class="w-16 h-16 rounded-lg object-cover"
-                                    />
+                                    <img th:src="${auction.product != null and auction.product.imageUrl != null ? auction.product.imageUrl : 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}"
+                                         class="w-16 h-16 rounded-lg object-cover" th:alt="${auction.product != null ? auction.product.title : 'Product'}" />
                                 </td>
+                                <td class="px-6 py-4 text-sm font-semibold text-[#5c4a3d]" th:text="${auction.product != null ? auction.product.title : 'Product'}">Product</td>
+                                <td class="px-6 py-4 text-sm text-[#8b7355]"><span th:text="${#numbers.formatDecimal(auction.startingBid, 1, 2)} + ' BD'">0 BD</span></td>
+                                <td class="px-6 py-4 text-sm text-[#8b7355]"><span th:text="${#numbers.formatDecimal(auction.currentHighestBid, 1, 2)} + ' BD'">0 BD</span></td>
+                                <td class="px-6 py-4 text-sm text-[#8b7355]" th:text="${auction.endTime != null ? #temporals.format(auction.endTime, 'yyyy-MM-dd HH:mm') : '-'}">End</td>
                                 <td class="px-6 py-4">
-                                    <div>
-                                        <h3 class="font-semibold text-[#5c4a3d]">Ceramic Bowl Set</h3>
-                                        <p class="text-sm text-[#8b7355]">Ceramics</p>
-                                    </div>
+                                    <span class="status-badge"
+                                          th:classappend="${auction.status != null and auction.status.equalsIgnoreCase('LIVE') ? ' status-active' : (auction.status != null and auction.status.equalsIgnoreCase('UPCOMING') ? ' status-upcoming' : ' status-ended')}"
+                                          th:text="${auction.status}">Status</span>
                                 </td>
-                                <td class="px-6 py-4 text-sm font-semibold text-[#8b7355]">75.00 BD</td>
-                                <td class="px-6 py-4 text-sm font-bold text-[#c17c5f]">180.00 BD</td>
-                                <td class="px-6 py-4 text-sm text-[#8b7355]">
-                                    <div class="flex items-center gap-1">
-                                        <i class="far fa-clock text-[#c17c5f]"></i>
-                                        <span>5h 12m</span>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <span class="status-badge status-active">Active</span>
-                                </td>
-                                <td class="px-6 py-4 text-sm text-[#8b7355]">
-                                    <div class="flex items-center gap-2">
-                                        <div class="w-6 h-6 bg-[#f5ebe0] rounded-full flex items-center justify-center">
-                                            <span class="text-xs font-semibold text-[#c17c5f]">SM</span>
-                                        </div>
-                                        <span>Sarah M.</span>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center gap-2">
-                                        <button class="text-[#8b7355] hover:text-[#c17c5f] transition-colors p-2" onclick="openModal()">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button class="text-[#8b7355] hover:text-red-500 transition-colors p-2" onclick="confirmCancel()">
-                                            <i class="fas fa-times-circle"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-
-                            <!-- Auction 3 - Upcoming -->
-                            <tr class="table-row" data-status="upcoming">
-                                <td class="px-6 py-4">
-                                    <img 
-                                        src="https://images.unsplash.com/photo-1590422749830-674860a6e4d4?w=80&h=80&fit=crop" 
-                                        alt="Artisan Tea Set" 
-                                        class="w-16 h-16 rounded-lg object-cover"
-                                    />
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div>
-                                        <h3 class="font-semibold text-[#5c4a3d]">Artisan Tea Set</h3>
-                                        <p class="text-sm text-[#8b7355]">Ceramics</p>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 text-sm font-semibold text-[#8b7355]">120.00 BD</td>
-                                <td class="px-6 py-4 text-sm text-[#8b7355]">—</td>
-                                <td class="px-6 py-4 text-sm text-[#8b7355]">
-                                    <div class="flex items-center gap-1">
-                                        <i class="far fa-calendar text-blue-500"></i>
-                                        <span>Starts in 1d 5h</span>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <span class="status-badge status-upcoming">Upcoming</span>
-                                </td>
-                                <td class="px-6 py-4 text-sm text-[#8b7355]">—</td>
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center gap-2">
-                                        <button class="text-[#8b7355] hover:text-[#c17c5f] transition-colors p-2" onclick="openModal()">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button class="text-[#8b7355] hover:text-red-500 transition-colors p-2" onclick="confirmCancel()">
-                                            <i class="fas fa-times-circle"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-
-                            <!-- Auction 4 - Active -->
-                            <tr class="table-row" data-status="active">
-                                <td class="px-6 py-4">
-                                    <img 
-                                        src="https://images.unsplash.com/photo-1565193566173-033e4e379cda?w=80&h=80&fit=crop" 
-                                        alt="Decorative Plant Pot" 
-                                        class="w-16 h-16 rounded-lg object-cover"
-                                    />
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div>
-                                        <h3 class="font-semibold text-[#5c4a3d]">Decorative Plant Pot</h3>
-                                        <p class="text-sm text-[#8b7355]">Ceramics</p>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 text-sm font-semibold text-[#8b7355]">30.00 BD</td>
-                                <td class="px-6 py-4 text-sm font-bold text-[#c17c5f]">65.00 BD</td>
-                                <td class="px-6 py-4 text-sm text-[#8b7355]">
-                                    <div class="flex items-center gap-1">
-                                        <i class="far fa-clock text-[#c17c5f]"></i>
-                                        <span>45m</span>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <span class="status-badge status-active">Active</span>
-                                </td>
-                                <td class="px-6 py-4 text-sm text-[#8b7355]">
-                                    <div class="flex items-center gap-2">
-                                        <div class="w-6 h-6 bg-[#f5ebe0] rounded-full flex items-center justify-center">
-                                            <span class="text-xs font-semibold text-[#c17c5f]">MK</span>
-                                        </div>
-                                        <span>Michael K.</span>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center gap-2">
-                                        <button class="text-[#8b7355] hover:text-[#c17c5f] transition-colors p-2" onclick="openModal()">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button class="text-[#8b7355] hover:text-red-500 transition-colors p-2" onclick="confirmCancel()">
-                                            <i class="fas fa-times-circle"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-
-                            <!-- Auction 5 - Ended -->
-                            <tr class="table-row" data-status="ended">
-                                <td class="px-6 py-4">
-                                    <img 
-                                        src="https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=80&h=80&fit=crop" 
-                                        alt="Ceramic Dinner Plates" 
-                                        class="w-16 h-16 rounded-lg object-cover"
-                                    />
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div>
-                                        <h3 class="font-semibold text-[#5c4a3d]">Ceramic Dinner Plates (Set of 4)</h3>
-                                        <p class="text-sm text-[#8b7355]">Ceramics</p>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 text-sm font-semibold text-[#8b7355]">80.00 BD</td>
-                                <td class="px-6 py-4 text-sm font-bold text-gray-500">150.00 BD</td>
-                                <td class="px-6 py-4 text-sm text-gray-500">
-                                    <div class="flex items-center gap-1">
-                                        <i class="fas fa-check-circle"></i>
-                                        <span>Ended</span>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <span class="status-badge status-ended">Ended</span>
-                                </td>
-                                <td class="px-6 py-4 text-sm text-[#8b7355]">
-                                    <div class="flex items-center gap-2">
-                                        <div class="w-6 h-6 bg-[#f5ebe0] rounded-full flex items-center justify-center">
-                                            <span class="text-xs font-semibold text-[#c17c5f]">EW</span>
-                                        </div>
-                                        <span>Emily W.</span>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center gap-2">
-                                        <button class="text-[#8b7355] hover:text-[#c17c5f] transition-colors p-2" disabled>
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                        <button class="text-[#8b7355] hover:text-red-500 transition-colors p-2" disabled>
-                                            <i class="fas fa-times-circle"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-
-                            <!-- Auction 6 - Ended -->
-                            <tr class="table-row" data-status="ended">
-                                <td class="px-6 py-4">
-                                    <img 
-                                        src="https://images.unsplash.com/photo-1578749556920-d1e28f925f40?w=80&h=80&fit=crop" 
-                                        alt="Rustic Mug Set" 
-                                        class="w-16 h-16 rounded-lg object-cover"
-                                    />
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div>
-                                        <h3 class="font-semibold text-[#5c4a3d]">Rustic Mug Set</h3>
-                                        <p class="text-sm text-[#8b7355]">Ceramics</p>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 text-sm font-semibold text-[#8b7355]">40.00 BD</td>
-                                <td class="px-6 py-4 text-sm font-bold text-gray-500">95.00 BD</td>
-                                <td class="px-6 py-4 text-sm text-gray-500">
-                                    <div class="flex items-center gap-1">
-                                        <i class="fas fa-check-circle"></i>
-                                        <span>Ended</span>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <span class="status-badge status-ended">Ended</span>
-                                </td>
-                                <td class="px-6 py-4 text-sm text-[#8b7355]">
-                                    <div class="flex items-center gap-2">
-                                        <div class="w-6 h-6 bg-[#f5ebe0] rounded-full flex items-center justify-center">
-                                            <span class="text-xs font-semibold text-[#c17c5f]">DL</span>
-                                        </div>
-                                        <span>David L.</span>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center gap-2">
-                                        <button class="text-[#8b7355] hover:text-[#c17c5f] transition-colors p-2" disabled>
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                        <button class="text-[#8b7355] hover:text-red-500 transition-colors p-2" disabled>
-                                            <i class="fas fa-times-circle"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-
-                            <!-- Auction 7 - Upcoming -->
-                            <tr class="table-row" data-status="upcoming">
-                                <td class="px-6 py-4">
-                                    <img 
-                                        src="https://images.unsplash.com/photo-1590422749830-674860a6e4d4?w=80&h=80&fit=crop" 
-                                        alt="Ceramic Serving Platter" 
-                                        class="w-16 h-16 rounded-lg object-cover"
-                                    />
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div>
-                                        <h3 class="font-semibold text-[#5c4a3d]">Ceramic Serving Platter</h3>
-                                        <p class="text-sm text-[#8b7355]">Ceramics</p>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 text-sm font-semibold text-[#8b7355]">90.00 BD</td>
-                                <td class="px-6 py-4 text-sm text-[#8b7355]">—</td>
-                                <td class="px-6 py-4 text-sm text-[#8b7355]">
-                                    <div class="flex items-center gap-1">
-                                        <i class="far fa-calendar text-blue-500"></i>
-                                        <span>Starts in 3d 12h</span>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <span class="status-badge status-upcoming">Upcoming</span>
-                                </td>
-                                <td class="px-6 py-4 text-sm text-[#8b7355]">—</td>
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center gap-2">
-                                        <button class="text-[#8b7355] hover:text-[#c17c5f] transition-colors p-2" onclick="openModal()">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button class="text-[#8b7355] hover:text-red-500 transition-colors p-2" onclick="confirmCancel()">
-                                            <i class="fas fa-times-circle"></i>
-                                        </button>
-                                    </div>
-                                </td>
+                                <td class="px-6 py-4 text-sm text-[#8b7355]" th:text="${auction.highestBidderName != null ? auction.highestBidderName : '-'}">-</td>
                             </tr>
                         </tbody>
                     </table>
@@ -678,17 +398,7 @@
 
                 <!-- Pagination -->
                 <div class="flex items-center justify-between px-6 py-4 border-t border-[#e5e0d8]">
-                    <p class="text-sm text-[#8b7355]">Showing 1-7 of 12 auctions</p>
-                    <div class="flex items-center gap-2">
-                        <button class="px-4 py-2 border border-[#e5e0d8] rounded-lg text-[#8b7355] hover:border-[#c17c5f] hover:text-[#c17c5f] transition-colors" disabled>
-                            Previous
-                        </button>
-                        <button class="px-4 py-2 bg-[#c17c5f] text-white rounded-lg">1</button>
-                        <button class="px-4 py-2 border border-[#e5e0d8] rounded-lg text-[#8b7355] hover:border-[#c17c5f] hover:text-[#c17c5f] transition-colors">2</button>
-                        <button class="px-4 py-2 border border-[#e5e0d8] rounded-lg text-[#8b7355] hover:border-[#c17c5f] hover:text-[#c17c5f] transition-colors">
-                            Next
-                        </button>
-                    </div>
+                    <p class="text-sm text-[#8b7355]">Auctions</p>
                 </div>
             </div>
         </main>
@@ -709,74 +419,94 @@
             <div class="p-6">
                 <form id="auction-form" onsubmit="saveAuction(event)">
                     <div class="space-y-5">
-                        <!-- Select Product -->
+                        <!-- Product Name -->
                         <div>
-                            <label class="block text-[#5c4a3d] font-semibold mb-2">Select Product</label>
-                            <select class="form-input w-full px-4 py-3 rounded-xl border border-[#e5e0d8] text-[#5c4a3d] bg-white" required>
-                                <option value="">Choose a product from your inventory</option>
-                                <option value="1">Handcrafted Ceramic Vase - 85.00 BD</option>
-                                <option value="2">Ceramic Bowl Set - 120.00 BD</option>
-                                <option value="3">Artisan Tea Set - 195.00 BD</option>
-                                <option value="4">Decorative Plant Pot - 45.00 BD</option>
-                            </select>
+                            <label class="block text-[#5c4a3d] font-semibold mb-2">Product Name</label>
+                            <input 
+                                id="auction-title"
+                                type="text" 
+                                placeholder="e.g., Handcrafted Ceramic Vase"
+                                class="form-input w-full px-4 py-3 rounded-xl border border-[#e5e0d8] text-[#5c4a3d] placeholder-[#b8a99a]"
+                                required
+                            />
                         </div>
 
-                        <!-- Starting Bid and Reserve Price Row -->
+                        <!-- Category and Starting Price Row -->
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-[#5c4a3d] font-semibold mb-2">Starting Bid (BD)</label>
+                                <label class="block text-[#5c4a3d] font-semibold mb-2">Category</label>
+                                <select id="auction-category" class="form-input w-full px-4 py-3 rounded-xl border border-[#e5e0d8] text-[#5c4a3d] bg-white" required>
+                                    <option value="">Select Category</option>
+                                    <option value="ceramics">Ceramics</option>
+                                    <option value="jewelry">Jewelry</option>
+                                    <option value="paintings">Paintings</option>
+                                    <option value="textiles">Textiles</option>
+                                    <option value="woodwork">Woodwork</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[#5c4a3d] font-semibold mb-2">Starting Price (BD)</label>
                                 <input 
+                                    id="auction-starting-bid"
                                     type="number" 
-                                    placeholder="0.00"
-                                    step="0.01"
-                                    min="0"
+                                    placeholder="e.g., 45"
+                                    step="1"
+                                    min="1"
                                     class="form-input w-full px-4 py-3 rounded-xl border border-[#e5e0d8] text-[#5c4a3d] placeholder-[#b8a99a]"
                                     required
                                 />
                             </div>
+                        </div>
+
+                        <!-- Start Time and End Time Row -->
+                        <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-[#5c4a3d] font-semibold mb-2">Reserve Price (BD)</label>
+                                <label class="block text-[#5c4a3d] font-semibold mb-2">Start Time</label>
                                 <input 
-                                    type="number" 
-                                    placeholder="Optional"
-                                    step="0.01"
-                                    min="0"
-                                    class="form-input w-full px-4 py-3 rounded-xl border border-[#e5e0d8] text-[#5c4a3d] placeholder-[#b8a99a]"
+                                    id="auction-starttime"
+                                    type="datetime-local" 
+                                    class="form-input w-full px-4 py-3 rounded-xl border border-[#e5e0d8] text-[#5c4a3d]"
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label class="block text-[#5c4a3d] font-semibold mb-2">End Time</label>
+                                <input 
+                                    id="auction-endtime"
+                                    type="datetime-local" 
+                                    class="form-input w-full px-4 py-3 rounded-xl border border-[#e5e0d8] text-[#5c4a3d]"
+                                    required
                                 />
                             </div>
                         </div>
 
-                        <!-- Auction Duration -->
+                        <!-- Product Image -->
                         <div>
-                            <label class="block text-[#5c4a3d] font-semibold mb-2">Auction Duration</label>
-                            <select class="form-input w-full px-4 py-3 rounded-xl border border-[#e5e0d8] text-[#5c4a3d] bg-white" required>
-                                <option value="">Select duration</option>
-                                <option value="1">1 day</option>
-                                <option value="3">3 days</option>
-                                <option value="5">5 days</option>
-                                <option value="7">7 days</option>
-                                <option value="14">14 days</option>
-                            </select>
-                        </div>
-
-                        <!-- End Time (Auto-calculated, shown for reference) -->
-                        <div>
-                            <label class="block text-[#5c4a3d] font-semibold mb-2">Expected End Time</label>
+                            <label class="block text-[#5c4a3d] font-semibold mb-2">Product Image</label>
+                            <div class="border-2 border-dashed border-[#e5e0d8] rounded-xl p-6 text-center hover:border-[#c17c5f] transition-colors cursor-pointer" id="auction-image-upload-area">
+                                <i class="fas fa-cloud-upload-alt text-3xl text-[#b8a99a] mb-3"></i>
+                                <p class="text-[#8b7355] font-medium">Click to upload or drag and drop</p>
+                                <p class="text-[#b8a99a] text-sm mt-1">PNG, JPG up to 2MB</p>
+                                <input id="auction-image-file" type="file" class="hidden" accept="image/*">
+                            </div>
+                            <p class="text-xs text-[#8b7355] mt-2">Or enter image URL:</p>
                             <input 
-                                type="text" 
-                                placeholder="Will be calculated based on duration"
-                                class="form-input w-full px-4 py-3 rounded-xl border border-[#e5e0d8] text-[#5c4a3d] placeholder-[#b8a99a] bg-[#f5ebe0]"
-                                readonly
+                                id="auction-image-url"
+                                type="url" 
+                                placeholder="https://example.com/image.jpg"
+                                class="form-input w-full px-4 py-2 rounded-xl border border-[#e5e0d8] text-[#5c4a3d] placeholder-[#b8a99a] mt-1"
                             />
                         </div>
 
-                        <!-- Auction Description -->
+                        <!-- Description -->
                         <div>
-                            <label class="block text-[#5c4a3d] font-semibold mb-2">Auction Notes (Optional)</label>
+                            <label class="block text-[#5c4a3d] font-semibold mb-2">Description</label>
                             <textarea 
-                                rows="3"
-                                placeholder="Add any special notes or conditions for this auction..."
+                                id="auction-description"
+                                rows="4"
+                                placeholder="Describe your product, materials used, dimensions..."
                                 class="form-input w-full px-4 py-3 rounded-xl border border-[#e5e0d8] text-[#5c4a3d] placeholder-[#b8a99a] resize-none"
+                                required
                             ></textarea>
                         </div>
 
@@ -784,11 +514,12 @@
                         <div>
                             <label class="flex items-start cursor-pointer">
                                 <input 
+                                    id="auction-agree-terms"
                                     type="checkbox" 
                                     class="w-5 h-5 rounded border-[#e5e0d8] text-[#c17c5f] focus:ring-[#c17c5f] mt-0.5"
                                     required
                                 >
-                                <span class="ml-3 text-sm text-[#8b7355]">I agree to the auction terms and conditions. I understand that once the auction ends, I am committed to selling the item to the highest bidder if the reserve price is met.</span>
+                                <span class="ml-3 text-sm text-[#8b7355]">I agree to the auction terms and conditions. I understand that once the auction starts, it will be visible to buyers and will run until the specified end time.</span>
                             </label>
                         </div>
                     </div>
@@ -808,21 +539,7 @@
     </div>
 
     <script>
-        // Sidebar navigation active state handling
-        document.querySelectorAll('.sidebar-link').forEach(link => {
-            link.addEventListener('click', function(e) {
-                // Remove active state from all links
-                document.querySelectorAll('.sidebar-link').forEach(l => {
-                    l.classList.remove('active');
-                    l.classList.remove('text-white');
-                    l.classList.add('text-[#d4c5b5]');
-                });
-
-                // Add active state to clicked link
-                this.classList.add('active');
-                this.classList.remove('text-[#d4c5b5]');
-            });
-        });
+        /* Sidebar active state handled by dynamic script below */
 
         // Modal functions
         function openModal() {
@@ -836,7 +553,57 @@
             modal.classList.add('hidden');
             modal.classList.remove('flex');
             document.getElementById('auction-form').reset();
+            const textEl = document.querySelector('#auction-image-upload-area p');
+            if (textEl) textEl.textContent = "Click to upload or drag and drop";
         }
+
+        // Image file upload drag/drop and click reader
+        document.getElementById('auction-image-file')?.addEventListener('change', function() {
+            if (!this.files.length) return;
+            const file = this.files[0];
+            const maxBytes = 2 * 1024 * 1024; // server accepts ~2 MB images
+            if (file.size > maxBytes) {
+                alert("Product image must be 2MB or smaller.");
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    const maxDim = 800;
+                    if (width > maxDim || height > maxDim) {
+                        if (width > height) {
+                            height = Math.round((height * maxDim) / width);
+                            width = maxDim;
+                        } else {
+                            width = Math.round((width * maxDim) / height);
+                            height = maxDim;
+                        }
+                    }
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    const compressedUrl = canvas.toDataURL('image/jpeg', 0.7);
+                    document.getElementById('auction-image-url').value = compressedUrl;
+                    const textEl = document.querySelector('#auction-image-upload-area p');
+                    if (textEl) textEl.textContent = "Image uploaded successfully!";
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // Click listener to trigger file upload click
+        document.getElementById('auction-image-upload-area')?.addEventListener('click', function(e) {
+            if (!e.target.closest('input')) {
+                document.getElementById('auction-image-file').click();
+            }
+        });
 
         // Filter auctions by status
         function filterAuctions(button, status) {
@@ -858,12 +625,91 @@
             });
         }
 
-        // Save auction
+        function getArtisanEmail() {
+            return sessionStorage.getItem('userEmail') || '';
+        }
+
+        // Save auction by calling the backend API
         function saveAuction(event) {
             event.preventDefault();
-            // In a real application, you would submit the form data to a server
-            alert('Auction created successfully!');
-            closeModal();
+            
+            const email = getArtisanEmail();
+            if (!email) {
+                alert("Error: Artisan email not found in session. Please log in again.");
+                return;
+            }
+
+            const title = document.getElementById('auction-title').value.trim();
+            const category = document.getElementById('auction-category').value.trim();
+            const price = parseInt(document.getElementById('auction-starting-bid').value); // integer price
+            const imageUrl = document.getElementById('auction-image-url').value.trim();
+            const description = document.getElementById('auction-description').value.trim();
+            const startTimeInput = document.getElementById('auction-starttime').value;
+            const endTimeInput = document.getElementById('auction-endtime').value;
+
+            if (isNaN(price) || price <= 0) {
+                alert('Please enter a valid starting price.');
+                return;
+            }
+
+            if (!startTimeInput || !endTimeInput) {
+                alert('Please specify both start and end times for the auction.');
+                return;
+            }
+            
+            const startTime = new Date(startTimeInput).toISOString();
+            const endTime = new Date(endTimeInput).toISOString();
+
+            const payload = {
+                artisanEmail: email,
+                title: title,
+                category: category,
+                price: price,
+                stockQuantity: 1,
+                status: "active",
+                imageUrl: imageUrl,
+                description: description,
+                isAuctionItem: true,
+                startTime: startTime,
+                endTime: endTime
+            };
+
+            const submitBtn = document.querySelector('button[type="submit"][form="auction-form"]') || event.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn ? submitBtn.innerHTML : 'Create Auction';
+            if (submitBtn) {
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Creating...';
+                submitBtn.disabled = true;
+            }
+
+            fetch('/api/products', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Auction listing created successfully!');
+                    closeModal();
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to list auction.'));
+                    if (submitBtn) {
+                        submitBtn.innerHTML = originalText;
+                        submitBtn.disabled = false;
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error creating auction:', error);
+                alert('An error occurred. Please try again.');
+                if (submitBtn) {
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                }
+            });
         }
 
         // Confirm cancel auction
@@ -907,9 +753,39 @@
         logoutButton.addEventListener('click', () => {
             const confirmed = window.confirm('Are you sure you want to logout?');
             if (confirmed) {
-                window.location.href = 'index.html';
+                if (typeof window.artisanLogout === 'function') {
+                    window.artisanLogout();
+                } else {
+                    sessionStorage.clear();
+                    window.location.href = '/login';
+                }
             }
         });
+    </script>
+    <script src="/artisan-common.js" defer></script>
+
+    <script>
+        // Dynamic sidebar active state: highlights the link matching the current page URL
+        (function() {
+            var path = window.location.pathname.toLowerCase();
+            document.querySelectorAll('.sidebar-link').forEach(function(link) {
+                link.classList.remove('active', 'text-white');
+                link.classList.add('text-[#d4c5b5]');
+                var href = (link.getAttribute('href') || '').toLowerCase().replace(/^\//, '');
+                if (href && path.includes(href)) {
+                    link.classList.add('active', 'text-white');
+                    link.classList.remove('text-[#d4c5b5]');
+                }
+            });
+            // Special case: artisanOrderDetail should highlight Orders
+            if (path.includes('artisanorderdetail')) {
+                var ordersLink = document.querySelector('a[href="/artisanOrders"]');
+                if (ordersLink) {
+                    ordersLink.classList.add('active', 'text-white');
+                    ordersLink.classList.remove('text-[#d4c5b5]');
+                }
+            }
+        })();
     </script>
 </body>
 </html>

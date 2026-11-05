@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script src="/app-core.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Wishlist - Artisan Co-op</title>
@@ -108,51 +109,59 @@
 <body class="min-h-screen flex flex-col">
     <!-- Navigation Bar -->
     <nav class="bg-[#faf9f6] border-b border-[#e5e0d8] py-4 px-6 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto flex items-center justify-between">
-            <div class="flex items-center">
+        <div class="max-w-7xl mx-auto flex items-center gap-4 lg:gap-6 min-h-[2.75rem]">
+            <!-- Brand -->
+            <div class="flex items-center shrink-0 min-w-0">
                 <a href="/" class="flex items-center gap-3 group">
-                    <!-- Logo -->
-                    <img src="/images/Logo.png" alt="ArtsyVibe Logo"
-                        class="h-10 w-auto object-contain"
+                    <img src="/images/Logo.png" alt="ArtsyVibe Logo" class="h-10 w-auto object-contain shrink-0"
                         style="filter: drop-shadow(0 0 0.5px rgba(193, 124, 95, 1));">
-
-                    <!-- Brand Name -->
-                    <span class="text-2xl font-semibold" 
+                    <span class="text-xl sm:text-2xl font-semibold whitespace-nowrap truncate max-w-[10rem] sm:max-w-none"
                         style="font-family: 'Playfair Display', serif;">
                         ArtsyVibe
                     </span>
                 </a>
             </div>
 
-            <!-- Center Links -->
-            <div class="hidden md:flex items-center space-x-8">
-                <a href="/" class="text-[#8b7355] hover:text-[#c17c5f] transition-colors font-medium">Home</a>
-                <a href="/products" class="text-[#8b7355] hover:text-[#c17c5f] transition-colors font-medium">Products</a>
-                <a href="/auctions" class="text-[#8b7355] hover:text-[#c17c5f] transition-colors font-medium">Auctions</a>
+            <!-- Center links -->
+            <div class="hidden md:flex flex-1 min-w-0 items-center justify-center gap-6 lg:gap-8 px-2">
+                <a href="/" class="text-[#8b7355] hover:text-[#c17c5f] transition-colors font-medium whitespace-nowrap shrink-0">Home</a>
+                <a href="/products"
+                    class="text-[#8b7355] hover:text-[#c17c5f] transition-colors font-medium whitespace-nowrap shrink-0">Products</a>
+                <a href="/auctions"
+                    class="text-[#8b7355] hover:text-[#c17c5f] transition-colors font-medium whitespace-nowrap shrink-0">Auctions</a>
             </div>
-            
-            <div class="flex items-center space-x-4">
-                <div id="login-button-wrapper" class="flex items-center">
-                    <a href="/login" class="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-[#c17c5f] to-[#a5664d] text-white text-sm font-semibold shadow-lg shadow-[#c17c5f]/20 transition-all hover:from-[#b06b4f] hover:to-[#8f5d3f]">
+
+            <!-- Actions -->
+            <div class="flex items-center justify-end gap-3 sm:gap-4 shrink-0 ml-auto">
+                <div id="login-button-wrapper" class="flex items-center hidden">
+                    <a href="/login"
+                        class="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-[#c17c5f] to-[#a5664d] text-white text-sm font-semibold shadow-lg shadow-[#c17c5f]/20 transition-all hover:from-[#b06b4f] hover:to-[#8f5d3f]">
                         <i class="fas fa-sign-in-alt"></i>
                         Login
                     </a>
                 </div>
 
                 <div id="user-section" class="hidden flex items-center space-x-4">
-                    <a href="/profile" class="flex flex-col items-center text-[#8b7355] hover:text-[#c17c5f] transition-colors">
+                    <a href="/profile" id="user-menu-button"
+                        class="flex flex-col items-center text-[#8b7355] hover:text-[#c17c5f] transition-colors">
                         <i class="fas fa-user-circle text-2xl"></i>
-                        <p id="nav-user-name" class="hidden md:block text-[10px] font-semibold text-[#5c4a3d] mt-0.5">John Doe</p>
+                        <p id="nav-user-name" class="hidden md:block text-[10px] font-semibold text-[#5c4a3d] mt-0.5">
+                            John Doe</p>
                     </a>
-                    <a id="notifications-link" href="/notifications" class="text-[#8b7355] hover:text-[#c17c5f] transition-colors relative">
+
+                    <a id="notifications-link" href="/notifications"
+                        class="text-[#8b7355] hover:text-[#c17c5f] transition-colors relative">
                         <i class="fas fa-bell text-xl"></i>
-                        <span id="notification-badge" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">4</span>
+                        <span id="notification-badge"
+                            class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">4</span>
                     </a>
                 </div>
 
-                <a id="cart-link" href="/cart" class="text-[#8b7355] hover:text-[#c17c5f] transition-colors relative">
+                <a id="cart-link" href="/cart" class="text-[#8b7355] hover:text-[#c17c5f] transition-colors relative shrink-0">
                     <i class="fas fa-shopping-cart text-xl"></i>
-                    <span class="absolute -top-2 -right-2 bg-[#c17c5f] text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">3</span>
+                    <span id="cart-badge"
+                        class="absolute -top-2 -right-2 bg-[#c17c5f] text-white text-xs rounded-full w-5 h-5 items-center justify-center"
+                        style="display: none;">0</span>
                 </a>
             </div>
         </div>
@@ -166,7 +175,7 @@
             <!-- Page Header -->
             <div class="mb-8">
                 <h1 class="text-3xl font-bold text-[#5c4a3d] mb-2">My Wishlist</h1>
-                <p class="text-[#8b7355]"><span id="wishlist-count">6</span> items saved for later</p>
+                <p class="text-[#8b7355]"><span id="wishlist-count">0</span> items saved for later</p>
             </div>
 
             <!-- Customer Account Navigation -->
@@ -186,21 +195,10 @@
 
             <!-- Category Filter Pills -->
             <div class="bg-white rounded-xl p-4 card-shadow mb-6">
-                <div class="flex flex-wrap gap-3">
+                <!-- "All Items" plus one pill per category in the wishlist (built by mywishlist.js). -->
+                <div id="wishlist-category-pills" class="flex flex-wrap gap-3">
                     <button class="filter-pill active px-5 py-2 rounded-full border-2 font-medium" onclick="filterWishlist('all', this)">
                         All Items
-                    </button>
-                    <button class="filter-pill px-5 py-2 rounded-full border-2 font-medium" onclick="filterWishlist('ceramics', this)">
-                        <i class="fas fa-mug-hot mr-2"></i>Ceramics
-                    </button>
-                    <button class="filter-pill px-5 py-2 rounded-full border-2 font-medium" onclick="filterWishlist('jewelry', this)">
-                        <i class="fas fa-gem mr-2"></i>Jewelry
-                    </button>
-                    <button class="filter-pill px-5 py-2 rounded-full border-2 font-medium" onclick="filterWishlist('textiles', this)">
-                        <i class="fas fa-tshirt mr-2"></i>Textiles
-                    </button>
-                    <button class="filter-pill px-5 py-2 rounded-full border-2 font-medium" onclick="filterWishlist('art', this)">
-                        <i class="fas fa-palette mr-2"></i>Art
                     </button>
                 </div>
             </div>

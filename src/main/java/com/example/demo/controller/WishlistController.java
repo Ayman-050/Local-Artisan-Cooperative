@@ -1,72 +1,96 @@
 package com.example.demo.controller;
 
 import com.example.demo.model.Customer;
+import com.example.demo.model.Product;
+import com.example.demo.model.Wishlist;
 import com.example.demo.model.WishlistItem;
-import com.example.demo.repository.UserRepository;
-import com.example.demo.service.WishlistService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.demo.repository.ProductRepository;
+import com.example.demo.repository.WishlistItemRepository;
+import com.example.demo.repository.WishlistRepository;
+import com.example.demo.security.CurrentUser;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 
+/** The signed-in customer's wishlist (the legacy X-User-Email header is ignored). */
 @RestController
 @RequestMapping("/api/wishlist")
+@RequiredArgsConstructor
 public class WishlistController {
 
-    @Autowired private WishlistService wishlistService;
-    @Autowired private UserRepository userRepository;
+    private final WishlistRepository wishlistRepository;
+    private final WishlistItemRepository wishlistItemRepository;
+    private final ProductRepository productRepository;
+    private final CurrentUser currentUser;
 
-    // GET /api/wishlist?customerId=3
     @GetMapping
-    public ResponseEntity<?> getWishlist(@RequestParam Long customerId) {
-        Customer customer = resolveCustomer(customerId);
-        if (customer == null) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Customer not found."));
-        }
-        List<WishlistItem> items = wishlistService.getWishlistItems(customer);
-        return ResponseEntity.ok(items);
+    @Transactional(readOnly = true)
+    public ResponseEntity<?> getWishlist() {
+        List<Product> products = wishlistRepository.findByCustomer(currentUser.requireCustomer())
+                .map(w -> w.getWishlistItems() == null ? List.<Product>of()
+                        : w.getWishlistItems().stream().map(WishlistItem::getProduct).toList())
+                .orElse(List.of());
+        return ResponseEntity.ok(products);
     }
 
-    // GET /api/wishlist/count?customerId=3
+    @PostMapping("/add/{productId}")
+    @Transactional
+    public ResponseEntity<?> addToWishlist(@PathVariable Long productId) {
+        Customer customer = currentUser.requireCustomer();
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("Product not found"));
+
+        Wishlist wishlist = wishlistRepository.findByCustomer(customer).orElseGet(() -> {
+            Wishlist fresh = new Wishlist();
+            fresh.setCustomer(customer);
+            fresh.setDateCreated(LocalDate.now());
+            fresh.setWishlistItems(new ArrayList<>());
+            return wishlistRepository.save(fresh);
+        });
+
+        if (wishlistItemRepository.findByWishlistAndProduct(wishlist, product).isPresent()) {
+            return ResponseEntity.ok("Item already in wishlist");
+        }
+        WishlistItem item = new WishlistItem();
+        item.setWishlist(wishlist);
+        item.setProduct(product);
+        item.setDateAdded(LocalDate.now());
+        wishlistItemRepository.save(item);
+        return ResponseEntity.ok("Item added to wishlist");
+    }
+
+    @DeleteMapping("/remove/{productId}")
+    @Transactional
+    public ResponseEntity<?> removeFromWishlist(@PathVariable Long productId) {
+        Customer customer = currentUser.requireCustomer();
+        Optional<Wishlist> wishlist = wishlistRepository.findByCustomer(customer);
+        Optional<Product> product = productRepository.findById(productId);
+        if (wishlist.isEmpty() || product.isEmpty()) {
+            return ResponseEntity.badRequest().body("Wishlist or product not found");
+        }
+        Optional<WishlistItem> item = wishlistItemRepository.findByWishlistAndProduct(wishlist.get(), product.get());
+        if (item.isEmpty()) {
+            return ResponseEntity.badRequest().body("Item not in wishlist");
+        }
+        if (wishlist.get().getWishlistItems() != null) {
+            wishlist.get().getWishlistItems().remove(item.get());
+        }
+        wishlistItemRepository.delete(item.get());
+        return ResponseEntity.ok("Item removed from wishlist");
+    }
+
     @GetMapping("/count")
-    public ResponseEntity<?> getWishlistCount(@RequestParam Long customerId) {
-        Customer customer = resolveCustomer(customerId);
-        if (customer == null) return ResponseEntity.ok(0);
-        return ResponseEntity.ok(wishlistService.getWishlistItems(customer).size());
-    }
-
-    // POST /api/wishlist
-    // Body: { "customerId": 3, "productId": 7 }
-    @PostMapping
-    public ResponseEntity<?> addToWishlist(@RequestBody Map<String, Long> payload) {
-        Long customerId = payload.get("customerId");
-        Long productId  = payload.get("productId");
-
-        Customer customer = resolveCustomer(customerId);
-        if (customer == null) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Customer not found."));
-        }
-
-        String result = wishlistService.addToWishlist(customer, productId);
-        return ResponseEntity.ok(Map.of("message", result));
-    }
-
-    // DELETE /api/wishlist/{itemId}
-    @DeleteMapping("/{itemId}")
-    public ResponseEntity<?> removeFromWishlist(@PathVariable Long itemId) {
-        String result = wishlistService.removeFromWishlist(itemId);
-        if (result.contains("not found")) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(Map.of("message", result));
-    }
-
-    private Customer resolveCustomer(Long customerId) {
-        return userRepository.findById(customerId)
-                .filter(u -> u instanceof Customer)
-                .map(u -> (Customer) u)
-                .orElse(null);
+    @Transactional(readOnly = true)
+    public ResponseEntity<?> getWishlistCount() {
+        int count = wishlistRepository.findByCustomer(currentUser.requireCustomer())
+                .map(w -> w.getWishlistItems() == null ? 0 : w.getWishlistItems().size())
+                .orElse(0);
+        return ResponseEntity.ok(count);
     }
 }

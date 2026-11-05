@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <script src="/app-core.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management - Artisan Co-op</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #faf9f6;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Playfair Display', serif;
+        }
+
+        .terracotta {
+            color: #c17c5f;
+        }
+
+        .bg-terracotta {
+            background-color: #c17c5f;
+        }
+
+        .bg-terracotta-dark {
+            background-color: #a5664d;
+        }
+
+        .hover\:bg-terracotta-dark:hover {
+            background-color: #a5664d;
+        }
+
+        .border-terracotta {
+            border-color: #c17c5f;
+        }
+
+        .text-earth {
+            color: #8b7355;
+        }
+
+        .bg-earth {
+            background-color: #8b7355;
+        }
+
+        .card-shadow {
+            box-shadow: 0 4px 6px -1px rgba(139, 115, 85, 0.1), 0 2px 4px -1px rgba(139, 115, 85, 0.06);
+        }
+
+        .card-shadow:hover {
+            box-shadow: 0 10px 15px -3px rgba(139, 115, 85, 0.15), 0 4px 6px -2px rgba(139, 115, 85, 0.1);
+        }
+
+        .sidebar-link {
+            transition: background-color 0.2s ease, color 0.2s ease;
+            color: #d4c5b5;
+        }
+        
+        .sidebar-link:hover {
+            background-color: rgba(255, 255, 255, 0.18);
+            color: #ffffff;
+        }
+        
+        .sidebar-link:hover i,
+        .sidebar-link:hover span {
+            color: #ffffff;
+        }
+        
+        .sidebar-link.active {
+            background-color: rgba(255, 255, 255, 0.25);
+            border-left: 3px solid #ffffff;
+            color: #ffffff;
+        }
+        
+        .sidebar-link.active i,
+        .sidebar-link.active span {
+            color: #ffffff;
+        }
+        
+        .user-menu {
+            position: relative;
+        }
+        
+        .user-menu-dropdown {
+            position: absolute;
+            right: 0;
+            top: calc(100% + 0.5rem);
+            width: 200px;
+            background: #ffffff;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-radius: 1rem;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+            display: none;
+            z-index: 50;
+        }
+        
+        .user-menu-dropdown.show {
+            display: block;
+        }
+        
+        .user-menu-item {
+            display: block;
+            padding: 0.85rem 1rem;
+            color: #5c4a3d;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            border-radius: 0.75rem;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+        
+        .user-menu-item:hover {
+            background-color: #f5ebe0;
+        }
+        
+        .user-menu-item.logout:hover {
+            color: #b91c1c;
+            background-color: #fee2e2;
+        }
+        
+        .chevron-icon {
+            transition: transform 0.3s ease;
+        }
+        
+        .chevron-icon.rotated {
+            transform: rotate(180deg);
+        }
+
+        .table-row {
+            transition: all 0.2s ease;
+        }
+
+        .table-row:hover {
+            background-color: #f5ebe0;
+        }
+
+        .table-row.suspended {
+            background-color: #fef2f2;
+            opacity: 0.8;
+        }
+
+        .table-row.suspended:hover {
+            background-color: #fee2e2;
+        }
+
+        .form-input {
+            transition: all 0.2s ease;
+        }
+
+        .form-input:focus {
+            border-color: #c17c5f;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(193, 124, 95, 0.1);
+        }
+
+        /* Role Badges */
+        .role-customer {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+
+        .role-artisan {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+
+        .role-admin {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* Status Badges */
+        .status-active {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-suspended {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status-pending {
+            background-color: #ffedd5;
+            color: #c2410c;
+        }
+
+        .status-rejected {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* Side Panel */
+        .side-panel {
+            position: fixed;
+            top: 0;
+            right: -600px;
+            width: 600px;
+            height: 100vh;
+            background: white;
+            box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
+            z-index: 100;
+            transition: right 0.3s ease-in-out;
+            overflow-y: auto;
+        }
+
+        .side-panel.open {
+            right: 0;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 99;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .overlay.open {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Bulk Action Bar */
+        .bulk-action-bar {
+            transform: translateY(-100%);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .bulk-action-bar.visible {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    </style>
+    <script src="/authguard.js"></script>
+</head>
+<body class="min-h-screen flex flex-col">
+    <!-- Top Navigation Bar -->
+    <nav class="bg-[#faf9f6] border-b border-[#e5e0d8] py-4 px-6 sticky top-0 z-50">
+        <div class="w-full flex items-center justify-between">
+            <div class="flex items-center">
+                <a href="/adminDashboard" class="flex items-center gap-3 group">
+                    <!-- Logo -->
+                    <img src="/images/Logo.png" alt="ArtsyVibe Logo"
+                        class="h-10 w-auto object-contain"
+                        style="filter: drop-shadow(0 0 0.5px rgba(193, 124, 95, 1));">
+                    
+                    <!-- Brand Name -->
+                    <span class="text-2xl font-semibold" 
+                        style="font-family: 'Playfair Display', serif;">
+                        ArtsyVibe
+                    </span>
+                </a>
+            </div>
+            
+            <!-- Right Side - Notifications and User -->
+            <div class="flex items-center space-x-4">
+                 <!-- Notification Bell -->
+                <a href="/adminNotification"><button class="relative p-2 text-[#8b7355] hover:text-[#c17c5f] transition-colors">
+                    <i class="fas fa-bell text-xl"></i>
+                    <span class="absolute top-0 right-0 w-5 h-5 bg-red-500 rounded-full border-2 border-[#faf9f6] text-white text-xs flex items-center justify-center font-semibold">5</span>
+                </button></a>
+                
+                <!-- User Profile -->
+                <div class="user-menu flex items-center space-x-3 pl-4 border-l border-[#e5e0d8]">
+                    <button id="userMenuButton" type="button" class="flex items-center gap-3 text-left focus:outline-none">
+                        <img 
+                            src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face" 
+                            alt="Admin User" 
+                            class="w-10 h-10 rounded-full object-cover border-2 border-[#c17c5f]"
+                        />
+                        <div class="hidden md:block">
+                            <p class="font-semibold text-[#5c4a3d] text-sm">Admin User</p>
+                            <p class="text-xs text-[#8b7355]">admin@artisancoop.com</p>
+                        </div>
+                        <i id="chevronIcon" class="chevron-icon fas fa-chevron-down text-[#8b7355] text-xs hidden md:block"></i>
+                    </button>
+                    <div id="userMenuDropdown" class="user-menu-dropdown">
+                        <button id="logoutButton" class="user-menu-item logout w-full text-left">
+                            <i class="fas fa-sign-out-alt mr-3"></i>Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area with Sidebar -->
+    <div class="flex flex-1">
+        <!-- Left Sidebar -->
+        <aside class="w-64 bg-[#5c4a3d] min-h-[calc(100vh-80px)] fixed left-0 top-20 overflow-y-auto">
+            <!-- Admin Profile -->
+            <div class="p-6 border-b border-[#7a6655]">
+                <div class="flex items-center gap-3">
+                    <img 
+                        src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face" 
+                        alt="Admin User" 
+                        class="w-12 h-12 rounded-full object-cover border-2 border-[#c17c5f]"
+                    />
+                    <div>
+                        <h3 class="text-white font-semibold text-sm">Admin User</h3>
+                        <span class="inline-block bg-[#c17c5f] text-white text-xs px-2 py-1 rounded-full mt-1">Administrator</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Navigation Menu -->
+            <nav class="p-4 mt-4">
+                <ul class="space-y-1">
+                    <li>
+                        <a href="/adminDashboard" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-tachometer-alt w-5"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/adminUsersManagement" class="sidebar-link active flex items-center gap-3 text-white px-4 py-3 rounded-lg">
+                            <i class="fas fa-users w-5"></i>
+                            <span>User Management</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/adminArtisanApproval" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-user-check w-5"></i>
+                            <span>Artisan Approvals</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/adminProducts" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-box w-5"></i>
+                            <span>Products</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/adminOrderManagment" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-shopping-bag w-5"></i>
+                            <span>Orders</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/adminAuction" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-gavel w-5"></i>
+                            <span>Auctions</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/adminRefund" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-undo w-5"></i>
+                            <span>Refunds</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/adminReview" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-star w-5"></i>
+                            <span>Review Moderation</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            
+            <!-- Systems Log Section -->
+            <div class="p-4 mt-2 border-t border-[#7a6655]">
+                <ul class="space-y-1">
+                    <li>
+                        <a href="/adminReports" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-history w-5"></i>
+                            <span>Reports</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 ml-64 p-8">
+            <!-- Page Header -->
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-[#5c4a3d] mb-2">User Management</h1>
+                <p class="text-[#8b7355]">Manage system users, roles, and access.</p>
+            </div>
+
+            <!-- Top Filter Bar -->
+            <div class="bg-white rounded-xl card-shadow p-4 mb-6">
+                <div class="flex flex-wrap gap-4 items-center">
+                    <!-- Search Input -->
+                    <div class="flex-1 min-w-64">
+                        <div class="relative">
+                            <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-[#8b7355]"></i>
+                            <input 
+                                type="text" 
+                                placeholder="Search by name or email..."
+                                data-filter-param="q"
+                                class="form-input w-full pl-12 pr-4 py-3 rounded-xl border border-[#e5e0d8] text-[#5c4a3d] placeholder-[#b8a99a]"
+                            />
+                        </div>
+                    </div>
+
+                    <!-- Role Filter -->
+                    <div class="flex items-center gap-2">
+                        <label class="text-[#5c4a3d] font-medium whitespace-nowrap">Role:</label>
+                        <select data-filter-param="role" class="form-input px-4 py-3 rounded-xl border border-[#e5e0d8] text-[#5c4a3d] bg-white min-w-32">
+                            <option value="">All Roles</option>
+                            <option value="customer">Customer</option>
+                            <option value="artisan">Artisan</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+
+                    <!-- Status Filter -->
+                    <div class="flex items-center gap-2">
+                        <label class="text-[#5c4a3d] font-medium whitespace-nowrap">Status:</label>
+                        <select data-filter-param="status" class="form-input px-4 py-3 rounded-xl border border-[#e5e0d8] text-[#5c4a3d] bg-white min-w-32">
+                            <option value="">All Statuses</option>
+                            <option value="active">Active</option>
+                            <option value="pending">Pending</option>
+                            <option value="suspended">Suspended</option>
+                            <option value="rejected">Rejected</option>
+                        </select>
+                    </div>
+
+                    <!-- Export Button -->
+                    <button class="ml-auto bg-[#c17c5f] hover:bg-[#a5664d] text-white px-6 py-3 rounded-xl font-medium transition-colors flex items-center gap-2">
+                        <i class="fas fa-download"></i>
+                        Export
+                    </button>
+                </div>
+            </div>
+
+            <!-- Bulk Action Bar -->
+            <div id="bulkActionBar" class="bulk-action-bar fixed bottom-0 left-0 right-0 bg-[#5c4a3d] text-white py-4 px-8 z-40 ml-64">
+                <div class="flex items-center justify-between max-w-6xl mx-auto">
+                    <div class="flex items-center gap-4">
+                        <input type="checkbox" id="bulkSelectAll" class="w-5 h-5 rounded border-gray-300">
+                        <span class="font-medium">Selected: <span id="selectedCount">0</span> users</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button class="px-5 py-2 border-2 border-white text-white rounded-lg font-medium hover:bg-white hover:text-[#5c4a3d] transition-colors">
+                            Suspend Selected
+                        </button>
+                        <button class="px-5 py-2 border-2 border-red-400 text-red-400 rounded-lg font-medium hover:bg-red-400 hover:text-white transition-colors">
+                            Delete Selected
+                        </button>
+                        <button onclick="hideBulkActionBar()" class="ml-4 text-white hover:text-gray-300">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Users Table -->
+            <div class="bg-white rounded-xl card-shadow overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-[#f5ebe0]">
+                            <tr>
+                                <th class="text-left px-6 py-4">
+                                    <input type="checkbox" onclick="toggleAllCheckboxes(this)" class="w-5 h-5 rounded border-gray-300 cursor-pointer">
+                                </th>
+                                <th class="text-left px-6 py-4 text-sm font-semibold text-[#5c4a3d] cursor-pointer hover:text-[#c17c5f]">
+                                    Name <i class="fas fa-sort ml-2"></i>
+                                </th>
+                                <th class="text-left px-6 py-4 text-sm font-semibold text-[#5c4a3d] cursor-pointer hover:text-[#c17c5f]">
+                                    Email <i class="fas fa-sort ml-2"></i>
+                                </th>
+                                <th class="text-left px-6 py-4 text-sm font-semibold text-[#5c4a3d]">Role</th>
+                                <th class="text-left px-6 py-4 text-sm font-semibold text-[#5c4a3d]">Status</th>
+                                <th class="text-left px-6 py-4 text-sm font-semibold text-[#5c4a3d] cursor-pointer hover:text-[#c17c5f]">
+                                    Join Date <i class="fas fa-sort ml-2"></i>
+                                </th>
+                                <th class="text-left px-6 py-4 text-sm font-semibold text-[#5c4a3d]">Last Active</th>
+                                <th class="text-left px-6 py-4 text-sm font-semibold text-[#5c4a3d]">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-[#e5e0d8]">
+                            <tr th:each="user : ${usersList.?[role != 'ADMIN']}"
+                                th:class="${'suspended'.equals(user.status) ? 'table-row suspended' : 'table-row'}"
+                                th:data-user-id="${user.userId}">
+                                <td class="px-6 py-4">
+                                    <input type="checkbox" class="user-checkbox w-5 h-5 rounded border-gray-300 cursor-pointer" onchange="updateBulkActionBar()">
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <div th:class="${'ARTISAN'.equals(user.role) ? 'w-9 h-9 bg-amber-100 rounded-full flex items-center justify-center' : ('ADMIN'.equals(user.role) ? 'w-9 h-9 bg-red-100 rounded-full flex items-center justify-center' : 'w-9 h-9 bg-blue-100 rounded-full flex items-center justify-center')}">
+                                            <span th:class="${'ARTISAN'.equals(user.role) ? 'text-sm font-semibold text-amber-600' : ('ADMIN'.equals(user.role) ? 'text-sm font-semibold text-red-600' : 'text-sm font-semibold text-blue-600')}"
+                                                  th:text="${user.name != null and !user.name.isEmpty() ? user.name.substring(0,1).toUpperCase() : '?'}">U</span>
+                                        </div>
+                                        <span class="font-medium text-[#5c4a3d]" th:text="${user.name}">User Name</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-[#8b7355]" th:text="${user.email}">email@example.com</td>
+                                <td class="px-6 py-4">
+                                    <span th:class="${'ARTISAN'.equals(user.role) ? 'status-badge role-artisan px-3 py-1 rounded-full text-xs font-semibold' : ('ADMIN'.equals(user.role) ? 'status-badge role-admin px-3 py-1 rounded-full text-xs font-semibold' : 'status-badge role-customer px-3 py-1 rounded-full text-xs font-semibold')}"
+                                          th:text="${user.role != null ? user.role.substring(0,1).toUpperCase() + user.role.substring(1).toLowerCase() : 'Unknown'}">Customer</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span th:class="${'suspended'.equals(user.status) ? 'status-badge status-suspended px-3 py-1 rounded-full text-xs font-semibold' : ('pending'.equals(user.status) or 'pending approval'.equals(user.status) ? 'status-badge status-pending px-3 py-1 rounded-full text-xs font-semibold' : ('rejected'.equals(user.status) ? 'status-badge status-rejected px-3 py-1 rounded-full text-xs font-semibold' : 'status-badge status-active px-3 py-1 rounded-full text-xs font-semibold'))}"
+                                          th:text="${user.status != null ? user.status.substring(0,1).toUpperCase() + user.status.substring(1).toLowerCase() : 'Active'}">Active</span>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-[#8b7355]"
+                                    th:text="${user.joinDate != null ? #temporals.format(user.joinDate, 'MMM dd, yyyy') : 'N/A'}">Jan 01, 2024</td>
+                                <td class="px-6 py-4 text-sm text-[#8b7355]"
+                                    th:text="${user.lastActive != null ? #temporals.format(user.lastActive, 'MMM dd, yyyy HH:mm') : 'Never'}">Never</td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-2">
+                                        <button onclick="openUserPanel()" class="text-[#c17c5f] hover:text-[#a5664d] font-medium text-sm">View</button>
+                                        <button th:if="${'pending'.equals(user.status) or 'pending approval'.equals(user.status)}"
+                                                class="approve-btn px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white text-xs rounded-lg font-medium transition-colors">
+                                            Approve
+                                        </button>
+                                        <button th:if="${'pending'.equals(user.status) or 'pending approval'.equals(user.status)}"
+                                                class="reject-btn px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs rounded-lg font-medium transition-colors">
+                                            Reject
+                                        </button>
+                                        <button th:if="${!'suspended'.equals(user.status) and !('pending'.equals(user.status) or 'pending approval'.equals(user.status))}"
+                                                class="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs rounded-lg font-medium transition-colors">
+                                            Suspend
+                                        </button>
+                                        <button th:if="${'suspended'.equals(user.status)}"
+                                                class="px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white text-xs rounded-lg font-medium transition-colors">
+                                            Activate
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+
+                    </table>
+                </div>
+
+                <!-- Pagination: server-side, see fragments/pager.html -->
+                <div th:replace="~{fragments/pager :: pager(${pager}, 'users')}"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Overlay -->
+    <div id="overlay" class="overlay" onclick="closeUserPanel()"></div>
+
+    <!-- User Detail Side Panel -->
+    <div id="userPanel" class="side-panel">
+        <div class="p-6">
+            <!-- Panel Header -->
+            <div class="flex items-center justify-between mb-6 pb-6 border-b border-[#e5e0d8]">
+                <h2 class="text-2xl font-bold text-[#5c4a3d]">User Details</h2>
+                <button onclick="closeUserPanel()" class="text-[#8b7355] hover:text-[#c17c5f] transition-colors">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+
+            <!-- User Profile Info -->
+            <div class="bg-[#f5ebe0] rounded-xl p-6 mb-6">
+                <div class="flex items-center gap-4 mb-4">
+                    <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center">
+                        <span class="text-2xl font-bold text-blue-600">JD</span>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-[#5c4a3d]">John Davis</h3>
+                        <p class="text-[#8b7355]">john.davis@email.com</p>
+                        <div class="flex items-center gap-2 mt-2">
+                            <span class="status-badge role-customer px-3 py-1 rounded-full text-xs font-semibold">Customer</span>
+                            <span class="status-badge status-active px-3 py-1 rounded-full text-xs font-semibold">Active</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Account Information -->
+            <div class="mb-6">
+                <h3 class="text-lg font-bold text-[#5c4a3d] mb-4">Account Information</h3>
+                <div class="space-y-3">
+                    <div class="flex justify-between py-2 border-b border-[#e5e0d8]">
+                        <span class="text-[#8b7355]">Phone Number</span>
+                        <span class="text-[#5c4a3d] font-medium">+1 (555) 123-4567</span>
+                    </div>
+                    <div class="flex justify-between py-2 border-b border-[#e5e0d8]">
+                        <span class="text-[#8b7355]">Join Date</span>
+                        <span class="text-[#5c4a3d] font-medium">January 15, 2024</span>
+                    </div>
+                    <div class="flex justify-between py-2 border-b border-[#e5e0d8]">
+                        <span class="text-[#8b7355]">Last Active</span>
+                        <span class="text-[#5c4a3d] font-medium">2 hours ago</span>
+                    </div>
+                    <div class="flex justify-between py-2 border-b border-[#e5e0d8]">
+                        <span class="text-[#8b7355]">Email Verified</span>
+                        <span class="text-green-600 font-medium"><i class="fas fa-check-circle mr-1"></i> Yes</span>
+                    </div>
+                    <div class="flex justify-between py-2">
+                        <span class="text-[#8b7355]">Total Orders</span>
+                        <span class="text-[#5c4a3d] font-medium">23 orders</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Account Activity Summary -->
+            <div class="mb-6">
+                <h3 class="text-lg font-bold text-[#5c4a3d] mb-4">Activity Summary</h3>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-[#f5ebe0] rounded-xl p-4 text-center">
+                        <div class="text-3xl font-bold text-[#c17c5f] mb-1">23</div>
+                        <div class="text-sm text-[#8b7355]">Total Orders</div>
+                    </div>
+                    <div class="bg-[#f5ebe0] rounded-xl p-4 text-center">
+                        <div class="text-3xl font-bold text-[#c17c5f] mb-1">$1,847</div>
+                        <div class="text-sm text-[#8b7355]">Total Spent</div>
+                    </div>
+                    <div class="bg-[#f5ebe0] rounded-xl p-4 text-center">
+                        <div class="text-3xl font-bold text-[#c17c5f] mb-1">8</div>
+                        <div class="text-sm text-[#8b7355]">Reviews Written</div>
+                    </div>
+                    <div class="bg-[#f5ebe0] rounded-xl p-4 text-center">
+                        <div class="text-3xl font-bold text-[#c17c5f] mb-1">12</div>
+                        <div class="text-sm text-[#8b7355]">Items in Wishlist</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order History -->
+            <div class="mb-6">
+                <h3 class="text-lg font-bold text-[#5c4a3d] mb-4">Recent Orders</h3>
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between p-3 bg-[#f5ebe0] rounded-lg">
+                        <div>
+                            <p class="font-semibold text-[#5c4a3d]">#ORD-2024-1547</p>
+                            <p class="text-xs text-[#8b7355]">Dec 10, 2024</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-bold text-[#c17c5f]">$245.00</p>
+                            <span class="status-badge status-delivered px-2 py-0.5 rounded-full text-xs">Delivered</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-[#f5ebe0] rounded-lg">
+                        <div>
+                            <p class="font-semibold text-[#5c4a3d]">#ORD-2024-1423</p>
+                            <p class="text-xs text-[#8b7355]">Nov 28, 2024</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-bold text-[#c17c5f]">$89.00</p>
+                            <span class="status-badge status-delivered px-2 py-0.5 rounded-full text-xs">Delivered</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-[#f5ebe0] rounded-lg">
+                        <div>
+                            <p class="font-semibold text-[#5c4a3d]">#ORD-2024-1298</p>
+                            <p class="text-xs text-[#8b7355]">Nov 15, 2024</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-bold text-[#c17c5f]">$156.00</p>
+                            <span class="status-badge status-shipped px-2 py-0.5 rounded-full text-xs">Shipped</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="w-full mt-3 text-[#c17c5f] hover:text-[#a5664d] font-medium text-sm">
+                    View All Orders <i class="fas fa-arrow-right ml-1"></i>
+                </button>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="mb-6">
+                <h3 class="text-lg font-bold text-[#5c4a3d] mb-4">Quick Actions</h3>
+                <div class="space-y-3">
+                    <button class="w-full bg-red-500 hover:bg-red-600 text-white py-3 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2">
+                        <i class="fas fa-ban"></i>
+                        Suspend Account
+
+                    </button>
+                    <button class="w-full bg-[#c17c5f] hover:bg-[#a5664d] text-white py-3 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2">
+                        <i class="fas fa-key"></i>
+                        Reset Password
+                    </button>
+                    <button class="w-full border-2 border-red-500 text-red-500 hover:bg-red-500 hover:text-white py-3 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2">
+                        <i class="fas fa-trash-alt"></i>
+                        Delete Account
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Toggle all checkboxes
+        function toggleAllCheckboxes(source) {
+            const checkboxes = document.querySelectorAll('.user-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = source.checked;
+            });
+            updateBulkActionBar();
+        }
+
+        // Update bulk action bar
+        function updateBulkActionBar() {
+            const checkboxes = document.querySelectorAll('.user-checkbox');
+            const checkedBoxes = Array.from(checkboxes).filter(cb => cb.checked);
+            const checkedCount = checkedBoxes.length;
+            const bulkActionBar = document.getElementById('bulkActionBar');
+            const selectedCount = document.getElementById('selectedCount');
+
+            selectedCount.textContent = checkedCount;
+
+            if (checkedCount > 0) {
+                bulkActionBar.classList.add('visible');
+                
+                let hasActive = false;
+                let hasSuspended = false;
+                
+                checkedBoxes.forEach(cb => {
+                    const row = cb.closest('tr');
+                    if (row) {
+                        const statusTd = row.children[4];
+                        const statusSpan = statusTd ? statusTd.querySelector('span') : null;
+                        const statusText = statusSpan ? statusSpan.textContent.trim().toLowerCase() : '';
+                        if (statusText === 'suspended') {
+                            hasSuspended = true;
+                        } else {
+                            hasActive = true;
+                        }
+                    }
+                });
+                
+                const bulkBtns = document.querySelectorAll('#bulkActionBar .flex.items-center.gap-3 button');
+                const bulkSuspendBtn = bulkBtns[0];
+                if (bulkSuspendBtn) {
+                    if (hasSuspended && !hasActive) {
+                        bulkSuspendBtn.textContent = 'Activate Selected';
+                    } else {
+                        bulkSuspendBtn.textContent = 'Suspend Selected';
+                    }
+                }
+            } else {
+                bulkActionBar.classList.remove('visible');
+            }
+        }
+
+        // Hide bulk action bar
+        function hideBulkActionBar() {
+            const bulkActionBar = document.getElementById('bulkActionBar');
+            const checkboxes = document.querySelectorAll('.user-checkbox');
+            const selectAll = document.querySelector('thead input[type="checkbox"]');
+
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            if (selectAll) selectAll.checked = false;
+
+            bulkActionBar.classList.remove('visible');
+        }
+
+        // Open user panel
+        function openUserPanel() {
+            const panel = document.getElementById('userPanel');
+            const overlay = document.getElementById('overlay');
+            panel.classList.add('open');
+            overlay.classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Close user panel
+        function closeUserPanel() {
+            const panel = document.getElementById('userPanel');
+            const overlay = document.getElementById('overlay');
+            panel.classList.remove('open');
+            overlay.classList.remove('open');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Close panel on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeUserPanel();
+            }
+        });
+    </script>
+    <script>
+        if (window.initAuthGuard) {
+            initAuthGuard({
+                redirectTo: "/login",
+                message: "Administrator access required. Please login."
+            });
+        }
+    </script>
+    <script src="/adminDashboard.js"></script>
+    <script src="/admin-paging.js"></script>
+    <script src="/adminUsersManagement.js"></script>
+</body>
+</html>
+

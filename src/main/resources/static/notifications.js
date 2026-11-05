@@ -7,6 +7,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const navUserEmail = document.getElementById('nav-user-email');
     const notificationBadge = document.getElementById('notification-badge');
     const cartBadge = document.getElementById('cart-badge');
+    const notificationsList = document.querySelector('.space-y-4');
+    const emptyState = document.getElementById('empty-state');
 
     function updateLoginState() {
         const loggedIn = sessionStorage.getItem('isLoggedIn') === 'true' || sessionStorage.getItem('loggedIn') === 'true';
@@ -19,31 +21,154 @@ document.addEventListener('DOMContentLoaded', () => {
             if (navUserName) navUserName.textContent = userName;
             if (navUserEmail) navUserEmail.textContent = userEmail;
 
-            updateNotificationBadge();
+            fetchNotifications();
         } else {
             loginButtonWrapper?.classList.remove('hidden');
             userSection?.classList.add('hidden');
+            if (notificationsList) notificationsList.innerHTML = '';
+            emptyState?.classList.remove('hidden');
         }
 
         updateCartBadge();
     }
-    
-    // --- 1. Filter Logic ---
+
+    async function fetchNotifications() {
+        const userId = sessionStorage.getItem('userId');
+        if (!userId) return;
+
+        try {
+            const res = await fetch(`/api/notifications/${userId}`);
+            if (!res.ok) throw new Error('Failed to fetch');
+            const notifications = await res.json();
+            renderNotifications(notifications);
+            updateBadgeCount(notifications.filter(n => !n.read).length);
+        } catch (err) {
+            console.error('Error fetching notifications:', err);
+        }
+    }
+
+    function renderNotifications(notifications) {
+        if (!notificationsList) return;
+
+        if (notifications.length === 0) {
+            notificationsList.innerHTML = '';
+            emptyState?.classList.remove('hidden');
+            return;
+        }
+
+        emptyState?.classList.add('hidden');
+        notificationsList.innerHTML = notifications.map(n => `
+            <div class="notification-card ${n.read ? 'read' : 'unread'} p-4 rounded-xl border border-gray-100 bg-white shadow-sm transition-all hover:shadow-md cursor-pointer group"
+                 data-id="${Number(n.id)}" data-type="${escapeHtml(n.type)}" data-read="${n.read}" onclick="handleNotificationClick(this)">
+                <div class="flex items-start gap-4">
+                    ${!n.read ? '<div class="unread-dot mt-1.5"></div>' : '<div class="w-2 mt-1.5"></div>'}
+                    <div class="flex-1">
+                        <div class="flex justify-between items-start mb-1">
+                            <h3 class="font-semibold text-[#2d3436] group-hover:text-[#c17c5f] transition-colors">${escapeHtml(n.title)}</h3>
+                            <span class="text-xs text-gray-400">${new Date(n.timestamp).toLocaleString()}</span>
+                        </div>
+                        <p class="text-sm text-gray-600 line-clamp-2">${escapeHtml(n.message)}</p>
+                        <div class="mt-2 flex items-center gap-3">
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 text-gray-500 uppercase tracking-wider">${escapeHtml(String(n.type || '').replace('_', ' '))}</span>
+                            ${n.link ? `<a href="${safeUrl(n.link, '#')}" class="text-[10px] font-semibold text-[#c17c5f] hover:underline">View Details</a>` : ''}
+                        </div>
+                    </div>
+                    <button onclick="event.stopPropagation(); deleteNotification(${Number(n.id)}, this.closest('.notification-card'))" 
+                            class="text-gray-300 hover:text-red-500 transition-colors p-1">
+                        <i class="fas fa-trash-alt text-sm"></i>
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    window.handleNotificationClick = async function(card) {
+        const id = card.getAttribute('data-id');
+        const isRead = card.getAttribute('data-read') === 'true';
+        
+        if (!isRead) {
+            try {
+                await fetch(`/api/notifications/${id}/read`, { method: 'PUT' });
+                card.setAttribute('data-read', 'true');
+                card.classList.remove('unread');
+                card.classList.add('read');
+                const dot = card.querySelector('.unread-dot');
+                if (dot) {
+                    const spacer = document.createElement('div');
+                    spacer.className = 'w-2 mt-1.5';
+                    dot.replaceWith(spacer);
+                }
+                const currentCount = parseInt(sessionStorage.getItem('notificationCount') || '0');
+                updateBadgeCount(Math.max(0, currentCount - 1));
+            } catch (err) {
+                console.error('Error marking as read:', err);
+            }
+        }
+        
+        const type = card.getAttribute('data-type');
+        // Optional navigation logic based on type could go here
+    };
+
+    window.deleteNotification = async function(id, cardElement) {
+        try {
+            const res = await fetch(`/api/notifications/${id}`, { method: 'DELETE' });
+            if (res.ok) {
+                cardElement.style.transform = 'translateX(20px)';
+                cardElement.style.opacity = '0';
+                setTimeout(() => {
+                    cardElement.remove();
+                    if (document.querySelectorAll('.notification-card').length === 0) {
+                        emptyState?.classList.remove('hidden');
+                    }
+                    const isUnread = cardElement.getAttribute('data-read') === 'false';
+                    if (isUnread) {
+                        const currentCount = parseInt(sessionStorage.getItem('notificationCount') || '0');
+                        updateBadgeCount(Math.max(0, currentCount - 1));
+                    }
+                }, 300);
+                showToast('Notification deleted', 'success');
+            }
+        } catch (err) {
+            console.error('Error deleting notification:', err);
+        }
+    };
+
+    window.markAllAsRead = async function() {
+        const userId = sessionStorage.getItem('userId');
+        if (!userId) return;
+
+        try {
+            const res = await fetch(`/api/notifications/read-all/${userId}`, { method: 'PUT' });
+            if (res.ok) {
+                document.querySelectorAll('.notification-card[data-read="false"]').forEach(card => {
+                    card.setAttribute('data-read', 'true');
+                    card.classList.remove('unread');
+                    card.classList.add('read');
+                    const dot = card.querySelector('.unread-dot');
+                    if (dot) {
+                        const spacer = document.createElement('div');
+                        spacer.className = 'w-2 mt-1.5';
+                        dot.replaceWith(spacer);
+                    }
+                });
+                updateBadgeCount(0);
+                showToast('All notifications marked as read', 'success');
+            }
+        } catch (err) {
+            console.error('Error marking all as read:', err);
+        }
+    };
+
     window.filterNotifications = function(button, type) {
-        // UI Update: Set active pill
-        document.querySelectorAll('.filter-pill').forEach(pill => {
-            pill.classList.remove('active');
-        });
+        document.querySelectorAll('.filter-pill').forEach(pill => pill.classList.remove('active'));
         button.classList.add('active');
 
-        // Filter Logic
         const cards = document.querySelectorAll('.notification-card');
         let visibleCount = 0;
 
         cards.forEach(card => {
             const cardType = card.getAttribute('data-type');
-            
-            if (type === 'all' || cardType === type) {
+            if (type === 'all' || cardType.toLowerCase().includes(type.toLowerCase())) {
                 card.style.display = 'block';
                 visibleCount++;
             } else {
@@ -51,110 +176,18 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Toggle Empty State
-        const emptyState = document.getElementById('empty-state');
-        if (visibleCount === 0) {
-            emptyState.classList.remove('hidden');
-        } else {
-            emptyState.classList.add('hidden');
-        }
+        if (visibleCount === 0) emptyState?.classList.remove('hidden');
+        else emptyState?.classList.add('hidden');
     };
 
-    // --- 2. Toggle Read/Unread Status ---
-    window.toggleRead = function(card) {
-        const isRead = card.getAttribute('data-read') === 'true';
-        
-        if (isRead) {
-            // Mark as Unread
-            card.setAttribute('data-read', 'false');
-            card.classList.remove('read');
-            card.classList.add('unread');
-            
-            // Add the blue dot back
-            const dotContainer = card.querySelector('.flex.items-start.gap-4');
-            const existingDot = dotContainer.querySelector('.unread-dot');
-            if (!existingDot) {
-                const unreadDot = document.createElement('div');
-                unreadDot.className = 'unread-dot mt-1.5';
-                dotContainer.insertBefore(unreadDot, dotContainer.firstChild);
-            }
-        } else {
-            // Mark as Read
-            card.setAttribute('data-read', 'true');
-            card.classList.remove('unread');
-            card.classList.add('read');
-            
-            // Remove blue dot
-            const unreadDot = card.querySelector('.unread-dot');
-            if (unreadDot) {
-                unreadDot.remove();
-            }
-            
-            // Replace with empty spacer to keep layout
-            const dotContainer = card.querySelector('.flex.items-start.gap-4');
-            const existingSpacer = dotContainer.querySelector('.w-2.mt-1\\.5');
-            if (!existingSpacer) {
-                const spacer = document.createElement('div');
-                spacer.className = 'w-2 mt-1.5';
-                dotContainer.insertBefore(spacer, dotContainer.firstChild);
-            }
-        }
-        
-        updateBadgeCount();
-        saveReadState();
-    };
-
-    // --- 3. Mark All as Read ---
-    window.markAllAsRead = function(skipToast) {
-        const unreadCards = document.querySelectorAll('.notification-card[data-read="false"]');
-        
-        unreadCards.forEach(card => {
-            // Set Attribute
-            card.setAttribute('data-read', 'true');
-            card.classList.remove('unread');
-            card.classList.add('read');
-            
-            // Remove blue dot
-            const unreadDot = card.querySelector('.unread-dot');
-            if (unreadDot) {
-                unreadDot.remove();
-            }
-
-            // Add spacer
-            const dotContainer = card.querySelector('.flex.items-start.gap-4');
-            const existingSpacer = dotContainer.querySelector('.w-2.mt-1\\.5');
-            if (!existingSpacer) {
-                const spacer = document.createElement('div');
-                spacer.className = 'w-2 mt-1.5';
-                dotContainer.insertBefore(spacer, dotContainer.firstChild);
-            }
-        });
-
-        updateBadgeCount();
-        saveReadState();
-        if (skipToast !== true) {
-            showToast('All notifications marked as read', 'success');
-        }
-    };
-
-    // --- 4. Update Navbar Badge ---
-    function updateBadgeCount() {
-        const unreadCount = document.querySelectorAll('.notification-card[data-read="false"]').length;
-        const badge = document.getElementById('notification-badge');
-        
-        sessionStorage.setItem('notificationCount', unreadCount.toString());
-        
-        if (unreadCount > 0) {
-            badge.textContent = unreadCount;
-            badge.style.display = 'flex';
-        } else {
-            badge.style.display = 'none';
+    function updateBadgeCount(count) {
+        sessionStorage.setItem('notificationCount', count.toString());
+        if (typeof window.updateNotificationBadge === 'function') {
+            window.updateNotificationBadge();
         }
     }
 
-    // --- 5. Utility: Simple Toast Notification ---
     function showToast(message, type = 'info') {
-        // Check if styles already exist
         if (!document.getElementById('toast-styles')) {
             const style = document.createElement('style');
             style.id = 'toast-styles';
@@ -167,115 +200,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
             `;
             document.head.appendChild(style);
-            document.body.insertAdjacentHTML('afterbegin', '<div class="toast-container"></div>');
+            if (!document.querySelector('.toast-container')) {
+                document.body.insertAdjacentHTML('beforeend', '<div class="toast-container"></div>');
+            }
         }
 
         const container = document.querySelector('.toast-container');
         const toast = document.createElement('div');
         toast.className = `toast ${type}`;
-        
-        let icon = '';
-        if (type === 'success') icon = '<i class="fas fa-check-circle"></i>';
-        if (type === 'error') icon = '<i class="fas fa-exclamation-circle"></i>';
-        if (type === 'info') icon = '<i class="fas fa-info-circle"></i>';
-
-        toast.innerHTML = `${icon} <span>${message}</span>`;
+        toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'info-circle'}"></i> <span>${escapeHtml(message)}</span>`;
         container.appendChild(toast);
-
-        setTimeout(() => {
-            toast.style.opacity = '0';
-            setTimeout(() => toast.remove(), 300);
-        }, 3000);
-    }
-
-    // --- 6. Persist state across reloads ---
-    function saveReadState() {
-        const cards = document.querySelectorAll('.notification-card');
-        const readIndices = [];
-        cards.forEach((card, index) => {
-            if (card.getAttribute('data-read') === 'true') {
-                readIndices.push(index);
-            }
-        });
-        sessionStorage.setItem('readNotifications', JSON.stringify(readIndices));
-    }
-
-    function loadReadState() {
-        const readIndicesStr = sessionStorage.getItem('readNotifications');
-        
-        // Backwards compatibility with previous notificationCount trick
-        if (sessionStorage.getItem('notificationCount') === '0' && !readIndicesStr) {
-            window.markAllAsRead(true);
-            return;
-        }
-
-        if (readIndicesStr) {
-            try {
-                const readIndices = JSON.parse(readIndicesStr);
-                const cards = document.querySelectorAll('.notification-card');
-                cards.forEach((card, index) => {
-                    if (readIndices.includes(index) && card.getAttribute('data-read') === 'false') {
-                        card.setAttribute('data-read', 'true');
-                        card.classList.remove('unread');
-                        card.classList.add('read');
-                        
-                        const unreadDot = card.querySelector('.unread-dot');
-                        if (unreadDot) unreadDot.remove();
-
-                        const dotContainer = card.querySelector('.flex.items-start.gap-4');
-                        if (!dotContainer.querySelector('.w-2.mt-1\\.5')) {
-                            const spacer = document.createElement('div');
-                            spacer.className = 'w-2 mt-1.5';
-                            dotContainer.insertBefore(spacer, dotContainer.firstChild);
-                        }
-                    } else if (!readIndices.includes(index) && card.getAttribute('data-read') === 'true') {
-                        card.setAttribute('data-read', 'false');
-                        card.classList.remove('read');
-                        card.classList.add('unread');
-                        
-                        const dotContainer = card.querySelector('.flex.items-start.gap-4');
-                        if (!dotContainer.querySelector('.unread-dot')) {
-                            const unreadDot = document.createElement('div');
-                            unreadDot.className = 'unread-dot mt-1.5';
-                            dotContainer.insertBefore(unreadDot, dotContainer.firstChild);
-                        }
-                    }
-                });
-            } catch (e) {
-                console.error("Failed to load readNotifications", e);
-            }
-        }
-        updateBadgeCount();
+        setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3000);
     }
 
     updateLoginState();
-    loadReadState();
 });
 
-// ============================================================
-// Utility helpers (shared across pages via global scope)
-// ============================================================
-
-/**
- * Read the notification count from sessionStorage and update any badge on the page.
- */
-function updateNotificationBadge() {
-    const badge = document.getElementById('notification-badge');
-    if (!badge) return;
-    const count = parseInt(sessionStorage.getItem('notificationCount') ?? '0', 10);
-    badge.textContent = count;
-    badge.style.display = count > 0 ? 'flex' : 'none';
-}
-
-/**
- * Read cart item count from sessionStorage and update any cart badge on the page.
- */
 function updateCartBadge() {
-    document.querySelectorAll('.fa-shopping-cart')
-        .forEach(icon => {
-            const badge = icon.parentElement?.querySelector('span');
-            if (!badge) return;
-            const count = parseInt(sessionStorage.getItem('cartCount') ?? '0', 10);
-            badge.textContent = count;
-        });
+    const count = sessionStorage.getItem('cartCount') || '0';
+    const badges = document.querySelectorAll('#cart-badge');
+    badges.forEach(b => {
+        b.textContent = count;
+        b.style.display = count !== '0' ? 'flex' : 'none';
+    });
 }

@@ -1,6 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
+    <script src="/app-core.js"></script>
+    <script src="/client-pager.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Products - Artisan Co-op</title>
@@ -185,7 +187,7 @@
 <body class="min-h-screen flex flex-col">
     <!-- Top Navigation Bar -->
     <nav class="bg-[#faf9f6] border-b border-[#e5e0d8] py-4 px-6 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto flex items-center justify-between">
+        <div class="w-full flex items-center justify-between">
             <div class="flex items-center">
                 <a href="/artisanDashboard" class="flex items-center gap-3 group">
                     <!-- Logo -->
@@ -204,10 +206,12 @@
             <!-- Right Side - Notifications and User -->
             <div class="flex items-center space-x-4">
                 <!-- Notification Bell -->
-                <button class="relative p-2 text-[#8b7355] hover:text-[#c17c5f] transition-colors">
-                    <i class="fas fa-bell text-xl"></i>
-                    <span class="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-[#faf9f6]"></span>
-                </button>
+                <a id="notifications-link" href="/artisanNotification" class="relative">
+                    <button class="relative p-2 text-[#8b7355] hover:text-[#c17c5f] transition-colors">
+                        <i class="fas fa-bell text-xl"></i>
+                        <span class="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-[#faf9f6]"></span>
+                    </button>
+                </a>
 
                 <!-- User Profile -->
                 <div class="user-menu flex items-center space-x-3 pl-4 border-l border-[#e5e0d8]">
@@ -219,16 +223,16 @@
                         />
                         <div class="hidden md:block">
                             <p class="font-semibold text-[#5c4a3d] text-sm" th:text="${artisan != null ? artisan.name : 'User'}">Elena Martinez</p>
-                            <p class="text-xs text-[#8b7355]" th:text="${artisan != null ? artisan.email : 'elena@artisan.com'}">elena@artisan.com</p>
+                            <p class="text-xs text-[#8b7355]" th:text="${artisan != null ? artisan.email : 'email@artisan.com'}">elena@artisan.com</p>
                         </div>
                         <i id="chevronIcon" class="chevron-icon fas fa-chevron-down text-[#8b7355] text-xs hidden md:block"></i>
                     </button>
                     <div id="userMenuDropdown" class="user-menu-dropdown">
-                        <button id="logoutButton" class="user-menu-item logout w-full text-left">
+                        <button id="logoutButton" type="button" class="user-menu-item logout w-full text-left">
                             <i class="fas fa-sign-out-alt mr-2"></i> Logout
                         </button>
                     </div>
-        </div>
+                </div>
     </nav>
 
     <!-- Main Content Area with Sidebar -->
@@ -254,31 +258,31 @@
             <nav class="p-4">
                 <ul class="space-y-1">
                     <li>
-                        <a href="artisan-dashboard.html" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                        <a href="/artisanDashboard" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
                             <i class="fas fa-chart-line w-5"></i>
                             <span>Dashboard</span>
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="sidebar-link active flex items-center gap-3 text-white px-4 py-3 rounded-lg">
+                        <a href="/artisanProducts" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
                             <i class="fas fa-box w-5"></i>
                             <span>My Products</span>
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                        <a href="/artisanAuction" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
                             <i class="fas fa-gavel w-5"></i>
                             <span>My Auctions</span>
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                        <a href="/artisanOrders" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
                             <i class="fas fa-receipt w-5"></i>
                             <span>Orders</span>
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                        <a href="/artisanAnalytics" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
                             <i class="fas fa-chart-bar w-5"></i>
                             <span>Analytics</span>
                         </a>
@@ -290,7 +294,7 @@
             <div class="p-4 mt-8 border-t border-[#7a6655]">
                 <ul class="space-y-1">
                     <li>
-                        <a href="#" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                        <a id="settingsLink" href="/artisanSettings" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
                             <i class="fas fa-cog w-5"></i>
                             <span>Settings</span>
                         </a>
@@ -307,7 +311,7 @@
                     <h1 class="text-3xl font-bold text-[#5c4a3d] mb-2">My Products</h1>
                     <p class="text-[#8b7355]">Manage your product listings and inventory.</p>
                 </div>
-                <button onclick="openModal()" class="bg-[#c17c5f] hover:bg-[#a5664d] text-white px-6 py-3 rounded-xl font-semibold transition-colors shadow-lg flex items-center gap-2">
+                <button onclick="openAddProductModal()" class="bg-[#c17c5f] hover:bg-[#a5664d] text-white px-6 py-3 rounded-xl font-semibold transition-colors shadow-lg flex items-center gap-2">
                     <i class="fas fa-plus"></i>
                     Add New Product
                 </button>
@@ -317,18 +321,19 @@
             <div class="bg-white rounded-xl p-4 card-shadow mb-6">
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div class="flex flex-wrap gap-2">
-                        <button class="filter-pill active px-4 py-2 rounded-full border-2 border-[#c17c5f] bg-[#c17c5f] text-white font-medium text-sm">
+                        <button id="filter-all" data-filter="all" class="filter-pill active px-4 py-2 rounded-full border-2 border-[#c17c5f] bg-[#c17c5f] text-white font-medium text-sm">
                             All
                         </button>
-                        <button class="filter-pill px-4 py-2 rounded-full border-2 border-[#e5e0d8] text-[#8b7355] font-medium text-sm hover:border-[#c17c5f] hover:text-[#c17c5f]">
+                        <button id="filter-active" data-filter="active" class="filter-pill px-4 py-2 rounded-full border-2 border-[#e5e0d8] text-[#8b7355] font-medium text-sm hover:border-[#c17c5f] hover:text-[#c17c5f]">
                             Active
                         </button>
-                        <button class="filter-pill px-4 py-2 rounded-full border-2 border-[#e5e0d8] text-[#8b7355] font-medium text-sm hover:border-[#c17c5f] hover:text-[#c17c5f]">
-                            Inactive
+                        <button id="filter-inactive" data-filter="out of stock" class="filter-pill px-4 py-2 rounded-full border-2 border-[#e5e0d8] text-[#8b7355] font-medium text-sm hover:border-[#c17c5f] hover:text-[#c17c5f]">
+                            Out of stock
                         </button>
                     </div>
                     <div class="relative">
                         <input 
+                            id="product-search"
                             type="text" 
                             placeholder="Search products..." 
                             class="w-full md:w-64 px-4 py-2 pl-10 rounded-lg border border-[#e5e0d8] focus:border-[#c17c5f] focus:outline-none text-[#5c4a3d] placeholder-[#b8a99a]"
@@ -352,193 +357,43 @@
                                 <th class="text-left px-6 py-4 text-sm font-semibold text-[#5c4a3d]">Actions</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-[#e5e0d8]">
-                            <!-- Product 1 -->
-                            <tr class="table-row">
-                                <td class="px-6 py-4">
-                                    <img 
-                                        src="https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=80&h=80&fit=crop" 
-                                        alt="Handcrafted Ceramic Vase" 
-                                        class="w-16 h-16 rounded-lg object-cover"
-                                    />
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div>
-                                        <h3 class="font-semibold text-[#5c4a3d]">Handcrafted Ceramic Vase</h3>
-                                        <p class="text-sm text-[#8b7355]">Ceramics</p>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 text-sm font-semibold text-[#c17c5f]">85.00 BD</td>
-                                <td class="px-6 py-4 text-sm text-[#8b7355]">12 in stock</td> 
-                                <td class="px-6 py-4">
-                                    <span class="status-badge status-active">Active</span>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center gap-2">
-                                        <button class="text-[#8b7355] hover:text-[#c17c5f] transition-colors p-2" onclick="openModal()">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button class="text-[#8b7355] hover:text-red-500 transition-colors p-2" onclick="confirmDelete()">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>
+                                                <tbody class="divide-y divide-[#e5e0d8]">
+                            <tr th:if="${products == null or products.isEmpty()}" class="table-row">
+                                <td colspan="6" class="px-6 py-12 text-center text-[#8b7355]">
+                                    <i class="fas fa-box-open text-4xl mb-3 text-[#d4c5b5] block"></i>
+                                    <p class="font-medium text-[#5c4a3d]">No products yet</p>
+                                    <p class="text-sm mt-1">Add your first product to start selling.</p>
                                 </td>
                             </tr>
-
-                            <!-- Product 2 -->
-                            <tr class="table-row">
+                            <tr th:each="product : ${products}" 
+                                class="table-row product-row"
+                                th:attr="data-id=${product.id}, data-title=${product.title}, data-category=${product.category}, data-price=${product.price}, data-stock=${product.stockQuantity}, data-image=${product.imageUrl}, data-description=${product.description}, data-auction=${product.isAuctionItem}, data-status=${product.status}">
                                 <td class="px-6 py-4">
-                                    <img 
-                                        src="https://images.unsplash.com/photo-1578749556920-d1e28f925f40?w=80&h=80&fit=crop" 
-                                        alt="Ceramic Bowl Set" 
-                                        class="w-16 h-16 rounded-lg object-cover"
-                                    />
+                                    <img th:src="${product.imageUrl != null and !product.imageUrl.isEmpty() ? product.imageUrl : 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}"
+                                         th:alt="${product.title}"
+                                         class="w-16 h-16 rounded-lg object-cover" />
                                 </td>
                                 <td class="px-6 py-4">
                                     <div>
-                                        <h3 class="font-semibold text-[#5c4a3d]">Ceramic Bowl Set</h3>
-                                        <p class="text-sm text-[#8b7355]">Ceramics</p>
+                                        <h3 class="font-semibold text-[#5c4a3d]" th:text="${product.title}">Product</h3>
+                                        <p class="text-sm text-[#8b7355]" th:text="${product.category}">Category</p>
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 text-sm font-semibold text-[#c17c5f]">120.00 BD</td>
-                                <td class="px-6 py-4 text-sm text-[#8b7355]">8 in stock</td>
+                                <td class="px-6 py-4 text-sm font-semibold text-[#c17c5f]">
+                                    <span th:text="${#numbers.formatDecimal(product.price, 1, 2)} + ' BD'">0.00 BD</span>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-[#8b7355]" th:text="${product.stockQuantity} + ' in stock'">0 in stock</td>
                                 <td class="px-6 py-4">
-                                    <span class="status-badge status-active">Active</span>
+                                    <span class="status-badge"
+                                          th:classappend="${#strings.toLowerCase(product.status) == 'active' ? ' status-active' : ' status-inactive'}"
+                                          th:text="${#strings.toLowerCase(product.status) == 'active' ? 'Active' : 'Out of stock'}">Out of stock</span>
                                 </td>
                                 <td class="px-6 py-4">
                                     <div class="flex items-center gap-2">
-                                        <button class="text-[#8b7355] hover:text-[#c17c5f] transition-colors p-2" onclick="openModal()">
+                                        <button type="button" class="text-[#8b7355] hover:text-[#c17c5f] transition-colors p-2 edit-product-btn">
                                             <i class="fas fa-edit"></i>
                                         </button>
-                                        <button class="text-[#8b7355] hover:text-red-500 transition-colors p-2" onclick="confirmDelete()">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-
-                            <!-- Product 3 -->
-                            <tr class="table-row">
-                                <td class="px-6 py-4">
-                                    <img 
-                                        src="https://images.unsplash.com/photo-1565193566173-033e4e379cda?w=80&h=80&fit=crop" 
-                                        alt="Decorative Plant Pot" 
-                                        class="w-16 h-16 rounded-lg object-cover"
-                                    />
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div>
-                                        <h3 class="font-semibold text-[#5c4a3d]">Decorative Plant Pot</h3>
-                                        <p class="text-sm text-[#8b7355]">Ceramics</p>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 text-sm font-semibold text-[#c17c5f]">45.00 BD</td>
-                                <td class="px-6 py-4 text-sm text-[#8b7355]">0 in stock</td>
-                                <td class="px-6 py-4">
-                                    <span class="status-badge status-inactive">Inactive</span>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center gap-2">
-                                        <button class="text-[#8b7355] hover:text-[#c17c5f] transition-colors p-2" onclick="openModal()">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button class="text-[#8b7355] hover:text-red-500 transition-colors p-2" onclick="confirmDelete()">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-
-                            <!-- Product 4 -->
-                            <tr class="table-row">
-                                <td class="px-6 py-4">
-                                    <img 
-                                        src="https://images.unsplash.com/photo-1590422749830-674860a6e4d4?w=80&h=80&fit=crop" 
-                                        alt="Artisan Tea Set" 
-                                        class="w-16 h-16 rounded-lg object-cover"
-                                    />
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div>
-                                        <h3 class="font-semibold text-[#5c4a3d]">Artisan Tea Set</h3>
-                                        <p class="text-sm text-[#8b7355]">Ceramics</p>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 text-sm font-semibold text-[#c17c5f]">195.00 BD</td>
-                                <td class="px-6 py-4 text-sm text-[#8b7355]">5 in stock</td>
-                                <td class="px-6 py-4">
-                                    <span class="status-badge status-active">Active</span>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center gap-2">
-                                        <button class="text-[#8b7355] hover:text-[#c17c5f] transition-colors p-2" onclick="openModal()">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button class="text-[#8b7355] hover:text-red-500 transition-colors p-2" onclick="confirmDelete()">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-
-                            <!-- Product 5 -->
-                            <tr class="table-row">
-                                <td class="px-6 py-4">
-                                    <img 
-                                        src="https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=80&h=80&fit=crop" 
-                                        alt="Ceramic Dinner Plates" 
-                                        class="w-16 h-16 rounded-lg object-cover"
-                                    />
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div>
-                                        <h3 class="font-semibold text-[#5c4a3d]">Ceramic Dinner Plates (Set of 4)</h3>
-                                        <p class="text-sm text-[#8b7355]">Ceramics</p>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 text-sm font-semibold text-[#c17c5f]">150.00 BD</td>
-                                <td class="px-6 py-4 text-sm text-[#8b7355]">15 in stock</td>
-                                <td class="px-6 py-4">
-                                    <span class="status-badge status-active">Active</span>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center gap-2">
-                                        <button class="text-[#8b7355] hover:text-[#c17c5f] transition-colors p-2" onclick="openModal()">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button class="text-[#8b7355] hover:text-red-500 transition-colors p-2" onclick="confirmDelete()">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-
-                            <!-- Product 6 -->
-                            <tr class="table-row">
-                                <td class="px-6 py-4">
-                                    <img 
-                                        src="https://images.unsplash.com/photo-1578749556920-d1e28f925f40?w=80&h=80&fit=crop" 
-                                        alt="Rustic Mug Set" 
-                                        class="w-16 h-16 rounded-lg object-cover"
-                                    />
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div>
-                                        <h3 class="font-semibold text-[#5c4a3d]">Rustic Mug Set</h3>
-                                        <p class="text-sm text-[#8b7355]">Ceramics</p>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 text-sm font-semibold text-[#c17c5f]">65.00 BD</td>
-                                <td class="px-6 py-4 text-sm text-[#8b7355]">20 in stock</td>
-                                <td class="px-6 py-4">
-                                    <span class="status-badge status-active">Active</span>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center gap-2">
-                                        <button class="text-[#8b7355] hover:text-[#c17c5f] transition-colors p-2" onclick="openModal()">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button class="text-[#8b7355] hover:text-red-500 transition-colors p-2" onclick="confirmDelete()">
+                                        <button type="button" class="text-[#8b7355] hover:text-red-500 transition-colors p-2 delete-product-btn">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </div>
@@ -549,20 +404,7 @@
                 </div>
 
                 <!-- Pagination -->
-                <div class="flex items-center justify-between px-6 py-4 border-t border-[#e5e0d8]">
-                    <p class="text-sm text-[#8b7355]">Showing 1-6 of 24 products</p>
-                    <div class="flex items-center gap-2">
-                        <button class="px-4 py-2 border border-[#e5e0d8] rounded-lg text-[#8b7355] hover:border-[#c17c5f] hover:text-[#c17c5f] transition-colors" disabled>
-                            Previous
-                        </button>
-                        <button class="px-4 py-2 bg-[#c17c5f] text-white rounded-lg">1</button>
-                        <button class="px-4 py-2 border border-[#e5e0d8] rounded-lg text-[#8b7355] hover:border-[#c17c5f] hover:text-[#c17c5f] transition-colors">2</button>
-                        <button class="px-4 py-2 border border-[#e5e0d8] rounded-lg text-[#8b7355] hover:border-[#c17c5f] hover:text-[#c17c5f] transition-colors">3</button>
-                        <button class="px-4 py-2 border border-[#e5e0d8] rounded-lg text-[#8b7355] hover:border-[#c17c5f] hover:text-[#c17c5f] transition-colors">
-                            Next
-                        </button>
-                    </div>
-                </div>
+                <div id="clientPagerFooter" class="flex items-center justify-between px-6 py-4 border-t border-[#e5e0d8]"></div>
             </div>
         </main>
     </div>
@@ -572,7 +414,7 @@
         <div class="bg-white rounded-2xl card-shadow w-full max-w-2xl max-h-[90vh] overflow-y-auto modal-content">
             <!-- Modal Header -->
             <div class="flex items-center justify-between p-6 border-b border-[#e5e0d8] sticky top-0 bg-white rounded-t-2xl">
-                <h3 class="text-xl font-bold text-[#5c4a3d]" style="font-family: 'Playfair Display', serif;">Add New Product</h3>
+                <h3 id="modal-title" class="text-xl font-bold text-[#5c4a3d]" style="font-family: 'Playfair Display', serif;">Add New Product</h3>
                 <button onclick="closeModal()" class="text-[#8b7355] hover:text-[#c17c5f] transition-colors">
                     <i class="fas fa-times text-xl"></i>
                 </button>
@@ -586,6 +428,7 @@
                         <div>
                             <label class="block text-[#5c4a3d] font-semibold mb-2">Product Name</label>
                             <input 
+                                id="product-title"
                                 type="text" 
                                 placeholder="e.g., Handcrafted Ceramic Vase"
                                 class="form-input w-full px-4 py-3 rounded-xl border border-[#e5e0d8] text-[#5c4a3d] placeholder-[#b8a99a]"
@@ -597,7 +440,7 @@
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-[#5c4a3d] font-semibold mb-2">Category</label>
-                                <select class="form-input w-full px-4 py-3 rounded-xl border border-[#e5e0d8] text-[#5c4a3d] bg-white" required>
+                                <select id="product-category" class="form-input w-full px-4 py-3 rounded-xl border border-[#e5e0d8] text-[#5c4a3d] bg-white" required>
                                     <option value="">Select Category</option>
                                     <option value="ceramics">Ceramics</option>
                                     <option value="jewelry">Jewelry</option>
@@ -609,6 +452,7 @@
                             <div>
                                 <label class="block text-[#5c4a3d] font-semibold mb-2">Price (BD)</label>
                                 <input 
+                                    id="product-price"
                                     type="number" 
                                     placeholder="0.00"
                                     step="0.01"
@@ -623,6 +467,7 @@
                         <div>
                             <label class="block text-[#5c4a3d] font-semibold mb-2">Stock Quantity</label>
                             <input 
+                                id="product-stock" oninput="handleStockInput()"
                                 type="number" 
                                 placeholder="Enter quantity"
                                 min="0"
@@ -631,17 +476,31 @@
                             />
                         </div>
 
+                        <!-- Status -->
+                        <div>
+                            <label class="block text-[#5c4a3d] font-semibold mb-2">Status</label>
+                            <select 
+                                id="product-status"
+                                class="form-input w-full px-4 py-3 rounded-xl border border-[#e5e0d8] text-[#5c4a3d] bg-white font-medium focus:border-[#c17c5f] focus:outline-none"
+                                onchange="handleStatusChange()"
+                            >
+                                <option value="active">Active</option>
+                                <option value="out of stock">Out of stock</option>
+                            </select>
+                        </div>
+
                         <!-- Image Upload -->
                         <div>
                             <label class="block text-[#5c4a3d] font-semibold mb-2">Product Image</label>
                             <div class="border-2 border-dashed border-[#e5e0d8] rounded-xl p-6 text-center hover:border-[#c17c5f] transition-colors cursor-pointer">
                                 <i class="fas fa-cloud-upload-alt text-3xl text-[#b8a99a] mb-3"></i>
                                 <p class="text-[#8b7355] font-medium">Click to upload or drag and drop</p>
-                                <p class="text-[#b8a99a] text-sm mt-1">PNG, JPG up to 5MB</p>
-                                <input type="file" class="hidden" accept="image/*">
+                                <p class="text-[#b8a99a] text-sm mt-1">PNG, JPG up to 2MB</p>
+                                <input id="product-image-file" type="file" class="hidden" accept="image/*">
                             </div>
                             <p class="text-xs text-[#8b7355] mt-2">Or enter image URL:</p>
                             <input 
+                                id="product-image-url"
                                 type="url" 
                                 placeholder="https://example.com/image.jpg"
                                 class="form-input w-full px-4 py-2 rounded-xl border border-[#e5e0d8] text-[#5c4a3d] placeholder-[#b8a99a] mt-1"
@@ -652,6 +511,7 @@
                         <div>
                             <label class="block text-[#5c4a3d] font-semibold mb-2">Description</label>
                             <textarea 
+                                id="product-description"
                                 rows="4"
                                 placeholder="Describe your product, materials used, dimensions, care instructions..."
                                 class="form-input w-full px-4 py-3 rounded-xl border border-[#e5e0d8] text-[#5c4a3d] placeholder-[#b8a99a] resize-none"
@@ -659,28 +519,7 @@
                             ></textarea>
                         </div>
 
-                        <!-- Enable Auction -->
-                        <div>
-                            <label class="flex items-center cursor-pointer">
-                                <input 
-                                    type="checkbox" 
-                                    id="enable-auction"
-                                    class="w-5 h-5 rounded border-[#e5e0d8] text-[#c17c5f] focus:ring-[#c17c5f]"
-                                    onchange="toggleAuctionField()"
-                                >
-                                <span class="ml-3 text-[#5c4a3d] font-semibold">Enable Auction</span>
-                            </label>
 
-                            <!-- Auction End Time (Hidden by default) -->
-                            <div id="auction-field" class="auction-field mt-4">
-                                <label class="block text-[#5c4a3d] font-semibold mb-2">Auction End Time</label>
-                                <input 
-                                    type="datetime-local" 
-                                    class="form-input w-full px-4 py-3 rounded-xl border border-[#e5e0d8] text-[#5c4a3d]"
-                                />
-                                <p class="text-xs text-[#8b7355] mt-1">Select when the auction should end</p>
-                            </div>
-                        </div>
                     </div>
                 </form>
             </div>
@@ -698,24 +537,37 @@
     </div>
 
     <script>
-        // Sidebar navigation active state handling
-        document.querySelectorAll('.sidebar-link').forEach(link => {
-            link.addEventListener('click', function(e) {
-                // Remove active state from all links
-                document.querySelectorAll('.sidebar-link').forEach(l => {
-                    l.classList.remove('active');
-                    l.classList.remove('text-white');
-                    l.classList.add('text-[#d4c5b5]');
-                });
+        /* Sidebar active state handled by dynamic script below */
 
-                // Add active state to clicked link
-                this.classList.add('active');
-                this.classList.remove('text-[#d4c5b5]');
-            });
-        });
+        let currentEditProductId = null;
+
+        function getArtisanEmail() {
+            return sessionStorage.getItem('userEmail') || '';
+        }
 
         // Modal functions
-        function openModal() {
+        function openAddProductModal() {
+            currentEditProductId = null;
+            document.getElementById('modal-title').textContent = "Add New Product";
+            document.getElementById('product-form').reset();
+            
+            const modal = document.getElementById('product-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function openEditProductModal(prod) {
+            currentEditProductId = prod.id;
+            document.getElementById('modal-title').textContent = "Edit Product";
+            
+            document.getElementById('product-title').value = prod.title || '';
+            document.getElementById('product-category').value = prod.category || '';
+            document.getElementById('product-price').value = prod.price || '0.00';
+            document.getElementById('product-stock').value = prod.stock || '0';
+            document.getElementById('product-status').value = prod.status || (parseInt(prod.stock) > 0 ? 'active' : 'out of stock');
+            document.getElementById('product-image-url').value = prod.image || '';
+            document.getElementById('product-description').value = prod.description || '';
+            
             const modal = document.getElementById('product-modal');
             modal.classList.remove('hidden');
             modal.classList.add('flex');
@@ -726,35 +578,229 @@
             modal.classList.add('hidden');
             modal.classList.remove('flex');
             document.getElementById('product-form').reset();
-            document.getElementById('auction-field').classList.remove('show');
+            currentEditProductId = null;
         }
 
-        // Toggle auction field visibility
-        function toggleAuctionField() {
-            const checkbox = document.getElementById('enable-auction');
-            const auctionField = document.getElementById('auction-field');
+        function handleStatusChange() {
+            const statusSelect = document.getElementById('product-status');
+            const stockInput = document.getElementById('product-stock');
+            if (statusSelect.value === 'out of stock') {
+                stockInput.value = '0';
+            } else if (statusSelect.value === 'active' && parseInt(stockInput.value) <= 0) {
+                stockInput.value = '1';
+            }
+        }
 
-            if (checkbox.checked) {
-                auctionField.classList.add('show');
+        function handleStockInput() {
+            const statusSelect = document.getElementById('product-status');
+            const stockInput = document.getElementById('product-stock');
+            const qty = parseInt(stockInput.value) || 0;
+            if (qty > 0) {
+                statusSelect.value = 'active';
             } else {
-                auctionField.classList.remove('show');
+                statusSelect.value = 'out of stock';
             }
         }
 
         // Save product
         function saveProduct(event) {
             event.preventDefault();
-            // In a real application, you would submit the form data to a server
-            alert('Product saved successfully!');
-            closeModal();
+
+            const email = getArtisanEmail();
+            if (!email) {
+                alert("Error: Artisan email not found in session. Please log in again.");
+                return;
+            }
+
+            const title = document.getElementById('product-title').value.trim();
+            const category = document.getElementById('product-category').value.trim();
+            const price = parseFloat(document.getElementById('product-price').value);
+            const stockQuantity = parseInt(document.getElementById('product-stock').value);
+            const imageUrl = document.getElementById('product-image-url').value.trim();
+            const description = document.getElementById('product-description').value.trim();
+            const status = document.getElementById('product-status').value;
+            if (status === 'active' && stockQuantity <= 0) {
+                alert("Please specify a stock quantity greater than 0 for active status.");
+                return;
+            }
+
+            const payload = {
+                artisanEmail: email,
+                title: title,
+                category: category,
+                price: price,
+                stockQuantity: stockQuantity,
+                status: status,
+                imageUrl: imageUrl,
+                description: description,
+                isAuctionItem: false,
+                endTime: null
+            };
+
+            const method = currentEditProductId ? 'PUT' : 'POST';
+            const url = currentEditProductId ? `/api/products/${currentEditProductId}` : '/api/products';
+
+            // When updating via PUT, the backend updateProduct API expects a standard Product entity
+            const bodyData = currentEditProductId ? {
+                title: title,
+                category: category,
+                price: price,
+                stockQuantity: stockQuantity,
+                status: status,
+                imageUrl: imageUrl,
+                description: description
+            } : payload;
+
+            fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(bodyData)
+            })
+            .then(r => r.json().catch(() => ({})))
+            .then(data => {
+                if (!data.success) {
+                    alert(data.message || 'Failed to save product.');
+                    return;
+                }
+                alert(currentEditProductId ? 'Product updated successfully!' : 'Product added successfully!');
+                closeModal();
+                window.location.reload();
+            })
+            .catch(err => {
+                console.error('Failed to save product', err);
+                alert("Failed to save product.");
+            });
         }
 
-        // Confirm delete
-        function confirmDelete() {
-            if (confirm('Are you sure you want to delete this product?')) {
-                alert('Product deleted successfully!');
-            }
+        // Delete product
+        function deleteProduct(id, title) {
+            if (!confirm(`Are you sure you want to delete "${title}"?`)) return;
+
+            fetch(`/api/products/${id}`, {
+                method: 'DELETE'
+            })
+            .then(r => r.json().catch(() => ({})))
+            .then(data => {
+                if (!data.success) {
+                    alert(data.message || 'Failed to delete product.');
+                    return;
+                }
+                alert(data.message || 'Product deleted successfully!');
+                window.location.reload();
+            })
+            .catch(err => {
+                console.error('Failed to delete product', err);
+                alert("Failed to delete product.");
+            });
         }
+
+        // Attach event listeners dynamically to buttons after DOM loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Handle Edit Product Click
+            document.querySelectorAll('.edit-product-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const row = this.closest('tr');
+                    const id = row.getAttribute('data-id');
+                    const title = row.getAttribute('data-title');
+                    const category = row.getAttribute('data-category');
+                    const price = row.getAttribute('data-price');
+                    const stock = row.getAttribute('data-stock');
+                    const image = row.getAttribute('data-image');
+                    const description = row.getAttribute('data-description');
+                    const isAuction = row.getAttribute('data-auction') === 'true';
+                    const status = row.getAttribute('data-status') || (parseInt(stock) > 0 ? 'active' : 'out of stock');
+
+                    openEditProductModal({ id, title, category, price, stock, image, description, isAuction, status });
+                });
+            });
+
+            // Handle Delete Product Click
+            document.querySelectorAll('.delete-product-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const row = this.closest('tr');
+                    const id = row.getAttribute('data-id');
+                    const title = row.getAttribute('data-title');
+                    
+                    deleteProduct(id, title);
+                });
+            });
+            
+            // Image file upload drag/drop and click reader
+            document.getElementById('product-image-file')?.addEventListener('change', function() {
+                if (!this.files.length) return;
+                const file = this.files[0];
+                const maxBytes = 2 * 1024 * 1024; // server accepts ~2 MB images
+                if (file.size > maxBytes) {
+                    alert("Product image must be 2MB or smaller.");
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+                        const maxDim = 800;
+                        if (width > maxDim || height > maxDim) {
+                            if (width > height) {
+                                height = Math.round((height * maxDim) / width);
+                                width = maxDim;
+                            } else {
+                                width = Math.round((width * maxDim) / height);
+                                height = maxDim;
+                            }
+                        }
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        const compressedUrl = canvas.toDataURL('image/jpeg', 0.7);
+                        document.getElementById('product-image-url').value = compressedUrl;
+                        const textEl = document.querySelector('.border-dashed p');
+                        if (textEl) textEl.textContent = "Image uploaded successfully!";
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        });
+
+        // ── Filtering helpers ──────────────────────────────────────────────
+        let currentFilter = 'all';
+        let currentSearch = '';
+
+        function applyFilters() {
+            const rows = document.querySelectorAll('.product-row');
+            let visibleCount = 0;
+
+            rows.forEach(row => {
+                const name = (row.querySelector('h3')?.textContent || '').toLowerCase();
+                const statusBadge = row.querySelector('.status-badge');
+                const status = (statusBadge?.textContent || '').trim().toLowerCase(); // 'active' or 'inactive'
+
+                const matchesSearch = name.includes(currentSearch);
+                const matchesFilter = currentFilter === 'all' || status === currentFilter;
+
+                if (matchesSearch && matchesFilter) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            productsPager.refresh(true);
+        }
+
+        // Real paging over the rows the filters leave visible (10 per page).
+        const productsPager = ClientPager({
+            rows: () => Array.from(document.querySelectorAll('.product-row')),
+            footer: document.getElementById('clientPagerFooter'),
+            noun: 'products'
+        });
+        productsPager.refresh(true);
 
         // Filter pill functionality
         document.querySelectorAll('.filter-pill').forEach(pill => {
@@ -766,7 +812,16 @@
 
                 this.classList.remove('border-[#e5e0d8]', 'text-[#8b7355]');
                 this.classList.add('active', 'bg-[#c17c5f]', 'text-white', 'border-[#c17c5f]');
+
+                currentFilter = this.getAttribute('data-filter') || 'all';
+                applyFilters();
             });
+        });
+
+        // Search input functionality
+        document.getElementById('product-search').addEventListener('input', function() {
+            currentSearch = this.value.trim().toLowerCase();
+            applyFilters();
         });
 
         // File upload click handler
@@ -810,10 +865,39 @@
         logoutButton.addEventListener('click', () => {
             const confirmed = window.confirm('Are you sure you want to logout?');
             if (confirmed) {
-                window.location.href = 'index.html';
+                if (typeof window.artisanLogout === 'function') {
+                    window.artisanLogout();
+                } else {
+                    sessionStorage.clear();
+                    window.location.href = '/login';
+                }
             }
         });
     </script>
-    <script src="/authguard.js"></script>
+    <script src="/artisan-common.js"></script>
+
+    <script>
+        // Dynamic sidebar active state: highlights the link matching the current page URL
+        (function() {
+            var path = window.location.pathname.toLowerCase();
+            document.querySelectorAll('.sidebar-link').forEach(function(link) {
+                link.classList.remove('active', 'text-white');
+                link.classList.add('text-[#d4c5b5]');
+                var href = (link.getAttribute('href') || '').toLowerCase().replace(/^\//, '');
+                if (href && path.includes(href)) {
+                    link.classList.add('active', 'text-white');
+                    link.classList.remove('text-[#d4c5b5]');
+                }
+            });
+            // Special case: artisanOrderDetail should highlight Orders
+            if (path.includes('artisanorderdetail')) {
+                var ordersLink = document.querySelector('a[href="/artisanOrders"]');
+                if (ordersLink) {
+                    ordersLink.classList.add('active', 'text-white');
+                    ordersLink.classList.remove('text-[#d4c5b5]');
+                }
+            }
+        })();
+    </script>
 </body>
 </html>

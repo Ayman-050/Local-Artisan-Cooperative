@@ -7,10 +7,8 @@ import lombok.Data;
 @Entity
 @Table(name = "product_categories")
 public class ProductCategory {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long categoryId;
-
     private String name;
 }

@@ -1,0 +1,1498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="/app-core.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Products Management - Artisan Co-op</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #faf9f6;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Playfair Display', serif;
+        }
+
+        .terracotta {
+            color: #c17c5f;
+        }
+
+        .bg-terracotta {
+            background-color: #c17c5f;
+        }
+
+        .bg-terracotta-dark {
+            background-color: #a5664d;
+        }
+
+        .hover\:bg-terracotta-dark:hover {
+            background-color: #a5664d;
+        }
+
+        .border-terracotta {
+            border-color: #c17c5f;
+        }
+
+        .text-earth {
+            color: #8b7355;
+        }
+
+        .bg-earth {
+            background-color: #8b7355;
+        }
+
+        .card-shadow {
+            box-shadow: 0 4px 6px -1px rgba(139, 115, 85, 0.1), 0 2px 4px -1px rgba(139, 115, 85, 0.06);
+        }
+
+        .card-shadow:hover {
+            box-shadow: 0 10px 15px -3px rgba(139, 115, 85, 0.15), 0 4px 6px -2px rgba(139, 115, 85, 0.1);
+        }
+
+        .sidebar-link {
+            transition: background-color 0.2s ease, color 0.2s ease;
+            color: #d4c5b5;
+        }
+        
+        .sidebar-link:hover {
+            background-color: rgba(255, 255, 255, 0.18);
+            color: #ffffff;
+        }
+        
+        .sidebar-link:hover i,
+        .sidebar-link:hover span {
+            color: #ffffff;
+        }
+        
+        .sidebar-link.active {
+            background-color: rgba(255, 255, 255, 0.25);
+            border-left: 3px solid #ffffff;
+            color: #ffffff;
+        }
+        
+        .sidebar-link.active i,
+        .sidebar-link.active span {
+            color: #ffffff;
+        }
+        
+        .user-menu {
+            position: relative;
+        }
+        
+        .user-menu-dropdown {
+            position: absolute;
+            right: 0;
+            top: calc(100% + 0.5rem);
+            width: 200px;
+            background: #ffffff;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-radius: 1rem;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+            display: none;
+            z-index: 50;
+        }
+        
+        .user-menu-dropdown.show {
+            display: block;
+        }
+        
+        .user-menu-item {
+            display: block;
+            padding: 0.85rem 1rem;
+            color: #5c4a3d;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            border-radius: 0.75rem;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+        
+        .user-menu-item:hover {
+            background-color: #f5ebe0;
+        }
+        
+        .user-menu-item.logout:hover {
+            color: #b91c1c;
+            background-color: #fee2e2;
+        }
+        
+        .chevron-icon {
+            transition: transform 0.3s ease;
+        }
+        
+        .chevron-icon.rotated {
+            transform: rotate(180deg);
+        }
+
+        .table-row-hover:hover {
+            background-color: #fef9f3;
+        }
+
+        .flagged-row {
+            background-color: #fef2f2;
+        }
+
+        .flagged-row:hover {
+            background-color: #fee2e2;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .category-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.625rem;
+            border-radius: 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            background-color: #f5ebe0;
+            color: #5c4a3d;
+        }
+
+        .modal-overlay {
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-content {
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .gallery-thumbnail {
+            transition: all 0.2s ease;
+        }
+
+        .gallery-thumbnail:hover {
+            opacity: 0.8;
+            transform: scale(1.05);
+        }
+
+        .gallery-thumbnail.active {
+            border-color: #c17c5f;
+            box-shadow: 0 0 0 2px #c17c5f;
+        }
+    </style>
+    <script src="/authguard.js"></script>
+</head>
+<body class="min-h-screen flex flex-col">
+    <!-- Top Navigation Bar -->
+    <nav class="bg-[#faf9f6] border-b border-[#e5e0d8] py-4 px-6 sticky top-0 z-50">
+        <div class="w-full flex items-center justify-between">
+            <div class="flex items-center">
+                <a href="/adminDashboard" class="flex items-center gap-3 group">
+                    <!-- Logo -->
+                    <img src="/images/Logo.png" alt="ArtsyVibe Logo"
+                        class="h-10 w-auto object-contain"
+                        style="filter: drop-shadow(0 0 0.5px rgba(193, 124, 95, 1));">
+                    
+                    <!-- Brand Name -->
+                    <span class="text-2xl font-semibold" 
+                        style="font-family: 'Playfair Display', serif;">
+                        ArtsyVibe
+                    </span>
+                </a>
+            </div>
+            
+            <!-- Right Side - Notifications and User -->
+            <div class="flex items-center space-x-4">
+                <!-- Notification Bell -->
+                <a href="/adminNotification"><button class="relative p-2 text-[#8b7355] hover:text-[#c17c5f] transition-colors">
+                    <i class="fas fa-bell text-xl"></i>
+                    <span class="absolute top-0 right-0 w-5 h-5 bg-red-500 rounded-full border-2 border-[#faf9f6] text-white text-xs flex items-center justify-center font-semibold">5</span>
+                </button></a>
+                
+                <!-- User Profile -->
+                <div class="user-menu flex items-center space-x-3 pl-4 border-l border-[#e5e0d8]">
+                    <button id="userMenuButton" type="button" class="flex items-center gap-3 text-left focus:outline-none">
+                        <img 
+                            src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face" 
+                            alt="Admin User" 
+                            class="w-10 h-10 rounded-full object-cover border-2 border-[#c17c5f]"
+                        />
+                        <div class="hidden md:block">
+                            <p class="font-semibold text-[#5c4a3d] text-sm">Admin User</p>
+                            <p class="text-xs text-[#8b7355]">admin@artisancoop.com</p>
+                        </div>
+                        <i id="chevronIcon" class="chevron-icon fas fa-chevron-down text-[#8b7355] text-xs hidden md:block"></i>
+                    </button>
+                    <div id="userMenuDropdown" class="user-menu-dropdown">
+                        <button id="logoutButton" class="user-menu-item logout w-full text-left">
+                            <i class="fas fa-sign-out-alt mr-3"></i>Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area with Sidebar -->
+    <div class="flex flex-1">
+        <!-- Left Sidebar -->
+        <aside class="w-64 bg-[#5c4a3d] min-h-[calc(100vh-80px)] fixed left-0 top-20 overflow-y-auto">
+            <!-- Admin Profile -->
+            <div class="p-6 border-b border-[#7a6655]">
+                <div class="flex items-center gap-3">
+                    <img 
+                        src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face" 
+                        alt="Admin User" 
+                        class="w-12 h-12 rounded-full object-cover border-2 border-[#c17c5f]"
+                    />
+                    <div>
+                        <h3 class="text-white font-semibold text-sm">Admin User</h3>
+                        <span class="inline-block bg-[#c17c5f] text-white text-xs px-2 py-1 rounded-full mt-1">Administrator</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Navigation Menu -->
+            <nav class="p-4 mt-4">
+                <ul class="space-y-1">
+                    <li>
+                        <a href="/adminDashboard" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-tachometer-alt w-5"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/adminUsersManagement" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-users w-5"></i>
+                            <span>User Management</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/adminArtisanApproval" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-user-check w-5"></i>
+                            <span>Artisan Approvals</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/adminProducts" class="sidebar-link active flex items-center gap-3 text-white px-4 py-3 rounded-lg">
+                            <i class="fas fa-box w-5"></i>
+                            <span>Products</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/adminOrderManagment" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-shopping-bag w-5"></i>
+                            <span>Orders</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/adminAuction" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-gavel w-5"></i>
+                            <span>Auctions</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/adminRefund" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-undo w-5"></i>
+                            <span>Refunds</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/adminReview" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-star w-5"></i>
+                            <span>Review Moderation</span>
+                        </a>
+                    </li>
+                    
+                </ul>
+            </nav>
+            
+            <!-- Systems Log Section -->
+            <div class="p-4 mt-2 border-t border-[#7a6655]">
+                <ul class="space-y-1">
+                    <li>
+                        <a href="/adminReports" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                            <i class="fas fa-history w-5"></i>
+                            <span>Reports</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 ml-64 p-8">
+            <!-- Page Header -->
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-[#5c4a3d] mb-2">Products Management</h1>
+                <p class="text-[#8b7355]">Monitor and moderate all product listings across the platform.</p>
+            </div>
+
+            <!-- Filters Bar -->
+            <div class="bg-white rounded-xl card-shadow p-6 mb-6">
+                <div class="flex flex-wrap items-center gap-4">
+                    <!-- Search Input -->
+                    <div class="flex-1 min-w-64">
+                        <div class="relative">
+                            <input 
+                                type="text" 
+                                id="searchInput" data-filter-param="q" placeholder="Search products..." 
+                                class="w-full pl-10 pr-4 py-2.5 border border-[#e5e0d8] rounded-lg focus:border-[#c17c5f] focus:outline-none text-[#5c4a3d] placeholder-[#b8a99a]"
+                            />
+                            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-[#8b7355]"></i>
+                        </div>
+                    </div>
+
+                    <!-- Category Filter -->
+                    <div class="relative">
+                        <select id="categoryFilter" data-filter-param="category" class="appearance-none border border-[#e5e0d8] rounded-lg px-4 py-2.5 pr-10 focus:border-[#c17c5f] focus:outline-none text-[#5c4a3d] bg-white cursor-pointer">
+                            <option value="">All Categories</option>
+                            <option th:each="cat : ${categoriesList}" th:value="${cat}" th:text="${cat}"></option>
+
+
+
+
+                        </select>
+                        <i class="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-[#8b7355] pointer-events-none"></i>
+                    </div>
+
+                    <!-- Status Filter -->
+                    <div class="relative">
+                        <select id="statusFilter" data-filter-param="status" class="appearance-none border border-[#e5e0d8] rounded-lg px-4 py-2.5 pr-10 focus:border-[#c17c5f] focus:outline-none text-[#5c4a3d] bg-white cursor-pointer">
+                            <option value="">All Statuses</option>
+                            <option value="active">Active</option>
+                            <option value="out of stock">Out of stock</option>
+                            <option value="hidden">Hidden</option>
+
+                        </select>
+                        <i class="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-[#8b7355] pointer-events-none"></i>
+                    </div>
+
+                    <!-- Artisan Filter -->
+                    <div class="relative">
+                        <select id="artisanFilter" data-filter-param="artisan" class="appearance-none border border-[#e5e0d8] rounded-lg px-4 py-2.5 pr-10 focus:border-[#c17c5f] focus:outline-none text-[#5c4a3d] bg-white cursor-pointer">
+                            <option value="">All Artisans</option>
+                            <option th:each="artisanName : ${artisansList}" th:value="${artisanName}" th:text="${artisanName}"></option>
+
+
+
+
+                        </select>
+                        <i class="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-[#8b7355] pointer-events-none"></i>
+                    </div>
+
+                    <!-- Export Button -->
+                    <button class="bg-[#c17c5f] hover:bg-[#a5664d] text-white px-6 py-2.5 rounded-lg font-medium transition-colors flex items-center gap-2">
+                        <i class="fas fa-download"></i>
+                        <span>Export</span>
+                    </button>
+                </div>
+
+                <!-- Flagged Products Quick Filter -->
+                <div class="mt-4 flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm text-[#8b7355]">Quick Filters:</span>
+                        <button id="flaggedQuickFilter" class="inline-flex items-center gap-2 bg-red-50 hover:bg-red-100 border border-red-200 px-4 py-1.5 rounded-full text-sm font-medium text-red-700 transition-colors">
+                            <i class="fas fa-flag"></i>
+                            Flagged Products
+                            <span class="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full" th:text="${#lists.size(productsList.?[status == 'flagged'])}">0</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Products Table -->
+            <div class="bg-white rounded-xl card-shadow overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-[#f5ebe0]">
+                            <tr>
+                                <th class="text-left text-sm font-semibold text-[#5c4a3d] px-6 py-4 w-12">
+                                    <input type="checkbox" id="selectAllProducts" title="Select all on this page" class="w-4 h-4 rounded border-[#e5e0d8] text-[#c17c5f] focus:ring-[#c17c5f]" />
+                                </th>
+                                <th class="text-left text-sm font-semibold text-[#5c4a3d] px-6 py-4">Product</th>
+                                <th class="text-left text-sm font-semibold text-[#5c4a3d] px-6 py-4">Artisan</th>
+                                <th class="text-left text-sm font-semibold text-[#5c4a3d] px-6 py-4">Category</th>
+                                <th class="text-left text-sm font-semibold text-[#5c4a3d] px-6 py-4">Price</th>
+
+                                <th class="text-left text-sm font-semibold text-[#5c4a3d] px-6 py-4">Status</th>
+                                <th class="text-left text-sm font-semibold text-[#5c4a3d] px-6 py-4">Date Added</th>
+                                <th class="text-left text-sm font-semibold text-[#5c4a3d] px-6 py-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-[#e5e0d8]">
+                            <!-- Dynamic Products List -->
+                            <tr th:each="product : ${productsList}" class="table-row-hover table-row" th:classappend="${#strings.equals(product.status, 'flagged') ? 'flagged-row' : ''}">
+                                <td class="px-6 py-4">
+                                    <input type="checkbox" th:data-id="${product.id}" class="row-select w-4 h-4 rounded border-[#e5e0d8] text-[#c17c5f] focus:ring-[#c17c5f]" />
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <img 
+                                            th:src="${product.imageUrl != null ? product.imageUrl : 'https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=60&h=60&fit=crop'}" 
+                                            th:alt="${product.title}" 
+                                            class="w-14 h-14 rounded-lg object-cover"
+                                        />
+                                        <div>
+                                            <p class="font-semibold text-[#5c4a3d]" th:text="${product.title}">Handmade Ceramic Vase</p>
+                                            <p class="text-xs text-[#8b7355]" th:text="${'SKU: PRD-' + product.id}">SKU: CER-VASE-001</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <img 
+                                            th:src="${product.artisan != null && product.artisan.profilePicture != null ? product.artisan.profilePicture : 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" 
+                                            th:alt="${product.artisanName}" 
+                                            class="w-10 h-10 rounded-full object-cover"
+                                        />
+                                        <span class="font-medium text-[#5c4a3d]" th:text="${product.artisanName}">Elena Rodriguez</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="category-badge">
+                                        <i class="fas fa-tag mr-1"></i>
+                                        <span th:text="${product.category}">Ceramics</span>
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <th:block th:with="auctionBid=${auctionBids[product.id]}">
+                                        <span class="font-semibold text-[#5c4a3d]" th:if="${auctionBid == null}" th:text="${'BD ' + #numbers.formatDecimal(product.price, 1, 3)}">BD 85.000</span>
+                                        <span th:if="${auctionBid != null}" class="font-semibold text-[#5c4a3d]" th:text="${'BD ' + #numbers.formatDecimal(auctionBid, 1, 3)}">BD 300.000</span>
+                                        <span th:if="${auctionBid != null}" class="block text-xs text-[#8b7355]">Auction (current bid)</span>
+                                    </th:block>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <!-- Status Badge -->
+                                    <span th:if="${product.stockQuantity <= 0}" class="status-badge bg-red-100 text-red-700">
+                                        <i class="fas fa-times-circle"></i>
+                                        Out of stock
+                                    </span>
+                                    <span th:if="${product.stockQuantity > 0}" class="status-badge bg-green-100 text-green-700">
+                                        <i class="fas fa-check-circle"></i>
+                                        Active
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-[#8b7355]" th:text="${product.addingDate}">Feb 15, 2025</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-2">
+                                        <button th:onclick="'openProductModal(' + ${product.id} + ')'" class="text-[#5c4a3d] hover:text-[#c17c5f] p-2 transition-colors" title="View">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <form th:action="@{'/admin/delete-product/' + ${product.id}}" method="post" onsubmit="return confirm('Are you sure you want to delete this product?');">
+                                            <button type="submit" class="text-red-500 hover:text-red-700 p-2 transition-colors" title="Remove">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                        <tbody class="divide-y divide-[#e5e0d8] hidden">
+                            <!-- Row 1 - Active Product -->
+                            <tr class="table-row-hover">
+                                <td class="px-6 py-4">
+                                    <input type="checkbox" class="w-4 h-4 rounded border-[#e5e0d8] text-[#c17c5f] focus:ring-[#c17c5f]" />
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <img 
+                                            src="https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=60&h=60&fit=crop" 
+                                            alt="Handmade Ceramic Vase" 
+                                            class="w-14 h-14 rounded-lg object-cover"
+                                        />
+                                        <div>
+                                            <p class="font-semibold text-[#5c4a3d]">Handmade Ceramic Vase</p>
+                                            <p class="text-xs text-[#8b7355]">SKU: CER-VASE-001</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <img 
+                                            src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=40&h=40&fit=crop&crop=face" 
+                                            alt="Elena Rodriguez" 
+                                            class="w-10 h-10 rounded-full object-cover"
+                                        />
+                                        <span class="font-medium text-[#5c4a3d]">Elena Rodriguez</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="category-badge">
+                                        <i class="fas fa-mug-hot mr-1"></i>
+                                        Ceramics
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="font-semibold text-[#5c4a3d]">BD 85.000</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-[#5c4a3d]">24 in stock</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="status-badge bg-green-100 text-green-700">
+                                        <i class="fas fa-check-circle"></i>
+                                        Active
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-[#8b7355]">Feb 15, 2025</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-2">
+                                        <button onclick="openProductModal(1)" class="text-[#5c4a3d] hover:text-[#c17c5f] p-2 transition-colors" title="View">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="text-[#5c4a3d] hover:text-[#c17c5f] p-2 transition-colors" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="text-red-500 hover:text-red-700 p-2 transition-colors" title="Remove">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- Row 2 - Flagged Product (Red Background) -->
+                            <tr class="flagged-row">
+                                <td class="px-6 py-4">
+                                    <input type="checkbox" class="w-4 h-4 rounded border-[#e5e0d8] text-[#c17c5f] focus:ring-[#c17c5f]" />
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="relative">
+                                            <img 
+                                                src="https://images.unsplash.com/photo-1573408301185-9146fe634ad0?w=60&h=60&fit=crop" 
+                                                alt="Silver Moonstone Necklace" 
+                                                class="w-14 h-14 rounded-lg object-cover"
+                                            />
+                                            <div class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
+                                                <i class="fas fa-flag text-white text-xs"></i>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <p class="font-semibold text-[#5c4a3d]">Silver Moonstone Necklace</p>
+                                            <p class="text-xs text-red-600"><i class="fas fa-exclamation-circle mr-1"></i>3 reports</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <img 
+                                            src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face" 
+                                            alt="Marcus Chen" 
+                                            class="w-10 h-10 rounded-full object-cover"
+                                        />
+                                        <span class="font-medium text-[#5c4a3d]">Marcus Chen</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="category-badge">
+                                        <i class="fas fa-gem mr-1"></i>
+                                        Jewelry
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="font-semibold text-[#5c4a3d]">BD 150.000</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-[#5c4a3d]">8 in stock</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="status-badge bg-red-100 text-red-700">
+                                        <i class="fas fa-flag"></i>
+                                        Flagged
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-[#8b7355]">Jan 28, 2025</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-2">
+                                        <button onclick="openProductModal(2)" class="text-[#5c4a3d] hover:text-[#c17c5f] p-2 transition-colors" title="View">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="text-[#5c4a3d] hover:text-[#c17c5f] p-2 transition-colors" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="text-red-500 hover:text-red-700 p-2 transition-colors" title="Remove">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- Row 3 - Active Product -->
+                            <tr class="table-row-hover">
+                                <td class="px-6 py-4">
+                                    <input type="checkbox" class="w-4 h-4 rounded border-[#e5e0d8] text-[#c17c5f] focus:ring-[#c17c5f]" />
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <img 
+                                            src="https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=60&h=60&fit=crop" 
+                                            alt="Abstract Oil Painting" 
+                                            class="w-14 h-14 rounded-lg object-cover"
+                                        />
+                                        <div>
+                                            <p class="font-semibold text-[#5c4a3d]">Abstract Oil Painting</p>
+                                            <p class="text-xs text-[#8b7355]">SKU: ART-OIL-042</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <img 
+                                            src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=40&h=40&fit=crop&crop=face" 
+                                            alt="Sarah Mitchell" 
+                                            class="w-10 h-10 rounded-full object-cover"
+                                        />
+                                        <span class="font-medium text-[#5c4a3d]">Sarah Mitchell</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="category-badge">
+                                        <i class="fas fa-palette mr-1"></i>
+                                        Paintings
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="font-semibold text-[#5c4a3d]">BD 350.000</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-[#5c4a3d]">1 in stock</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="status-badge bg-green-100 text-green-700">
+                                        <i class="fas fa-check-circle"></i>
+                                        Active
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-[#8b7355]">Mar 01, 2025</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-2">
+                                        <button onclick="openProductModal(3)" class="text-[#5c4a3d] hover:text-[#c17c5f] p-2 transition-colors" title="View">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="text-[#5c4a3d] hover:text-[#c17c5f] p-2 transition-colors" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="text-red-500 hover:text-red-700 p-2 transition-colors" title="Remove">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- Row 4 - Inactive Product -->
+                            <tr class="table-row-hover">
+                                <td class="px-6 py-4">
+                                    <input type="checkbox" class="w-4 h-4 rounded border-[#e5e0d8] text-[#c17c5f] focus:ring-[#c17c5f]" />
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <img 
+                                            src="https://images.unsplash.com/photo-1606293926075-69a00dbfde81?w=60&h=60&fit=crop" 
+                                            alt="Woven Wool Blanket" 
+                                            class="w-14 h-14 rounded-lg object-cover"
+                                        />
+                                        <div>
+                                            <p class="font-semibold text-[#5c4a3d]">Woven Wool Blanket</p>
+                                            <p class="text-xs text-[#8b7355]">SKU: TEX-BLK-015</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <img 
+                                            src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face" 
+                                            alt="Anna Kowalski" 
+                                            class="w-10 h-10 rounded-full object-cover"
+                                        />
+                                        <span class="font-medium text-[#5c4a3d]">Anna Kowalski</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="category-badge">
+                                        <i class="fas fa-tshirt mr-1"></i>
+                                        Textiles
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="font-semibold text-[#5c4a3d]">BD 195.000</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-red-500">Out of stock</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="status-badge bg-gray-100 text-gray-700">
+                                        <i class="fas fa-pause-circle"></i>
+                                        Inactive
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-[#8b7355]">Dec 10, 2024</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-2">
+                                        <button onclick="openProductModal(4)" class="text-[#5c4a3d] hover:text-[#c17c5f] p-2 transition-colors" title="View">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="text-[#5c4a3d] hover:text-[#c17c5f] p-2 transition-colors" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="text-red-500 hover:text-red-700 p-2 transition-colors" title="Remove">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- Row 5 - Flagged Product -->
+                            <tr class="flagged-row">
+                                <td class="px-6 py-4">
+                                    <input type="checkbox" class="w-4 h-4 rounded border-[#e5e0d8] text-[#c17c5f] focus:ring-[#c17c5f]" />
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="relative">
+                                            <img 
+                                                src="https://images.unsplash.com/photo-1681091638141-a87495ae612f?w=60&h=60&fit=crop" 
+                                                alt="Hammered Silver Cuff" 
+                                                class="w-14 h-14 rounded-lg object-cover"
+                                            />
+                                            <div class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
+                                                <i class="fas fa-flag text-white text-xs"></i>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <p class="font-semibold text-[#5c4a3d]">Hammered Silver Cuff</p>
+                                            <p class="text-xs text-red-600"><i class="fas fa-exclamation-circle mr-1"></i>2 reports</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <img 
+                                            src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face" 
+                                            alt="Maya Singh" 
+                                            class="w-10 h-10 rounded-full object-cover"
+                                        />
+                                        <span class="font-medium text-[#5c4a3d]">Maya Singh</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="category-badge">
+                                        <i class="fas fa-gem mr-1"></i>
+                                        Jewelry
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="font-semibold text-[#5c4a3d]">BD 48.000</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-[#5c4a3d]">15 in stock</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="status-badge bg-red-100 text-red-700">
+                                        <i class="fas fa-flag"></i>
+                                        Flagged
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-[#8b7355]">Feb 20, 2025</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-2">
+                                        <button onclick="openProductModal(5)" class="text-[#5c4a3d] hover:text-[#c17c5f] p-2 transition-colors" title="View">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="text-[#5c4a3d] hover:text-[#c17c5f] p-2 transition-colors" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="text-red-500 hover:text-red-700 p-2 transition-colors" title="Remove">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div th:replace="~{fragments/pager :: pager(${pager}, 'products')}"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Product Detail Modal -->
+    <div id="productModal" class="fixed inset-0 modal-overlay z-50 hidden items-center justify-center p-4">
+        <div class="modal-content bg-white rounded-2xl w-full max-w-5xl max-h-[90vh] overflow-y-auto">
+            <!-- Modal Header -->
+            <div class="sticky top-0 bg-white border-b border-[#e5e0d8] px-6 py-4 flex items-center justify-between z-10">
+                <h2 class="text-2xl font-bold text-[#5c4a3d]">Product Details</h2>
+                <button onclick="closeProductModal()" class="text-[#8b7355] hover:text-red-500 transition-colors p-2">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <!-- Modal Content -->
+            <div class="p-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Left Column - Images -->
+                    <div>
+                        <div class="mb-4">
+                            <img 
+                                id="mainImage"
+                                src="https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=600&h=600&fit=crop" 
+                                alt="Main product image" 
+                                class="w-full h-96 object-cover rounded-xl shadow-lg"
+                            />
+                        </div>
+                        <div class="flex gap-3 overflow-x-auto" id="thumbnailGallery">
+                            <img 
+                                src="https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=150&h=150&fit=crop" 
+                                alt="Thumbnail 1" 
+                                class="gallery-thumbnail active w-20 h-20 object-cover rounded-lg cursor-pointer border-2 border-[#c17c5f]"
+                                onclick="changeMainImage(this)"
+                            />
+                            <img 
+                                src="https://images.unsplash.com/photo-1578749556920-d1e28f1fa5c9?w=150&h=150&fit=crop" 
+                                alt="Thumbnail 2" 
+                                class="gallery-thumbnail w-20 h-20 object-cover rounded-lg cursor-pointer border-2 border-transparent"
+                                onclick="changeMainImage(this)"
+                            />
+                            <img 
+                                src="https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=150&h=150&fit=crop" 
+                                alt="Thumbnail 3" 
+                                class="gallery-thumbnail w-20 h-20 object-cover rounded-lg cursor-pointer border-2 border-transparent"
+                                onclick="changeMainImage(this)"
+                            />
+                            <img 
+                                src="https://images.unsplash.com/photo-1573408301185-9146fe634ad0?w=150&h=150&fit=crop" 
+                                alt="Thumbnail 4" 
+                                class="gallery-thumbnail w-20 h-20 object-cover rounded-lg cursor-pointer border-2 border-transparent"
+                                onclick="changeMainImage(this)"
+                            />
+                        </div>
+                    </div>
+
+                    <!-- Right Column - Details -->
+                    <div class="space-y-6">
+                        <!-- Product Info -->
+                        <div>
+                            <div class="flex items-start justify-between mb-2">
+                                <h3 class="text-2xl font-bold text-[#5c4a3d]">Handmade Ceramic Vase</h3>
+                                <span class="status-badge bg-green-100 text-green-700">
+                                    <i class="fas fa-check-circle"></i>
+                                    Active
+                                </span>
+                            </div>
+                            <p class="text-sm text-[#8b7355] mb-3">SKU: CER-VASE-001</p>
+                            <p class="text-[#5c4a3d] leading-relaxed">
+                                Beautiful handcrafted ceramic vase made with traditional techniques. Each piece is unique with subtle variations in glaze and texture. Perfect for displaying fresh or dried flowers. Height: 12 inches, Diameter: 6 inches.
+                            </p>
+                        </div>
+
+                        <!-- Pricing & Stock -->
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-[#f5ebe0] rounded-lg p-4">
+                                <p class="text-sm text-[#8b7355] mb-1">Price</p>
+                                <p id="modalPrice" class="text-2xl font-bold text-[#c17c5f]">BD 85.000</p>
+                            </div>
+                            <div class="bg-[#f5ebe0] rounded-lg p-4">
+                                <p class="text-sm text-[#8b7355] mb-1">Date Added</p>
+                                <p id="modalDate" class="text-2xl font-bold text-[#5c4a3d]">Feb 15, 2025</p>
+                            </div>
+                        </div>
+
+                        <!-- Artisan Info -->
+                        <div class="bg-white border border-[#e5e0d8] rounded-lg p-4">
+                            <h4 class="font-semibold text-[#5c4a3d] mb-3 flex items-center gap-2">
+                                <i class="fas fa-palette text-[#c17c5f]"></i>
+                                Artisan Information
+                            </h4>
+                            <div class="flex items-center gap-3 mb-3">
+                                <img id="modalArtisanImage"
+                                    src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=50&h=50&fit=crop&crop=face" 
+                                    alt="Elena Rodriguez" 
+                                    class="w-12 h-12 rounded-full object-cover"
+                                />
+                                <div>
+                                    <p id="modalArtisanName" class="font-semibold text-[#5c4a3d]">Elena Rodriguez</p>
+                                    <p id="modalArtisanShop" class="text-sm text-[#8b7355]">Ceramics Artist</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-4 text-sm text-[#8b7355]">
+                                <span><i class="fas fa-star text-amber-500 mr-1"></i><span id="modalArtisanRating">4.9 (127 reviews)</span></span>
+                                <span><i class="fas fa-box mr-1"></i><span id="modalArtisanProducts">43 products</span></span>
+                            </div>
+                        </div>
+
+                        <!-- Customer Reviews -->
+                        <div>
+                            <h4 class="font-semibold text-[#5c4a3d] mb-3 flex items-center gap-2">
+                                <i class="fas fa-comments text-[#c17c5f]"></i>
+                                Customer Reviews (<span id="modalReviewsCount">8</span>)
+                            </h4>
+                            <div id="modalReviewsContainer" class="space-y-3 max-h-64 overflow-y-auto">
+                                <!-- Review 1 -->
+                                <div class="bg-gray-50 rounded-lg p-3">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <div class="flex items-center gap-2">
+                                            <img 
+                                                src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=32&h=32&fit=crop&crop=face" 
+                                                alt="Reviewer" 
+                                                class="w-8 h-8 rounded-full object-cover"
+                                            />
+                                            <span class="text-sm font-medium text-[#5c4a3d]">Sarah J.</span>
+                                        </div>
+                                        <div class="flex items-center gap-1">
+                                            <i class="fas fa-star text-amber-500 text-xs"></i>
+                                            <i class="fas fa-star text-amber-500 text-xs"></i>
+                                            <i class="fas fa-star text-amber-500 text-xs"></i>
+                                            <i class="fas fa-star text-amber-500 text-xs"></i>
+                                            <i class="fas fa-star text-amber-500 text-xs"></i>
+                                        </div>
+                                    </div>
+                                    <p class="text-sm text-[#5c4a3d]">Absolutely beautiful! The craftsmanship is exceptional and it looks even better in person.</p>
+                                    <p class="text-xs text-[#8b7355] mt-1">March 10, 2025</p>
+                                </div>
+
+                                <!-- Review 2 -->
+                                <div class="bg-gray-50 rounded-lg p-3">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <div class="flex items-center gap-2">
+                                            <img 
+                                                src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=32&h=32&fit=crop&crop=face" 
+                                                alt="Reviewer" 
+                                                class="w-8 h-8 rounded-full object-cover"
+                                            />
+                                            <span class="text-sm font-medium text-[#5c4a3d]">Michael T.</span>
+                                        </div>
+                                        <div class="flex items-center gap-1">
+                                            <i class="fas fa-star text-amber-500 text-xs"></i>
+                                            <i class="fas fa-star text-amber-500 text-xs"></i>
+                                            <i class="fas fa-star text-amber-500 text-xs"></i>
+                                            <i class="fas fa-star text-amber-500 text-xs"></i>
+                                            <i class="fas fa-star-half-alt text-amber-500 text-xs"></i>
+                                        </div>
+                                    </div>
+                                    <p class="text-sm text-[#5c4a3d]">Great quality and fast shipping. Slightly smaller than expected but still love it!</p>
+                                    <p class="text-xs text-[#8b7355] mt-1">February 28, 2025</p>
+                                </div>
+
+                                <!-- Review 3 -->
+                                <div class="bg-gray-50 rounded-lg p-3">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <div class="flex items-center gap-2">
+                                            <img 
+                                                src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=32&h=32&fit=crop&crop=face" 
+                                                alt="Reviewer" 
+                                                class="w-8 h-8 rounded-full object-cover"
+                                            />
+                                            <span class="text-sm font-medium text-[#5c4a3d]">David L.</span>
+                                        </div>
+                                        <div class="flex items-center gap-1">
+                                            <i class="fas fa-star text-amber-500 text-xs"></i>
+                                            <i class="fas fa-star text-amber-500 text-xs"></i>
+                                            <i class="fas fa-star text-amber-500 text-xs"></i>
+                                            <i class="fas fa-star text-amber-500 text-xs"></i>
+                                            <i class="fas fa-star text-amber-500 text-xs"></i>
+                                        </div>
+                                    </div>
+                                    <p class="text-sm text-[#5c4a3d]">Perfect gift for my wife. She absolutely loves it!</p>
+                                    <p class="text-xs text-[#8b7355] mt-1">February 15, 2025</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Admin Action Buttons -->
+                <div class="mt-8 pt-6 border-t border-[#e5e0d8]">
+                    <h4 class="font-semibold text-[#5c4a3d] mb-4 flex items-center gap-2">
+                        <i class="fas fa-shield-alt text-[#c17c5f]"></i>
+                        Admin Actions
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <button id="modalApproveBtn" class="bg-green-600 hover:bg-green-700 text-white font-medium py-3 rounded-lg transition-colors flex items-center justify-center gap-2">
+                            <i class="fas fa-check-circle"></i>
+                            Approve Listing
+                        </button>
+                        <button id="modalRemoveBtn" class="bg-red-600 hover:bg-red-700 text-white font-medium py-3 rounded-lg transition-colors flex items-center justify-center gap-2">
+                            <i class="fas fa-trash"></i>
+                            Remove Listing
+                        </button>
+
+
+
+
+
+
+
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* Sidebar handled by adminDashboard.js */
+
+        // Open product modal & fetch dynamically
+        function openProductModal(productId) {
+            fetch(`/api/products/${productId}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.product) {
+                        const p = data.product;
+                        
+                        document.querySelector('#productModal h3').textContent = p.title;
+                        document.querySelector('#productModal .text-sm.text-\\[\\#8b7355\\]').textContent = 'SKU: PRD-' + p.id;
+                        document.querySelector('#productModal .text-\\[\\#5c4a3d\\]').textContent = p.description || 'No description provided.';
+                        
+                        document.getElementById('modalPrice').textContent = 'BD ' + p.price.toFixed(3);
+                        document.getElementById('modalDate').textContent = p.addingDate || 'N/A';
+                        
+                        const statusBadge = document.querySelector('#productModal .status-badge');
+                        const isOutOfStock = p.stockQuantity <= 0 || p.status === 'out of stock';
+                        if (p.status === 'hidden') {
+                            statusBadge.className = 'status-badge bg-gray-100 text-gray-700';
+                            statusBadge.innerHTML = '<i class="fas fa-eye-slash"></i> Hidden / Removed';
+                        } else if (isOutOfStock) {
+                            statusBadge.className = 'status-badge bg-red-100 text-red-700';
+                            statusBadge.innerHTML = '<i class="fas fa-times-circle"></i> Out of Stock';
+                        } else {
+                            statusBadge.className = 'status-badge bg-green-100 text-green-700';
+                            statusBadge.innerHTML = '<i class="fas fa-check-circle"></i> Active';
+                        }
+                        
+                        const mainImage = document.getElementById('mainImage');
+                        mainImage.src = p.imageUrl || 'https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=600&h=600&fit=crop';
+                        
+                        const gallery = document.getElementById('thumbnailGallery');
+                        gallery.innerHTML = `
+                            <img 
+                                src="${safeUrl(p.imageUrl, 'https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=150&h=150&fit=crop')}" 
+                                class="gallery-thumbnail active w-20 h-20 object-cover rounded-lg cursor-pointer border-2 border-[#c17c5f]"
+                                onclick="changeMainImage(this)"
+                            />
+                        `;
+                        
+                        document.getElementById('modalArtisanName').textContent = p.artisanName || 'Unknown Artisan';
+                        
+                        const artisanImg = document.getElementById('modalArtisanImage');
+                        if (p.artisan && p.artisan.profilePicture) {
+                            artisanImg.src = p.artisan.profilePicture;
+                        } else {
+                            artisanImg.src = 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+                        }
+
+                        document.getElementById('modalArtisanShop').textContent = (p.artisan && p.artisan.shopName) ? p.artisan.shopName : 'Artisan Shop';
+
+                        document.getElementById('modalArtisanProducts').textContent = `${data.artisanTotalProducts || 0} products`;
+                        document.getElementById('modalArtisanRating').textContent = `${(data.artisanAverageRating || 0).toFixed(1)} (${data.artisanReviewsCount || 0} reviews)`;
+
+                        document.getElementById('modalReviewsCount').textContent = data.reviews ? data.reviews.length : 0;
+                        const reviewsContainer = document.getElementById('modalReviewsContainer');
+                        if (!data.reviews || data.reviews.length === 0) {
+                            reviewsContainer.innerHTML = `
+                                <div class="text-center py-6 text-sm text-[#8b7355]">
+                                    No reviews yet for this product.
+                                </div>
+                            `;
+                        } else {
+                            reviewsContainer.innerHTML = data.reviews.map(r => {
+                                let starHtml = '';
+                                for (let i = 1; i <= 5; i++) {
+                                    if (i <= r.rating) {
+                                        starHtml += '<i class="fas fa-star text-amber-500 text-xs"></i>';
+                                    } else {
+                                        starHtml += '<i class="far fa-star text-amber-500 text-xs"></i>';
+                                    }
+                                }
+                                return `
+                                    <div class="bg-gray-50 rounded-lg p-3">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <div class="flex items-center gap-2">
+                                                <img 
+                                                    src="${safeUrl(r.reviewerImage, '/images/Logo.png')}" 
+                                                    alt="${escapeHtml(r.reviewerName)}" 
+                                                    class="w-8 h-8 rounded-full object-cover"
+                                                />
+                                                <span class="text-sm font-medium text-[#5c4a3d]">${escapeHtml(r.reviewerName)}</span>
+                                            </div>
+                                            <div class="flex items-center gap-1">
+                                                ${starHtml}
+                                            </div>
+                                        </div>
+                                        <p class="text-sm text-[#5c4a3d]">${escapeHtml(r.comment)}</p>
+                                        <p class="text-xs text-[#8b7355] mt-1">${escapeHtml(r.date)}</p>
+                                    </div>
+                                `;
+                            }).join('');
+                        }
+
+                        document.getElementById('modalApproveBtn').onclick = () => handleAdminAction('approve', p.id);
+                        document.getElementById('modalRemoveBtn').onclick = () => handleAdminAction('remove', p.id);
+
+                        const modal = document.getElementById('productModal');
+                        modal.classList.remove('hidden');
+                        modal.classList.add('flex');
+                        document.body.style.overflow = 'hidden';
+                    } else {
+                        alert('Failed to load product details.');
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert('Error loading product details.');
+                });
+        }
+
+        // Close product modal
+        function closeProductModal() {
+            const modal = document.getElementById('productModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Change main image from thumbnail
+        function changeMainImage(thumbnail) {
+            const mainImage = document.getElementById('mainImage');
+            mainImage.src = thumbnail.src;
+
+            // Update active state
+            document.querySelectorAll('.gallery-thumbnail').forEach(thumb => {
+                thumb.classList.remove('active', 'border-[#c17c5f]');
+                thumb.classList.add('border-transparent');
+            });
+            thumbnail.classList.add('active', 'border-[#c17c5f]');
+            thumbnail.classList.remove('border-transparent');
+        }
+
+        // Close modal on outside click
+        document.getElementById('productModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeProductModal();
+            }
+        });
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeProductModal();
+            }
+        });
+
+        // Dynamic Filtering & Pagination
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchInput = document.getElementById('searchInput');
+            const categoryFilter = document.getElementById('categoryFilter');
+            const statusFilter = document.getElementById('statusFilter');
+            const artisanFilter = document.getElementById('artisanFilter');
+            const flaggedQuickFilter = document.getElementById('flaggedQuickFilter');
+            
+            const tbody = document.querySelector('tbody');
+            const allRows = Array.from(tbody.querySelectorAll('.table-row'));
+            
+            let currentPage = 1;
+            const perPage = 10;
+            let filteredRows = [...allRows];
+            let showFlaggedOnly = false;
+
+            function applyFilters() {
+                // Search, filters and paging are done by the server (admin-paging.js).
+                if (window.ADMIN_SERVER_PAGED) return;
+                const searchVal = searchInput.value.toLowerCase().trim();
+                const catVal = categoryFilter.value.toLowerCase();
+                const statusVal = statusFilter.value.toLowerCase();
+                const artisanVal = artisanFilter.value.toLowerCase();
+
+                filteredRows = allRows.filter(row => {
+                    // Extract fields
+                    const productText = row.querySelector('td:nth-child(2) p.font-semibold').textContent.toLowerCase();
+                    const artisanText = row.querySelector('td:nth-child(3) span.font-medium').textContent.toLowerCase();
+                    const categoryText = row.querySelector('td:nth-child(4) span span').textContent.toLowerCase();
+                    
+                    const statusBadge = row.querySelector('td:nth-child(6) .status-badge');
+                    const statusText = statusBadge ? statusBadge.textContent.toLowerCase().trim() : '';
+
+                    // Match filters
+                    const matchesSearch = productText.includes(searchVal) || artisanText.includes(searchVal);
+                    const matchesCat = !catVal || categoryText === catVal;
+                    
+                    let matchesStatus = !statusVal;
+                    if (statusVal === 'active') {
+                        matchesStatus = statusText.includes('active');
+                    } else if (statusVal === 'out of stock') {
+                        matchesStatus = statusText.includes('out of stock');
+                    }
+
+                    const matchesArtisan = !artisanVal || artisanText === artisanVal;
+                    const matchesFlagged = !showFlaggedOnly || statusText.includes('flagged');
+
+                    return matchesSearch && matchesCat && matchesStatus && matchesArtisan && matchesFlagged;
+                });
+
+                currentPage = 1;
+                renderTable();
+            }
+
+            function renderTable() {
+                if (window.ADMIN_SERVER_PAGED) return;
+                // Hide all rows
+                allRows.forEach(row => row.style.display = 'none');
+
+                // Determine pagination bounds
+                const total = filteredRows.length;
+                const startIdx = (currentPage - 1) * perPage;
+                const endIdx = Math.min(startIdx + perPage, total);
+
+                // Show active page rows
+                filteredRows.slice(startIdx, endIdx).forEach(row => {
+                    row.style.display = '';
+                });
+
+                // Update Pagination Label
+                const label = document.getElementById('paginationLabel');
+                if (total === 0) {
+                    label.innerHTML = `Showing <span class="font-semibold text-[#5c4a3d]">0</span> to <span class="font-semibold text-[#5c4a3d]">0</span> of <span class="font-semibold text-[#5c4a3d]">0</span> products`;
+                } else {
+                    label.innerHTML = `Showing <span class="font-semibold text-[#5c4a3d]">${startIdx + 1}</span> to <span class="font-semibold text-[#5c4a3d]">${endIdx}</span> of <span class="font-semibold text-[#5c4a3d]">${total}</span> products`;
+                }
+
+                // Render Controls
+                renderPaginationControls(total);
+            }
+
+            function renderPaginationControls(total) {
+                const controls = document.getElementById('paginationControls');
+                controls.innerHTML = '';
+
+                const totalPages = Math.ceil(total / perPage);
+                if (totalPages <= 1) return;
+
+                // Prev button
+                const prevBtn = document.createElement('button');
+                prevBtn.className = 'px-4 py-2 border border-[#e5e0d8] rounded-lg text-[#8b7355] hover:bg-[#f5ebe0] transition-colors disabled:opacity-50';
+                prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+                prevBtn.disabled = currentPage === 1;
+                prevBtn.addEventListener('click', () => {
+                    if (currentPage > 1) {
+                        currentPage--;
+                        renderTable();
+                    }
+                });
+                controls.appendChild(prevBtn);
+
+                // Page numbers
+                for (let i = 1; i <= totalPages; i++) {
+                    const btn = document.createElement('button');
+                    if (i === currentPage) {
+                        btn.className = 'px-4 py-2 bg-[#c17c5f] text-white rounded-lg font-medium';
+                    } else {
+                        btn.className = 'px-4 py-2 border border-[#e5e0d8] rounded-lg text-[#8b7355] hover:bg-[#f5ebe0] transition-colors';
+                    }
+                    btn.textContent = i;
+                    btn.addEventListener('click', () => {
+                        currentPage = i;
+                        renderTable();
+                    });
+                    controls.appendChild(btn);
+                }
+
+                // Next button
+                const nextBtn = document.createElement('button');
+                nextBtn.className = 'px-4 py-2 border border-[#e5e0d8] rounded-lg text-[#8b7355] hover:bg-[#f5ebe0] transition-colors disabled:opacity-50';
+                nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+                nextBtn.disabled = currentPage === totalPages;
+                nextBtn.addEventListener('click', () => {
+                    if (currentPage < totalPages) {
+                        currentPage++;
+                        renderTable();
+                    }
+                });
+                controls.appendChild(nextBtn);
+            }
+
+            // Wire Listeners
+            searchInput.addEventListener('input', applyFilters);
+            categoryFilter.addEventListener('change', applyFilters);
+            statusFilter.addEventListener('change', applyFilters);
+            artisanFilter.addEventListener('change', applyFilters);
+            
+            flaggedQuickFilter.addEventListener('click', () => {
+                showFlaggedOnly = !showFlaggedOnly;
+                if (showFlaggedOnly) {
+                    flaggedQuickFilter.classList.add('bg-red-200');
+                } else {
+                    flaggedQuickFilter.classList.remove('bg-red-200');
+                }
+                applyFilters();
+            });
+
+            // Initial Filter Run
+            applyFilters();
+        });
+
+        function ignoreEverythingElse() {}
+
+
+        function openProductModalOld(productId) {
+            const modal = document.getElementById('productModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Close product modal
+        function closeProductModalOld() {
+            const modal = document.getElementById('productModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Change main image from thumbnail
+        function changeMainImageOld(thumbnail) {
+            const mainImage = document.getElementById('mainImage');
+            mainImage.src = thumbnail.src.replace('w=150&h=150', 'w=600&h=600');
+
+            // Update active state
+            document.querySelectorAll('.gallery-thumbnail').forEach(thumb => {
+                thumb.classList.remove('active', 'border-[#c17c5f]');
+                thumb.classList.add('border-transparent');
+            });
+            thumbnail.classList.add('active', 'border-[#c17c5f]');
+            thumbnail.classList.remove('border-transparent');
+        }
+
+        // Handle admin action
+        function handleAdminAction(action, productId) {
+            if (action === "approve") {
+                fetch(`/api/products/${productId}/status?status=active`, {
+                    method: "PUT"
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification("Product approved and visible!", "success");
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
+                    } else {
+                        showNotification(data.message || "Action failed.", "error");
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    showNotification("An error occurred.", "error");
+                });
+            } else if (action === "remove") {
+                fetch(`/admin/delete-product/${productId}`, {
+                    method: "POST"
+                })
+                .then(res => {
+                    if (res.ok) {
+                        showNotification("Product removed successfully!", "success");
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
+                    } else {
+                        showNotification("Unable to remove product.", "error");
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    showNotification("An error occurred.", "error");
+                });
+            } else {
+                showNotification("Unsupported admin action: " + action, "error");
+            }
+        }
+
+
+
+
+
+
+        // Close modal on outside click
+        document.getElementById('productModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeProductModal();
+            }
+        });
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeProductModal();
+            }
+        });
+
+        // Show notification toast
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+
+            let bgColor = '#c17c5f';
+            if (type === 'success') {
+                bgColor = '#16a34a';
+            } else if (type === 'error') {
+                bgColor = '#dc2626';
+            } else if (type === 'warning') {
+                bgColor = '#d97706';
+            }
+
+            notification.className = 'fixed bottom-4 right-4 text-white px-6 py-3 rounded-xl shadow-lg z-50 transition-opacity duration-300';
+            notification.style.backgroundColor = bgColor;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 3000);
+        }
+    </script>
+    <script>
+        if (window.initAuthGuard) {
+            initAuthGuard({
+                redirectTo: "/login",
+                message: "Administrator access required. Please login."
+            });
+        }
+    </script>
+    <script src="/admin-paging.js"></script>
+    <script src="/admin-bulk-products.js"></script>
+    <script src="/adminDashboard.js"></script>
+</body>
+</html>
+
+

@@ -28,7 +28,7 @@ outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "./gradlew bootRun"
+args = "./gradlew --no-daemon bootRun"
 waitForPort = 5000
 
 [[ports]]
@@ -38,4 +38,4 @@ externalPort = 80
 [deployment]
 deploymentTarget = "autoscale"
 run = ["java", "-jar", "build/libs/demo-0.0.1-SNAPSHOT.jar", "--server.port=5000"]
-build = ["./gradlew", "build", "-x", "test"]
+build = ["./gradlew", "--no-daemon", "build", "-x", "test"]

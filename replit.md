@@ -1,11 +1,11 @@
 # Local Artisan Cooperative
 
-A Spring Boot web application for an artisan marketplace called "ArtsyVibe" — lets users browse handcrafted products, view auctions, manage a shopping cart, and access their profile.
+A Spring Boot web application for an artisan marketplace called "ArtsyVibe": lets users browse handcrafted products, view auctions, manage a shopping cart, and access their profile.
 
 ## Run & Operate
 
 - **Run**: `./gradlew bootRun` (via "Start application" workflow, port 5000)
-- **Build**: `./gradlew build -x test`
+- **Build**: `./gradlew build` (tests use in-memory H2; no database needed)
 - **Deploy run**: `java -jar build/libs/demo-0.0.1-SNAPSHOT.jar --server.port=5000`
 - **Required env vars**: `PGHOST`, `PGPORT`, `PGDATABASE`, `PGUSER`, `PGPASSWORD` (provided automatically by Replit PostgreSQL)
 
@@ -16,22 +16,25 @@ A Spring Boot web application for an artisan marketplace called "ArtsyVibe" — 
 - **Build**: Gradle 9.4.1 (wrapper)
 - **Template Engine**: Thymeleaf (server-side rendering, `.html` suffix)
 - **Database**: PostgreSQL via Replit built-in integration
-- **ORM**: Spring Data JPA / Hibernate (ddl-auto=update)
+- **ORM**: Spring Data JPA / Hibernate (`ddl-auto=validate`)
+- **Schema**: Flyway migrations in `src/main/resources/db/migration`
+- **Security**: Spring Security, session-based (see README "Security model")
 
 ## Where things live
 
-- `src/main/java/com/example/demo/` — Java source (controllers, entities)
-- `src/main/resources/templates/` — Thymeleaf HTML templates
-- `src/main/resources/static/` — Static assets (Logo.png, Benifitpay.png, etc.)
-- `src/main/resources/application.properties` — Server port, DB config, JPA settings
-- `build.gradle` — Dependencies and build config
+- `src/main/java/com/example/demo/`: Java source (controllers, entities)
+- `src/main/resources/templates/`: Thymeleaf HTML templates
+- `src/main/resources/static/`: Static assets (Logo.png, Benifitpay.png, etc.)
+- `src/main/resources/application.properties`: Server port, DB config, JPA settings
+- `build.gradle`: Dependencies and build config
 
 ## Architecture decisions
 
 - Thymeleaf suffix set to lowercase `.html` to match actual template filenames
 - `gradlew` CRLF line endings were converted to LF for Linux compatibility
 - `MainController` maps `/` to the `index` template (homepage)
-- JPA `ddl-auto=update` auto-creates/updates tables from entity classes — no manual migrations needed
+- Schema changes go in a new Flyway migration (`V3__...sql`). Hibernate only validates; it never alters tables.
+- Existing databases created by the old `ddl-auto=update` are baselined at V1 automatically on first start
 - Port 5000 mapped to external port 80 in `.replit`
 
 ## Product
@@ -47,10 +50,18 @@ A Spring Boot web application for an artisan marketplace called "ArtsyVibe" — 
 
 _Populate as you build_
 
+## Test Credentials (`db/demo-data.sql`, run manually on an empty DB; password: `password123`)
+
+| Role     | Email                  |
+|----------|------------------------|
+| Admin    | alice@artsyvibe.com    |
+| Artisan  | elena@artsyvibe.com    |
+| Customer | john@example.com       |
+
 ## Gotchas
 
-- Template filenames are mixed-case (e.g., `Login.html`, `Forget-Password.html`) — Thymeleaf suffix must remain lowercase `.html`
-- The Gradle wrapper (`gradlew`) must have LF line endings — re-run `sed -i 's/\r//' gradlew` if it gets reset to CRLF
+- Template filenames are mixed-case (e.g., `Login.html`, `Forget-Password.html`): Thymeleaf suffix must remain lowercase `.html`
+- The Gradle wrapper (`gradlew`) must have LF line endings: re-run `sed -i 's/\r//' gradlew` if it gets reset to CRLF
 
 ## Pointers
 

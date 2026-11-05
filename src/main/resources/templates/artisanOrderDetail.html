@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script src="/app-core.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Order Detail - Artisan Co-op</title>
@@ -226,14 +227,14 @@
 <body class="min-h-screen flex flex-col">
     <!-- Top Navigation Bar -->
     <nav class="bg-[#faf9f6] border-b border-[#e5e0d8] py-4 px-6 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto flex items-center justify-between">
+        <div class="w-full flex items-center justify-between">
             <div class="flex items-center">
                 <a href="/artisanDashboard" class="flex items-center gap-3 group">
                     <!-- Logo -->
                     <img src="/images/Logo.png" alt="ArtsyVibe Logo"
                         class="h-10 w-auto object-contain"
                         style="filter: drop-shadow(0 0 0.5px rgba(193, 124, 95, 1));">
-                    
+
                     <!-- Brand Name -->
                     <span class="text-2xl font-semibold" 
                         style="font-family: 'Playfair Display', serif;">
@@ -243,34 +244,35 @@
             </div>
 
             <!-- Right Side - Notifications and User -->
-            <!-- Right Side - Notifications and User -->
             <div class="flex items-center space-x-4">
                 <!-- Notification Bell -->
-                <button class="relative p-2 text-[#8b7355] hover:text-[#c17c5f] transition-colors">
-                    <i class="fas fa-bell text-xl"></i>
-                    <span class="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-[#faf9f6]"></span>
-                </button>
+                <a id="notifications-link" href="/artisanNotification" class="relative">
+                    <button class="relative p-2 text-[#8b7355] hover:text-[#c17c5f] transition-colors">
+                        <i class="fas fa-bell text-xl"></i>
+                        <span class="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-[#faf9f6]"></span>
+                    </button>
+                </a>
 
-                <!-- User Profile -->
+                                                <!-- User Profile -->
                 <div class="user-menu flex items-center space-x-3 pl-4 border-l border-[#e5e0d8]">
                     <button id="userMenuButton" type="button" class="flex items-center gap-3 text-left focus:outline-none">
                         <img 
-                            src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=40&h=40&fit=crop&crop=face" 
-                            alt="Elena Martinez" 
+                            th:src="${artisan != null ? artisan.profilePicture : 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" 
+                            th:alt="${artisan != null ? artisan.name : 'User'}" 
                             class="w-10 h-10 rounded-full object-cover border-2 border-[#c17c5f]"
                         />
                         <div class="hidden md:block">
-                            <p class="font-semibold text-[#5c4a3d] text-sm">Elena Martinez</p>
-                            <p class="text-xs text-[#8b7355]">elena@artisan.com</p>
+                            <p class="font-semibold text-[#5c4a3d] text-sm" th:text="${artisan != null ? artisan.name : 'User'}">Elena Martinez</p>
+                            <p class="text-xs text-[#8b7355]" th:text="${artisan != null ? artisan.email : 'email@artisan.com'}">elena@artisan.com</p>
                         </div>
                         <i id="chevronIcon" class="chevron-icon fas fa-chevron-down text-[#8b7355] text-xs hidden md:block"></i>
                     </button>
                     <div id="userMenuDropdown" class="user-menu-dropdown">
-                        <button id="logoutButton" class="user-menu-item logout w-full text-left">
+                        <button id="logoutButton" type="button" class="user-menu-item logout w-full text-left">
                             <i class="fas fa-sign-out-alt mr-2"></i> Logout
                         </button>
                     </div>
-        </div>
+                </div>
     </nav>
 
     <!-- Main Content Area with Sidebar -->
@@ -278,16 +280,17 @@
         <!-- Left Sidebar -->
         <aside class="w-64 bg-[#5c4a3d] min-h-[calc(100vh-80px)] fixed left-0 top-20 overflow-y-auto">
             <!-- Artisan Profile -->
+            <!-- Artisan Profile -->
             <div class="p-6 border-b border-[#7a6655]">
                 <div class="flex items-center gap-4">
                     <img 
-                        src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face" 
-                        alt="Elena Martinez" 
+                        th:src="${artisan != null ? artisan.profilePicture : 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" 
+                        th:alt="${artisan != null ? artisan.name : 'User'}" 
                         class="w-14 h-14 rounded-full object-cover border-2 border-[#c17c5f]"
                     />
                     <div>
-                        <h3 class="text-white font-semibold">Elena Martinez</h3>
-                        <p class="text-[#d4c5b5] text-sm">Ceramics Artist</p>
+                        <h3 class="text-white font-semibold" th:text="${artisan != null ? artisan.name : 'User'}">Elena Martinez</h3>
+                        <p class="text-[#d4c5b5] text-sm" th:text="${artisan != null ? artisan.shopName : 'Shop'}">Ceramics Artist</p>
                     </div>
                 </div>
             </div>
@@ -296,31 +299,31 @@
             <nav class="p-4">
                 <ul class="space-y-1">
                     <li>
-                        <a href="artisan-dashboard.html" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                        <a href="/artisanDashboard" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
                             <i class="fas fa-chart-line w-5"></i>
                             <span>Dashboard</span>
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                        <a href="/artisanProducts" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
                             <i class="fas fa-box w-5"></i>
                             <span>My Products</span>
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                        <a href="/artisanAuction" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
                             <i class="fas fa-gavel w-5"></i>
                             <span>My Auctions</span>
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="sidebar-link active flex items-center gap-3 text-white px-4 py-3 rounded-lg">
+                        <a href="/artisanOrders" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
                             <i class="fas fa-receipt w-5"></i>
                             <span>Orders</span>
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                        <a href="/artisanAnalytics" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
                             <i class="fas fa-chart-bar w-5"></i>
                             <span>Analytics</span>
                         </a>
@@ -332,7 +335,7 @@
             <div class="p-4 mt-8 border-t border-[#7a6655]">
                 <ul class="space-y-1">
                     <li>
-                        <a href="#" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
+                        <a id="settingsLink" href="/artisanSettings" class="sidebar-link flex items-center gap-3 text-[#d4c5b5] px-4 py-3 rounded-lg">
                             <i class="fas fa-cog w-5"></i>
                             <span>Settings</span>
                         </a>
@@ -344,15 +347,15 @@
         <!-- Main Content -->
         <main class="flex-1 ml-64 p-8">
             <!-- Back Link -->
-            <a href="artisan-orders.html" class="inline-flex items-center gap-2 text-[#8b7355] hover:text-[#c17c5f] transition-colors mb-6">
+            <a href="/artisanOrders" class="inline-flex items-center gap-2 text-[#8b7355] hover:text-[#c17c5f] transition-colors mb-6">
                 <i class="fas fa-arrow-left"></i>
                 <span>Back to Orders</span>
             </a>
 
             <!-- Page Header -->
-            <div class="flex items-center justify-between mb-8">
-                <h1 class="text-3xl font-bold text-[#5c4a3d]">Order #ORD-2847</h1>
-                <p class="text-[#8b7355]">March 15, 2025</p>
+            <div class="flex items-center justify-between mb-8" th:if="${order != null}">
+                <h1 class="text-3xl font-bold text-[#5c4a3d]" th:text="'Order #ORD-' + ${order.orderId}">Order #ORD-0</h1>
+                <p class="text-[#8b7355]" th:text="${order.date}">Date</p>
             </div>
 
             <!-- Two Column Layout -->
@@ -375,68 +378,24 @@
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-[#e5e0d8]">
-                                    <tr>
+                                    <tr th:each="item : ${orderItems}">
                                         <td class="py-4">
                                             <div class="flex items-center gap-3">
                                                 <div class="relative w-16 h-16 rounded-lg overflow-hidden bg-gray-200 flex-shrink-0">
                                                     <img 
-                                                        src="https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=80&h=80&fit=crop" 
-                                                        alt="Handcrafted Ceramic Vase" 
+                                                        th:src="${item.product != null and item.product.imageUrl != null ? item.product.imageUrl : 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}"
+                                                        th:alt="${item.product != null ? item.product.title : 'Product'}"
                                                         class="w-full h-full object-cover"
-                                                        onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'w-full h-full flex items-center justify-center bg-gray-300 text-gray-500\'><i class=\'fas fa-image text-xl\'></i></div>'"
                                                     />
                                                 </div>
                                                 <div>
-                                                    <p class="font-medium text-[#5c4a3d]">Handcrafted Ceramic Vase</p>
-                                                    <p class="text-sm text-[#8b7355]">SKU: CER-VASE-001</p>
+                                                    <p class="font-medium text-[#5c4a3d]" th:text="${item.product != null ? item.product.title : 'Product'}">Product</p>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td class="py-4 text-center text-[#5c4a3d]">2</td>
-                                        <td class="py-4 text-right text-[#5c4a3d]">BD 85.000</td>
-                                        <td class="py-4 text-right font-medium text-[#5c4a3d]">BD 170.000</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="py-4">
-                                            <div class="flex items-center gap-3">
-                                                <div class="relative w-16 h-16 rounded-lg overflow-hidden bg-gray-200 flex-shrink-0">
-                                                    <img 
-                                                        src="https://images.unsplash.com/photo-1578749556920-d1e28f1fa5c9?w=80&h=80&fit=crop" 
-                                                        alt="Artisan Tea Set" 
-                                                        class="w-full h-full object-cover"
-                                                        onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'w-full h-full flex items-center justify-center bg-gray-300 text-gray-500\'><i class=\'fas fa-image text-xl\'></i></div>'"
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <p class="font-medium text-[#5c4a3d]">Artisan Tea Set</p>
-                                                    <p class="text-sm text-[#8b7355]">SKU: CER-TEA-003</p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="py-4 text-center text-[#5c4a3d]">1</td>
-                                        <td class="py-4 text-right text-[#5c4a3d]">BD 120.000</td>
-                                        <td class="py-4 text-right font-medium text-[#5c4a3d]">BD 120.000</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="py-4">
-                                            <div class="flex items-center gap-3">
-                                                <div class="relative w-16 h-16 rounded-lg overflow-hidden bg-gray-200 flex-shrink-0">
-                                                    <img 
-                                                        src="https://images.unsplash.com/photo-1565193566173-034e40b7c3f8?w=80&h=80&fit=crop" 
-                                                        alt="Rustic Mug Set" 
-                                                        class="w-full h-full object-cover"
-                                                        onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'w-full h-full flex items-center justify-center bg-gray-300 text-gray-500\'><i class=\'fas fa-image text-xl\'></i></div>'"
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <p class="font-medium text-[#5c4a3d]">Rustic Mug Set (4pcs)</p>
-                                                    <p class="text-sm text-[#8b7355]">SKU: CER-MUG-007</p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="py-4 text-center text-[#5c4a3d]">3</td>
-                                        <td class="py-4 text-right text-[#5c4a3d]">BD 45.000</td>
-                                        <td class="py-4 text-right font-medium text-[#5c4a3d]">BD 135.000</td>
+                                        <td class="py-4 text-center text-[#5c4a3d]" th:text="${item.quantity}">0</td>
+                                        <td class="py-4 text-right text-[#5c4a3d]" th:text="${#numbers.formatDecimal(item.price, 1, 3) + ' BD'}">0.000 BD</td>
+                                        <td class="py-4 text-right font-medium text-[#5c4a3d]" th:text="${#numbers.formatDecimal(item.price * item.quantity, 1, 3) + ' BD'}">0.000 BD</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -444,23 +403,15 @@
                             <!-- Order Totals -->
                             <div class="mt-6 pt-6 border-t border-[#e5e0d8] space-y-2">
                                 <div class="flex justify-between text-[#8b7355]">
-                                    <span>Subtotal</span>
-                                    <span>BD 425.000</span>
-                                </div>
-                                <div class="flex justify-between text-[#8b7355]">
-                                    <span>Shipping Fee</span>
-                                    <span>BD 15.000</span>
-                                </div>
-                                <div class="flex justify-between text-lg font-semibold text-[#5c4a3d] pt-2 border-t border-[#e5e0d8]">
-                                    <span>Total</span>
-                                    <span>BD 440.000</span>
+                                    <span>Subtotal (Your Items)</span>
+                                    <span th:text="${artisanSubtotal != null ? #numbers.formatDecimal(artisanSubtotal, 1, 3) + ' BD' : '0.000 BD'}">0.000 BD</span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Order Timeline Card -->
-                    <div class="bg-white rounded-xl card-shadow overflow-hidden">
+                    <div class="bg-white rounded-xl card-shadow overflow-hidden" th:if="${order != null}">
                         <div class="p-6 border-b border-[#e5e0d8]">
                             <h2 class="text-xl font-semibold text-[#5c4a3d]">Order Timeline</h2>
                         </div>
@@ -473,7 +424,7 @@
                                     </div>
                                     <div>
                                         <h4 class="font-semibold text-[#5c4a3d]">Order Placed</h4>
-                                        <p class="text-sm text-[#8b7355] mt-1">March 15, 2025 at 10:30 AM</p>
+                                        <p class="text-sm text-[#8b7355] mt-1" th:text="${order.date}">March 15, 2025</p>
                                         <p class="text-sm text-[#8b7355]">Customer placed the order successfully</p>
                                     </div>
                                 </div>
@@ -485,56 +436,47 @@
                                     </div>
                                     <div>
                                         <h4 class="font-semibold text-[#5c4a3d]">Payment Confirmed</h4>
-                                        <p class="text-sm text-[#8b7355] mt-1">March 15, 2025 at 10:32 AM</p>
-                                        <p class="text-sm text-[#8b7355]">Payment received via PayPal</p>
+                                        <p class="text-sm text-[#8b7355] mt-1" th:text="${order.date}">March 15, 2025</p>
+                                        <p class="text-sm text-[#8b7355]">Payment received successfully</p>
                                     </div>
                                 </div>
 
-                                <!-- Processing - Current -->
-                                <div class="timeline-step current">
+                                <!-- Processing - Current/Completed -->
+                                <div class="timeline-step" th:classappend="${artisanStatus == 'shipped' || artisanStatus == 'delivered' ? 'completed' : 'current'}">
                                     <div class="timeline-icon">
                                         <i class="fas fa-box-open"></i>
                                     </div>
                                     <div>
                                         <h4 class="font-semibold text-[#5c4a3d]">Processing</h4>
-                                        <p class="text-sm text-[#8b7355] mt-1">March 16, 2025 at 9:00 AM</p>
+                                        <p class="text-sm text-[#8b7355] mt-1" th:text="${artisanStatus == 'pending' ? 'Pending' : 'Completed'}">Completed</p>
                                         <p class="text-sm text-[#8b7355]">Preparing items for shipment</p>
                                     </div>
                                 </div>
 
-                                <!-- Shipped - Pending -->
-                                <div class="timeline-step pending" id="step-shipped">
+                                <!-- Shipped - Pending/Current/Completed -->
+                                <div class="timeline-step" id="step-shipped" th:classappend="${artisanStatus == 'delivered' ? 'completed' : (artisanStatus == 'shipped' ? 'current' : 'pending')}">
                                     <div class="timeline-icon">
                                         <i class="fas fa-shipping-fast"></i>
                                     </div>
                                     <div>
                                         <h4 class="font-semibold text-[#5c4a3d]">Shipped</h4>
-                                        <p class="text-sm text-[#8b7355] mt-1">Pending</p>
-                                        <p class="text-sm text-[#8b7355]">Awaiting dispatch</p>
-                                        <div id="shipped-inputs" class="hidden mt-3 space-y-2">
-                                            <div class="flex items-center gap-2">
-                                                <input 
-                                                    type="text" 
-                                                    id="trackingNumber" 
-                                                    placeholder="Enter tracking number" 
-                                                    class="tracking-input flex-1 border border-[#e5e0d8] rounded-lg px-3 py-2 text-sm text-[#5c4a3d]"
-                                                />
-                                                <button onclick="saveTrackingNumber()" class="bg-[#c17c5f] hover:bg-[#a5664d] text-white text-sm font-medium px-3 py-2 rounded-lg transition-colors">
-                                                    Save
-                                                </button>
-                                            </div>
+                                        <p class="text-sm text-[#8b7355] mt-1" th:text="${artisanStatus == 'shipped' || artisanStatus == 'delivered' ? 'Completed' : 'Pending'}">Pending</p>
+                                        <p class="text-sm text-[#8b7355]">Your item is on its way</p>
+                                        <div class="mt-3 pt-3 border-t border-[#e5e0d8]">
+                                            <p class="text-xs text-[#8b7355] mb-1">Estimated Delivery:</p>
+                                            <p id="estimatedDeliveryDate" class="font-semibold text-[#5c4a3d]">Calculating...</p>
                                         </div>
                                     </div>
                                 </div>
 
-                                <!-- Delivered - Pending -->
-                                <div class="timeline-step pending" id="step-delivered">
+                                <!-- Delivered - Pending/Current/Completed -->
+                                <div class="timeline-step" id="step-delivered" th:classappend="${artisanStatus == 'delivered' ? 'completed' : 'pending'}">
                                     <div class="timeline-icon">
                                         <i class="fas fa-home"></i>
                                     </div>
                                     <div>
                                         <h4 class="font-semibold text-[#5c4a3d]">Delivered</h4>
-                                        <p class="text-sm text-[#8b7355] mt-1">Pending</p>
+                                        <p class="text-sm text-[#8b7355] mt-1" th:text="${artisanStatus == 'delivered' ? 'Completed' : 'Pending'}">Pending</p>
                                         <p class="text-sm text-[#8b7355]">Awaiting delivery confirmation</p>
                                         <div id="delivered-inputs" class="hidden mt-3 space-y-2">
                                             <div class="flex items-center gap-2">
@@ -558,43 +500,42 @@
                 <!-- Right Column (Narrower) -->
                 <div class="space-y-6">
                     <!-- Customer Information Card -->
-                    <div class="bg-white rounded-xl card-shadow overflow-hidden">
+                    <div class="bg-white rounded-xl card-shadow overflow-hidden" th:if="${order != null and order.customer != null}">
                         <div class="p-6 border-b border-[#e5e0d8]">
                             <h2 class="text-xl font-semibold text-[#5c4a3d]">Customer Information</h2>
                         </div>
                         <div class="p-6">
                             <div class="flex items-center gap-4 mb-4">
-                                <div class="w-14 h-14 rounded-full bg-[#c17c5f] flex items-center justify-center text-white text-xl font-semibold">
-                                    JD
+                                <div class="w-14 h-14 rounded-full bg-[#c17c5f] flex items-center justify-center text-white text-xl font-semibold" th:text="${#strings.substring(order.customer.name, 0, 1)}">
+                                    C
                                 </div>
                                 <div>
-                                    <h3 class="font-semibold text-[#5c4a3d]">John Doe</h3>
-                                    <p class="text-sm text-[#8b7355]">john.doe@email.com</p>
+                                    <h3 class="font-semibold text-[#5c4a3d]" th:text="${order.customer.name}">Customer Name</h3>
+                                    <p class="text-sm text-[#8b7355]" th:text="${order.customer.email}">customer@email.com</p>
                                 </div>
                             </div>
-                            <div class="flex items-center gap-2 text-[#8b7355]">
-                                <i class="fas fa-phone"></i>
-                                <span class="text-sm" id="customerPhone">+973 3344 5566</span>
-                                <span id="phoneWarning" class="tooltip hidden" data-tooltip="Phone number format may be incorrect.">
-                                    <i class="fas fa-exclamation-triangle text-amber-500"></i>
-                                </span>
+                            <div class="flex flex-col gap-1">
+                                <div class="flex items-center gap-2 text-[#8b7355]">
+                                    <i class="fas fa-phone"></i>
+                                    <span id="customerPhone" class="text-sm" th:text="${order.customer.phone}">+973 0000 0000</span>
+                                </div>
+                                <div id="phoneWarning" class="hidden text-xs text-red-500 flex items-center gap-1 mt-1">
+                                    <i class="fas fa-exclamation-circle"></i> Phone format is invalid (+973 followed by 8 digits)
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Shipping Address Card -->
-                    <div class="bg-white rounded-xl card-shadow overflow-hidden">
+                    <div class="bg-white rounded-xl card-shadow overflow-hidden" th:if="${order != null}">
                         <div class="p-6 border-b border-[#e5e0d8]">
                             <h2 class="text-xl font-semibold text-[#5c4a3d]">Shipping Address</h2>
                         </div>
                         <div class="p-6">
                             <div class="flex items-start gap-3">
                                 <i class="fas fa-map-marker-alt text-[#c17c5f] mt-1"></i>
-                                <div class="text-[#5c4a3d] text-sm leading-relaxed">
-                                    <p>Building 1234, Road 5678</p>
-                                    <p>Block 901, Seef District</p>
-                                    <p>Manama, Bahrain</p>
-                                    <p class="text-[#8b7355] mt-2">Postal Code: 35678</p>
+                                <div class="text-[#5c4a3d] text-sm leading-relaxed" th:text="${order.shippingAddress}">
+                                    Shipping Address
                                 </div>
                             </div>
                         </div>
@@ -608,11 +549,11 @@
                         <div class="p-6">
                             <div class="mb-4">
                                 <label class="block text-sm font-medium text-[#8b7355] mb-2">Current Status</label>
-                                <select id="orderStatus" class="w-full border border-[#e5e0d8] rounded-lg px-4 py-2.5 text-[#5c4a3d] focus:outline-none focus:border-[#c17c5f]">
-                                    <option value="pending" selected>Pending</option>
-                                    <option value="processing">Processing</option>
-                                    <option value="shipped">Shipped</option>
-                                    <option value="delivered">Delivered</option>
+                                <select id="orderStatus" class="w-full border border-[#e5e0d8] rounded-lg px-4 py-2.5 text-[#5c4a3d] focus:outline-none focus:border-[#c17c5f]" th:if="${order != null}">
+                                    <option value="pending" th:selected="${artisanStatus == 'pending'}">Pending</option>
+                                    <option value="processing" th:selected="${artisanStatus == 'processing'}">Processing</option>
+                                    <option value="shipped" th:selected="${artisanStatus == 'shipped'}">Shipped</option>
+                                    <option value="delivered" th:selected="${artisanStatus == 'delivered'}">Delivered</option>
                                 </select>
                             </div>
                             <button id="updateStatusBtn" onclick="updateOrderStatus()" class="w-full bg-[#c17c5f] hover:bg-[#a5664d] text-white font-medium py-2.5 rounded-lg transition-colors">
@@ -622,90 +563,65 @@
                     </div>
 
                     <!-- Payment Information Card -->
-                    <div class="bg-white rounded-xl card-shadow overflow-hidden">
+                    <div class="bg-white rounded-xl card-shadow overflow-hidden" th:if="${order != null and order.payment != null}">
                         <div class="p-6 border-b border-[#e5e0d8]">
                             <h2 class="text-xl font-semibold text-[#5c4a3d]">Payment Information</h2>
                         </div>
                         <div class="p-6 space-y-3">
                             <div class="flex justify-between items-center">
                                 <span class="text-[#8b7355]">Payment Method</span>
-                                <span class="font-medium text-[#5c4a3d]">PayPal</span>
+                                <span class="font-medium text-[#5c4a3d]" th:text="${order.payment.paymentMethod}">Method</span>
                             </div>
                             <div class="flex justify-between items-center">
                                 <span class="text-[#8b7355]">Payment Status</span>
-                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
-                                    <i class="fas fa-check-circle"></i>
-                                    Paid
-                                </span>
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700" th:text="${order.payment.status}">Status</span>
                             </div>
-                            <div class="flex justify-between items-center">
+                            <div class="flex justify-between items-center" th:if="${order.payment.transactionDetails != null}">
                                 <span class="text-[#8b7355]">Transaction ID</span>
-                                <span class="text-sm text-[#8b7355]">TXN-8472639105</span>
+                                <span class="text-sm text-[#8b7355]" th:text="${order.payment.transactionDetails}">TXN-0</span>
                             </div>
                             <div class="pt-3 border-t border-[#e5e0d8]">
                                 <div class="flex justify-between items-center">
                                     <span class="text-[#8b7355]">Amount Paid</span>
-                                    <span class="font-semibold text-[#5c4a3d]">BD 440.000</span>
+                                    <span class="font-semibold text-[#5c4a3d]" th:text="${#numbers.formatDecimal(order.payment.amount, 1, 3) + ' BD'}">0.000 BD</span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Refund Request Panel -->
-                    <div class="bg-white rounded-xl card-shadow overflow-hidden border-l-4 border-amber-500">
+                    <!-- Refund Request Panels -->
+                    <div th:each="item : ${orderItems}" th:if="${item.refundRequested}" 
+                         class="bg-white rounded-xl card-shadow overflow-hidden border-l-4 border-amber-500 mb-6">
                         <div class="p-6 border-b border-[#e5e0d8]">
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-2">
                                     <i class="fas fa-exclamation-triangle text-amber-500 text-xl"></i>
-                                    <h2 class="text-xl font-semibold text-amber-600">Refund Request</h2>
+                                    <h2 class="text-xl font-semibold text-amber-600" th:text="'Refund Request - ' + ${item.product.title}">Refund Request</h2>
                                 </div>
-                                <span class="text-sm text-[#8b7355]">March 18, 2025 at 2:45 PM</span>
+                                <span class="text-sm font-semibold text-amber-600" th:text="${item.refundStatus}">PENDING</span>
                             </div>
                         </div>
                         <div class="p-6 space-y-4">
                             <!-- Refund Reason -->
                             <div>
                                 <p class="text-sm font-medium text-[#8b7355] mb-2">Customer's Reason:</p>
-                                <blockquote class="bg-amber-50 border-l-4 border-amber-400 p-4 italic text-[#5c4a3d]">
-                                    "The item arrived damaged and does not match the description. The ceramic vase has a large crack on the side and the color is significantly different from what was shown in the product images."
+                                <blockquote class="bg-amber-50 border-l-4 border-amber-400 p-4 italic text-[#5c4a3d]" th:text="${item.refundReason}">
+                                    Reason details...
                                 </blockquote>
                             </div>
 
                             <!-- Attached Evidence Section -->
-                            <div>
+                            <div th:if="${item.refundImages != null and !item.refundImages.isEmpty()}">
                                 <p class="text-sm font-medium text-[#8b7355] mb-2 flex items-center gap-2">
                                     <i class="fas fa-paperclip"></i>
-                                    Attached Photos
+                                    Attached Photo
                                 </p>
                                 <div class="flex gap-3">
-                                    <div class="relative group cursor-pointer" onclick="openLightbox(0)">
+                                    <div class="relative group cursor-pointer" onclick="openLightboxDirectFromImage(this)">
                                         <img 
-                                            src="https://images.unsplash.com/photo-1596464716127-f2a82984de30?w=160&h=160&fit=crop" 
-                                            alt="Evidence photo 1" 
+                                            th:src="${item.refundImages}" 
+                                            alt="Evidence photo" 
                                             class="w-20 h-20 rounded-lg object-cover border border-[#e5e0d8]"
-                                            onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23e5e0d8%22 width=%22100%22 height=%22100%22/><text x=%2250%22 y=%2255%22 text-anchor=%22middle%22 fill=%22%238b7355%22 font-size=%2224%22><tspan>📷</tspan></text></svg>'"
-                                        />
-                                        <div class="absolute inset-0 bg-black bg-opacity-50 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                            <i class="fas fa-expand text-white text-xl"></i>
-                                        </div>
-                                    </div>
-                                    <div class="relative group cursor-pointer" onclick="openLightbox(1)">
-                                        <img 
-                                            src="https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=160&h=160&fit=crop" 
-                                            alt="Evidence photo 2" 
-                                            class="w-20 h-20 rounded-lg object-cover border border-[#e5e0d8]"
-                                            onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23e5e0d8%22 width=%22100%22 height=%22100%22/><text x=%2250%22 y=%2255%22 text-anchor=%22middle%22 fill=%22%238b7355%22 font-size=%2224%22><tspan>📷</tspan></text></svg>'"
-                                        />
-                                        <div class="absolute inset-0 bg-black bg-opacity-50 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                            <i class="fas fa-expand text-white text-xl"></i>
-                                        </div>
-                                    </div>
-                                    <div class="relative group cursor-pointer" onclick="openLightbox(2)">
-                                        <img 
-                                            src="https://images.unsplash.com/photo-1578749556920-d1e28f1fa5c9?w=160&h=160&fit=crop" 
-                                            alt="Evidence photo 3" 
-                                            class="w-20 h-20 rounded-lg object-cover border border-[#e5e0d8]"
-                                            onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23e5e0d8%22 width=%22100%22 height=%22100%22/><text x=%2250%22 y=%2255%22 text-anchor=%22middle%22 fill=%22%238b7355%22 font-size=%2224%22><tspan>📷</tspan></text></svg>'"
                                         />
                                         <div class="absolute inset-0 bg-black bg-opacity-50 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                             <i class="fas fa-expand text-white text-xl"></i>
@@ -716,25 +632,52 @@
 
                             <!-- Refund Amount -->
                             <div class="flex justify-between items-center pt-2">
-                                <span class="text-[#8b7355]">Requested Refund Amount</span>
-                                <span class="text-lg font-semibold text-amber-600">BD 85.000</span>
+                                <span class="text-[#8b7355]">Refund Amount (Qty: <span th:text="${item.quantity}">1</span>)</span>
+                                <span class="text-lg font-semibold text-amber-600" th:text="${#numbers.formatDecimal(item.price * item.quantity, 1, 3) + ' BD'}">0.000 BD</span>
                             </div>
 
                             <!-- Action Buttons -->
-                            <div class="flex gap-3 pt-4" id="refundActions">
-                                <button onclick="handleRefundDecision('accept')" class="refund-btn flex-1 bg-green-600 hover:bg-green-700 text-white font-medium py-2.5 rounded-lg transition-colors">
+                            <div class="flex gap-3 pt-4" th:id="'refundActions-' + ${item.orderItemId}" th:if="${item.refundStatus == 'PENDING'}">
+                                <button th:onclick="'handleRefundDecisionDirect(\'accept\', ' + ${item.orderItemId} + ')'" class="refund-btn-action flex-1 bg-green-600 hover:bg-green-700 text-white font-medium py-2.5 rounded-lg transition-colors">
                                     Accept Refund
                                 </button>
-                                <button onclick="handleRefundDecision('decline')" class="refund-btn flex-1 border-2 border-red-500 text-red-500 hover:bg-red-50 font-medium py-2.5 rounded-lg transition-colors">
+                                <button th:onclick="'openDeclineModal(' + ${item.orderItemId} + ')'" class="refund-btn-action flex-1 border-2 border-red-500 text-red-500 hover:bg-red-50 font-medium py-2.5 rounded-lg transition-colors">
                                     Decline Refund
                                 </button>
-                                <button onclick="handleRefundDecision('escalate')" class="refund-btn flex-1 bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-medium py-2.5 rounded-lg transition-colors">
+                                <button th:onclick="'handleRefundDecisionDirect(\'escalate\', ' + ${item.orderItemId} + ')'" class="refund-btn-action flex-1 bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-medium py-2.5 rounded-lg transition-colors">
                                     Escalate to Admin
                                 </button>
                             </div>
+                            
+                            <!-- If already resolved -->
+                            <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-2 text-left" th:if="${item.refundStatus != 'PENDING'}">
+                                <p class="text-sm text-gray-700">
+                                    <span class="font-semibold">Your Decision:</span> 
+                                    <span class="text-[#c17c5f] font-semibold" th:text="${item.refundStatus}">DECISION</span>.
+                                </p>
+                                <div th:if="${item.refundStatus == 'DECLINED' and item.artisanRefusalReason != null}" class="bg-red-50 p-3 rounded-lg border-l-4 border-red-300">
+                                    <p class="text-xs font-semibold text-red-700">Refusal Reason:</p>
+                                    <p class="text-sm text-red-800 italic" th:text="${item.artisanRefusalReason}">Reason text...</p>
+                                </div>
+                                <div class="border-t border-gray-200 pt-2 mt-2" th:if="${item.adminRefundStatus != 'PENDING' and item.adminRefundStatus != null}">
+                                    <p class="text-sm text-gray-700">
+                                        <span class="font-semibold">Administrator Final Decision:</span> 
+                                        <span class="font-semibold" th:classappend="${item.adminRefundStatus == 'APPROVED' ? 'text-green-600' : 'text-red-600'}" th:text="${item.adminRefundStatus}">STATUS</span>.
+                                    </p>
+                                    <div th:if="${item.adminNote != null}" class="bg-gray-100 p-3 rounded-lg border-l-4 border-gray-400 mt-1">
+                                        <p class="text-xs font-semibold text-gray-600">Admin Note:</p>
+                                        <p class="text-sm text-gray-700 italic" th:text="${item.adminNote}">Note text...</p>
+                                    </div>
+                                </div>
+                                <div class="border-t border-gray-200 pt-2 mt-2" th:if="${item.adminRefundStatus == 'PENDING' or item.adminRefundStatus == null}">
+                                    <p class="text-sm text-amber-600 font-semibold flex items-center gap-1">
+                                        <i class="fas fa-clock"></i> Awaiting Administrator Review
+                                    </p>
+                                </div>
+                            </div>
 
                             <!-- Notice -->
-                            <p class="text-xs text-[#8b7355] text-center pt-2">
+                            <p class="text-xs text-[#8b7355] text-center pt-2" th:if="${item.refundStatus == 'PENDING'}">
                                 Your decision will be reviewed and finalized by the administrator before any funds are returned.
                             </p>
                         </div>
@@ -745,21 +688,7 @@
     </div>
 
     <script>
-        // Sidebar navigation active state handling
-        document.querySelectorAll('.sidebar-link').forEach(link => {
-            link.addEventListener('click', function(e) {
-                // Remove active state from all links
-                document.querySelectorAll('.sidebar-link').forEach(l => {
-                    l.classList.remove('active');
-                    l.classList.remove('text-white');
-                    l.classList.add('text-[#d4c5b5]');
-                });
-
-                // Add active state to clicked link
-                this.classList.add('active');
-                this.classList.remove('text-[#d4c5b5]');
-            });
-        });
+        /* Sidebar active state handled by dynamic script below */
 
         // Validate phone number on page load
         document.addEventListener('DOMContentLoaded', function() {
@@ -802,11 +731,98 @@
                 updateTimelineInputs(status);
             }, 1000);
         }
+    </script>
+
+    <script>
+        /* Sidebar active state handled by dynamic script below */
+
+        // Validate phone number and initialize timeline inputs on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            validatePhoneNumber();
+            const orderStatusSelect = document.getElementById('orderStatus');
+            if (orderStatusSelect) {
+                updateTimelineInputs(orderStatusSelect.value);
+            }
+        });
+
+        // Validate Bahraini phone number format
+        function validatePhoneNumber() {
+            const phoneElement = document.getElementById('customerPhone');
+            const warningElement = document.getElementById('phoneWarning');
+            if (!phoneElement || !warningElement) return;
+            const phoneNumber = phoneElement.textContent.trim();
+
+            // Bahraini format: +973 followed by 8 digits starting with 3 or 6
+            const bahrainiPattern = /^\+973\s?[36]\d{7}$/;
+
+            if (!bahrainiPattern.test(phoneNumber)) {
+                warningElement.classList.remove('hidden');
+            }
+        }
+
+        // Update order status
+        function updateOrderStatus() {
+            const btn = document.getElementById('updateStatusBtn');
+            const statusSelect = document.getElementById('orderStatus');
+            if (!btn || !statusSelect) return;
+            const status = statusSelect.value;
+
+            // Get orderId from query parameter
+            const urlParams = new URLSearchParams(window.location.search);
+            const orderId = urlParams.get('orderId');
+            if (!orderId) {
+                showNotification('Order ID not found in URL.', 'error');
+                return;
+            }
+
+            // Disable button to prevent double-click
+            btn.disabled = true;
+            btn.classList.add('btn-disabled');
+            btn.textContent = 'Updating...';
+
+            fetch(`/api/orders/${orderId}/status`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ status: status })
+            })
+            .then(res => {
+                btn.disabled = false;
+                btn.classList.remove('btn-disabled');
+                btn.textContent = 'Update Status';
+
+                if (res.ok) {
+                    showNotification(`Order status updated to ${status.charAt(0).toUpperCase() + status.slice(1)}`, 'success');
+                    // Show relevant input fields based on status
+                    updateTimelineInputs(status);
+                    
+                    // Reload after a short delay to sync timeline/UI with the server
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    showNotification('Failed to update order status', 'error');
+                }
+            })
+            .catch(err => {
+                btn.disabled = false;
+                btn.classList.remove('btn-disabled');
+                btn.textContent = 'Update Status';
+                console.error(err);
+                showNotification('Network error occurred', 'error');
+            });
+        }
 
         // Update timeline inputs based on status
         function updateTimelineInputs(status) {
             const shippedInputs = document.getElementById('shipped-inputs');
             const deliveredInputs = document.getElementById('delivered-inputs');
+            if (!shippedInputs || !deliveredInputs) return;
+
+            // Hide them by default
+            shippedInputs.classList.add('hidden');
+            deliveredInputs.classList.add('hidden');
 
             if (status === 'shipped') {
                 shippedInputs.classList.remove('hidden');
@@ -818,17 +834,40 @@
             }
         }
 
-        // Save tracking number
-        function saveTrackingNumber() {
-            const trackingNumber = document.getElementById('trackingNumber').value.trim();
-
-            if (!trackingNumber) {
-                showNotification('Please enter a tracking number', 'error');
-                return;
+        // Calculate and display estimated delivery date (Order Date + 5 days)
+        function calculateEstimatedDeliveryDate() {
+            // Get the order date from the page header
+            const orderDateText = document.querySelector('p[th\\:text*="order.date"]')?.textContent || '';
+            
+            // Parse order date or use today's date
+            let orderDate = new Date();
+            if (orderDateText) {
+                try {
+                    orderDate = new Date(orderDateText);
+                } catch (e) {
+                    orderDate = new Date();
+                }
             }
-
-            showNotification(`Tracking number saved: ${trackingNumber}`, 'success');
+            
+            // Add 5 days to order date
+            const estimatedDeliveryDate = new Date(orderDate);
+            estimatedDeliveryDate.setDate(estimatedDeliveryDate.getDate() + 5);
+            
+            // Format the date as "MMM DD, YYYY" (e.g., "May 25, 2026")
+            const options = { year: 'numeric', month: 'short', day: 'numeric' };
+            const formattedDate = estimatedDeliveryDate.toLocaleDateString('en-US', options);
+            
+            // Display the estimated delivery date
+            const dateElement = document.getElementById('estimatedDeliveryDate');
+            if (dateElement) {
+                dateElement.textContent = formattedDate;
+            }
         }
+        
+        // Initialize estimated delivery date when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            calculateEstimatedDeliveryDate();
+        });
 
         // Save expected delivery date
         function saveDeliveryDate() {
@@ -860,22 +899,26 @@
             }
         }
 
-        // Evidence photos for lightbox
-        const evidencePhotos = [
-            'https://images.unsplash.com/photo-1596464716127-f2a82984de30?w=800&h=600&fit=crop',
-            'https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=800&h=600&fit=crop',
-            'https://images.unsplash.com/photo-1578749556920-d1e28f1fa5c9?w=800&h=600&fit=crop'
-        ];
+        // Close lightbox
+        function closeLightbox() {
+            const lightbox = document.getElementById('lightbox');
+            if (lightbox) {
+                lightbox.style.opacity = '0';
+                lightbox.style.transition = 'opacity 0.2s ease';
+                setTimeout(() => {
+                    lightbox.remove();
+                }, 200);
+            }
+        }
 
-        // Open lightbox with image
-        function openLightbox(index) {
+        function openLightboxDirect(imgSrc) {
             const lightbox = document.createElement('div');
             lightbox.id = 'lightbox';
             lightbox.className = 'fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center cursor-pointer';
             lightbox.onclick = closeLightbox;
 
             const img = document.createElement('img');
-            img.src = evidencePhotos[index];
+            img.src = imgSrc;
             img.alt = 'Evidence photo';
             img.className = 'max-w-full max-h-full w-auto h-auto object-contain p-4';
             img.onclick = (e) => e.stopPropagation();
@@ -893,16 +936,85 @@
             document.body.appendChild(lightbox);
         }
 
-        // Close lightbox
-        function closeLightbox() {
-            const lightbox = document.getElementById('lightbox');
-            if (lightbox) {
-                lightbox.style.opacity = '0';
-                lightbox.style.transition = 'opacity 0.2s ease';
-                setTimeout(() => {
-                    lightbox.remove();
-                }, 200);
+        function openLightboxDirectFromImage(element) {
+            const img = element.querySelector('img');
+            if (img && img.src) {
+                openLightboxDirect(img.src);
             }
+        }
+
+        function openDeclineModal(orderItemId) {
+            document.getElementById('declineOrderItemId').value = orderItemId;
+            document.getElementById('refusalReason').value = '';
+            const modal = document.getElementById('declineRefundModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeDeclineModal() {
+            const modal = document.getElementById('declineRefundModal');
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+        }
+
+        function submitDeclineRefund() {
+            const orderItemId = document.getElementById('declineOrderItemId').value;
+            const refusalReason = document.getElementById('refusalReason').value.trim();
+            if (!refusalReason) {
+                showNotification('Please enter a refusal reason', 'error');
+                return;
+            }
+            closeDeclineModal();
+            handleRefundDecisionDirect('decline', orderItemId, refusalReason);
+        }
+
+        function handleRefundDecisionDirect(decision, orderItemId, refusalReason = '') {
+            const container = document.getElementById('refundActions-' + orderItemId);
+            const buttons = container ? container.querySelectorAll('button') : [];
+            
+            buttons.forEach(btn => {
+                btn.disabled = true;
+                btn.classList.add('btn-disabled');
+            });
+
+            fetch(`/api/orders/items/${orderItemId}/refund/decision`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ 
+                    decision: decision,
+                    refusalReason: refusalReason
+                })
+            })
+            .then(res => {
+                if (res.ok) {
+                    if (decision === 'accept') {
+                        showNotification('Refund request accepted and sent to administrator.', 'success');
+                    } else if (decision === 'decline') {
+                        showNotification('Refund request declined and sent to administrator.', 'info');
+                    } else if (decision === 'escalate') {
+                        showNotification('Refund request escalated to administrator.', 'info');
+                    }
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
+                } else {
+                    showNotification('Error processing decision', 'error');
+                    buttons.forEach(btn => {
+                        btn.disabled = false;
+                        btn.classList.remove('btn-disabled');
+                    });
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                showNotification('Network error occurred', 'error');
+                buttons.forEach(btn => {
+                    btn.disabled = false;
+                    btn.classList.remove('btn-disabled');
+                });
+            });
         }
 
         // Show notification toast
@@ -940,26 +1052,86 @@
 
         const showUserMenu = () => {
             clearTimeout(hideTimeout);
-            userMenuDropdown.classList.add('show');
-            chevronIcon.classList.add('rotated');
+            if (userMenuDropdown) userMenuDropdown.classList.add('show');
+            if (chevronIcon) chevronIcon.classList.add('rotated');
         };
 
         const hideUserMenu = () => {
             hideTimeout = setTimeout(() => {
-                userMenuDropdown.classList.remove('show');
-                chevronIcon.classList.remove('rotated');
+                if (userMenuDropdown) userMenuDropdown.classList.remove('show');
+                if (chevronIcon) chevronIcon.classList.remove('rotated');
             }, 150);
         };
 
-        userMenu.addEventListener('mouseenter', showUserMenu);
-        userMenu.addEventListener('mouseleave', hideUserMenu);
+        if (userMenu) {
+            userMenu.addEventListener('mouseenter', showUserMenu);
+            userMenu.addEventListener('mouseleave', hideUserMenu);
+        }
 
-        logoutButton.addEventListener('click', () => {
-            const confirmed = window.confirm('Are you sure you want to logout?');
-            if (confirmed) {
-                window.location.href = 'index.html';
-            }
-        });
+        if (logoutButton) {
+            logoutButton.addEventListener('click', () => {
+                const confirmed = window.confirm('Are you sure you want to logout?');
+                if (confirmed) {
+                    if (typeof window.artisanLogout === 'function') {
+                        window.artisanLogout();
+                    } else {
+                        sessionStorage.clear();
+                        localStorage.clear();
+                        window.location.href = '/login';
+                    }
+                }
+            });
+        }
     </script>
+    <script src="/artisan-common.js"></script>
+
+    <script>
+        // Dynamic sidebar active state: highlights the link matching the current page URL
+        (function() {
+            var path = window.location.pathname.toLowerCase();
+            document.querySelectorAll('.sidebar-link').forEach(function(link) {
+                link.classList.remove('active', 'text-white');
+                link.classList.add('text-[#d4c5b5]');
+                var href = (link.getAttribute('href') || '').toLowerCase().replace(/^\//, '');
+                if (href && path.includes(href)) {
+                    link.classList.add('active', 'text-white');
+                    link.classList.remove('text-[#d4c5b5]');
+                }
+            });
+            // Special case: artisanOrderDetail should highlight Orders
+            if (path.includes('artisanorderdetail')) {
+                var ordersLink = document.querySelector('a[href="/artisanOrders"]');
+                if (ordersLink) {
+                    ordersLink.classList.add('active', 'text-white');
+                    ordersLink.classList.remove('text-[#d4c5b5]');
+                }
+            }
+        })();
+    </script>
+    <!-- Decline Refund Modal -->
+    <div id="declineRefundModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+        <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6 mx-4">
+            <div class="flex justify-between items-center pb-3 border-b border-[#e5e0d8] mb-4">
+                <h3 class="text-lg font-semibold text-[#5c4a3d]">Decline Refund Request</h3>
+                <button onclick="closeDeclineModal()" class="text-[#8b7355] hover:text-[#c17c5f]">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <p class="text-sm text-[#8b7355]">
+                    Please provide a reason for declining this refund request. This explanation will be visible to both the customer and the administrator.
+                </p>
+                <input type="hidden" id="declineOrderItemId" />
+                <div>
+                    <label for="refusalReason" class="block text-xs font-semibold text-[#8b7355] mb-2 uppercase tracking-wider">Reason for Refusal</label>
+                    <textarea id="refusalReason" rows="4" placeholder="Explain why you are declining this refund..." class="w-full border border-[#e5e0d8] rounded-xl px-4 py-3 text-sm text-[#5c4a3d] focus:outline-none focus:border-[#c17c5f] resize-none" required></textarea>
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button onclick="closeDeclineModal()" class="flex-1 py-2.5 border border-[#e5e0d8] text-[#8b7355] hover:bg-gray-50 rounded-lg transition-colors font-medium">Cancel</button>
+                    <button onclick="submitDeclineRefund()" class="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors font-medium">Decline Refund</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

@@ -1,137 +1,129 @@
 package com.example.demo.controller;
 
 import com.example.demo.model.Artisan;
-import com.example.demo.model.Customer;
 import com.example.demo.model.User;
+import com.example.demo.repository.AddressRepository;
 import com.example.demo.repository.UserRepository;
-import org.mindrot.jbcrypt.BCrypt;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
+import com.example.demo.security.CurrentUser;
+import com.example.demo.service.AuthService;
+import com.example.demo.web.ImageUrls;
+import com.example.demo.web.Phones;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
-import java.util.Optional;
 
+/**
+ * Profile endpoints for the signed-in user. The user is always taken from the session; an {@code email}
+ * field in the body is only ever treated as the <em>new</em> e-mail on /update-profile.
+ */
 @RestController
 @RequestMapping("/api/user")
+@RequiredArgsConstructor
 public class UserController {
 
-    @Autowired
-    private UserRepository userRepository;
+    private static final int MAX_NAME = 100;
+    private static final int MAX_TEXT = 255;
 
-    // GET /api/user/me?email=john@example.com
-    // Used by my-profile.js on page load to fetch the current user's data
+    private final UserRepository userRepository;
+    private final AddressRepository addressRepository;
+    private final CurrentUser currentUser;
+
     @GetMapping("/me")
-    public ResponseEntity<?> getCurrentUser(@RequestParam String email) {
-        Optional<User> userOpt = userRepository.findByEmail(email);
-        if (userOpt.isPresent()) {
-            return ResponseEntity.ok(Map.of("success", true, "user", userOpt.get()));
-        }
-        return ResponseEntity.status(404)
-                .body(Map.of("success", false, "message", "User not found"));
+    public ResponseEntity<?> getCurrentUser() {
+        return ok(currentUser.require());
     }
 
-    // POST /api/user/update-profile-picture
-    // Body: { "email": "john@example.com", "imageUrl": "https://..." }
     @PostMapping("/update-profile-picture")
+    @Transactional
     public ResponseEntity<?> updateProfilePicture(@RequestBody Map<String, String> payload) {
-        String email    = payload.get("email");
-        String imageUrl = payload.get("imageUrl");
-
-        Optional<User> userOpt = userRepository.findByEmail(email);
-        if (userOpt.isPresent()) {
-            User user = userOpt.get();
-            user.setProfilePicture(imageUrl);
-            userRepository.save(user);
-            return ResponseEntity.ok(Map.of("success", true, "user", user));
-        }
-        return ResponseEntity.status(404)
-                .body(Map.of("success", false, "message", "User not found"));
+        User user = currentUser.require();
+        String image = ImageUrls.validate(payload.get("imageUrl"), "Profile picture");
+        user.setProfilePicture(image != null ? image : User.DEFAULT_PROFILE_PICTURE);
+        return ok(userRepository.save(user));
     }
 
-    // PUT /api/user/{id}
-    // Updates name, email, phone/address (Customer), shopName/biography (Artisan)
-    // Called by my-profile.js savePersonalInfo() and saveShopInfo()
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updateUser(@PathVariable Long id,
-                                        @RequestBody Map<String, String> payload) {
-        Optional<User> opt = userRepository.findById(id);
-        if (opt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("message", "User not found."));
+    @PostMapping("/update-artisan-settings")
+    @Transactional
+    public ResponseEntity<?> updateArtisanSettings(@RequestBody Map<String, String> payload) {
+        Artisan artisan = currentUser.requireArtisan();
+        String name = payload.get("name");
+        if (name != null) {
+            artisan.setName(validName(name, artisan));
         }
+        if (payload.get("phone") != null) {
+            artisan.setPhone(validPhone(payload.get("phone")));
+        }
+        if (payload.get("shopName") != null) {
+            artisan.setShopName(limit(payload.get("shopName"), MAX_TEXT, "Shop name"));
+        }
+        if (payload.get("biography") != null) {
+            artisan.setBiography(limit(payload.get("biography"), MAX_TEXT, "Biography"));
+        }
+        return ok(userRepository.save(artisan));
+    }
 
-        User user = opt.get();
-
-        if (payload.containsKey("name"))  user.setName(payload.get("name"));
-        if (payload.containsKey("email")) {
-            String newEmail = payload.get("email");
-            boolean emailTaken = userRepository.findByEmail(newEmail)
-                    .map(u -> !u.getUserId().equals(id))
-                    .orElse(false);
-            if (emailTaken) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(Map.of("message", "Email is already in use by another account."));
+    @PostMapping("/update-profile")
+    @Transactional
+    public ResponseEntity<?> updateProfile(@RequestBody Map<String, String> payload) {
+        User user = currentUser.require();
+        if (payload.get("name") != null) {
+            user.setName(validName(payload.get("name"), user));
+        }
+        if (payload.get("phone") != null) {
+            user.setPhone(validPhone(payload.get("phone")));
+        }
+        String newEmail = AuthService.normalizeEmail(payload.get("email"));
+        if (newEmail != null && !newEmail.isBlank() && !newEmail.equalsIgnoreCase(user.getEmail())) {
+            if (!newEmail.matches("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$") || newEmail.length() > MAX_TEXT) {
+                throw new IllegalArgumentException("Please enter a valid email address.");
             }
+            if (userRepository.findByEmailIgnoreCase(newEmail).isPresent()) {
+                throw new IllegalArgumentException("Email already in use.");
+            }
+            // Saved addresses are keyed by e-mail; move them along with the account.
+            addressRepository.reassignEmail(user.getEmail(), newEmail);
             user.setEmail(newEmail);
         }
-
-        if (user instanceof Customer customer) {
-            if (payload.containsKey("phone"))   customer.setPhone(payload.get("phone"));
-            if (payload.containsKey("address")) customer.setAddress(payload.get("address"));
-        }
-
-        if (user instanceof Artisan artisan) {
-            if (payload.containsKey("shopName"))  artisan.setShopName(payload.get("shopName"));
-            if (payload.containsKey("biography")) artisan.setBiography(payload.get("biography"));
-        }
-
-        userRepository.save(user);
-        return ResponseEntity.ok(Map.of("success", true, "user", user));
+        return ok(userRepository.save(user));
     }
 
-    // PUT /api/user/{id}/password
-    // Verifies current password before saving new one
-    @PutMapping("/{id}/password")
-    public ResponseEntity<?> changePassword(@PathVariable Long id,
-                                            @RequestBody Map<String, String> payload) {
-        Optional<User> opt = userRepository.findById(id);
-        if (opt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("message", "User not found."));
-        }
-
-        User user = opt.get();
-        String currentPassword = payload.get("currentPassword");
-        String newPassword     = payload.get("newPassword");
-
-        if (!BCrypt.checkpw(currentPassword, user.getPassword())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("message", "Current password is incorrect."));
-        }
-
-        if (newPassword == null || newPassword.length() < 8) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("message", "New password must be at least 8 characters."));
-        }
-
-        user.setPassword(BCrypt.hashpw(newPassword, BCrypt.gensalt()));
-        userRepository.save(user);
-        return ResponseEntity.ok(Map.of("success", true, "message", "Password updated successfully."));
-    }
-
-    // DELETE /api/user/{id}
-    // @Transactional ensures the whole delete rolls back if FK constraint fails
+    @PostMapping("/update-shop-banner")
     @Transactional
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
-        if (!userRepository.existsById(id)) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("message", "User not found."));
+    public ResponseEntity<?> updateShopBanner(@RequestBody Map<String, String> payload) {
+        Artisan artisan = currentUser.requireArtisan();
+        artisan.setShopBanner(ImageUrls.validate(payload.get("bannerUrl"), "Shop banner"));
+        return ok(userRepository.save(artisan));
+    }
+
+    private String validName(String raw, User self) {
+        String name = raw.trim();
+        if (name.isEmpty() || name.length() > MAX_NAME) {
+            throw new IllegalArgumentException("Name must be between 1 and " + MAX_NAME + " characters.");
         }
-        userRepository.deleteById(id);
-        return ResponseEntity.ok(Map.of("success", true, "message", "Account deleted."));
+        userRepository.findByNameIgnoreCase(name)
+                .filter(other -> !other.getUserId().equals(self.getUserId()))
+                .ifPresent(other -> {
+                    throw new IllegalArgumentException("Name already exists");
+                });
+        return name;
+    }
+
+    private static String validPhone(String raw) {
+        return Phones.normalize(raw);
+    }
+
+    private static String limit(String value, int max, String label) {
+        String v = value.trim();
+        if (v.length() > max) {
+            throw new IllegalArgumentException(label + " is too long (" + max + " characters max).");
+        }
+        return v;
+    }
+
+    private static ResponseEntity<?> ok(User user) {
+        return ResponseEntity.ok(Map.of("success", true, "user", user));
     }
 }

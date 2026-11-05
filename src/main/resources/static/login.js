@@ -1,5 +1,5 @@
 // ============================================================
-// login.js — ArtsyVibe Login / Register Page
+// login.js: ArtsyVibe Login / Register Page
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -51,7 +51,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // ----------------------------------------------------------
     initCustomCheckboxes();
 
-    // Navigation from the login page is unrestricted —
+    document.querySelectorAll('.password-toggle').forEach(button => {
+        button.addEventListener('click', () => togglePasswordVisibility(button));
+    });
+
+    document.querySelectorAll('input[data-password-criteria-target]').forEach(input => {
+        const targetId = input.dataset.passwordCriteriaTarget;
+        input.addEventListener('input', () => updatePasswordCriteria(input, targetId));
+        if (targetId) updatePasswordCriteria(input, targetId);
+    });
+
+    // Navigation from the login page is unrestricted:
     // protected pages redirect to login themselves via initAuthGuard.
 
     // ----------------------------------------------------------
@@ -60,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.handleLogin = async function (event) {
         event.preventDefault();
         const form     = event.target;
-        const email    = form.querySelector('input[type="email"]')?.value.trim();
+        const email    = form.querySelector('input[type="email"]')?.value.trim().toLowerCase();
         const password = form.querySelector('input[type="password"]')?.value;
 
         if (!email || !password) {
@@ -95,12 +105,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 sessionStorage.setItem('userId', data.user.userId);
                 sessionStorage.setItem('userProfile', JSON.stringify(data.user));
 
+                if (typeof window.syncCartCountFromServer === 'function') {
+                    await window.syncCartCountFromServer();
+                }
+                if (typeof window.syncNotificationCountFromServer === 'function') {
+                    await window.syncNotificationCountFromServer();
+                }
+
                 // Redirect back to the originally requested page (if any)
                 const url = new URL(window.location.href);
-                const next = url.searchParams.get('next') || sessionStorage.getItem('postLoginNext');
+                const next = window.AppCore.safeNextPath(url.searchParams.get('next') || sessionStorage.getItem('postLoginNext'));
                 sessionStorage.removeItem('postLoginNext');
 
-                window.location.href = next || '/index';
+                const userRole = (data.user.role || '').toUpperCase();
+                if (!next && userRole === 'ARTISAN') {
+                    window.location.href = `/artisanDashboard?id=${data.user.userId}`;
+                } else if (!next && userRole === 'ADMIN') {
+                    window.location.href = '/adminDashboard';
+                } else {
+                    window.location.href = next || '/';
+                }
             } else {
                 showFormError(form, data.message || 'Invalid email or password');
                 resetButtonLoading(form.querySelector('button[type="submit"]'), 'Login');
@@ -117,21 +141,20 @@ document.addEventListener('DOMContentLoaded', () => {
     window.handleRegister = async function (event) {
         event.preventDefault();
         const form = event.target;
-
-        // Determine which form is active
         const isArtisan = form.id === 'artisan-form';
 
-        const inputs    = form.querySelectorAll('input[type="text"], input[type="email"], input[type="tel"], input[type="password"]');
-        const email     = form.querySelector('input[type="email"]')?.value.trim();
-        const passwords = form.querySelectorAll('input[type="password"]');
+        const fullName = form.querySelector('input[name="fullName"]')?.value.trim() || '';
+        const email = form.querySelector('input[name="email"]')?.value.trim().toLowerCase() || '';
+        const countryCode = form.querySelector('select[name="countryCode"]')?.value || '+880';
+        const phoneRaw = form.querySelector('input[name="phone"]')?.value.trim() || '';
+        const password = form.querySelector('input[name="password"]')?.value || '';
+        const confirmPassword = form.querySelector('input[name="confirmPassword"]')?.value || '';
+        const shopName = form.querySelector('input[name="shopName"]')?.value.trim() || '';
+        const biography = form.querySelector('textarea[name="biography"]')?.value.trim() || '';
 
-        // Basic validation
-        for (const input of inputs) {
-            if (input.required && !input.value.trim()) {
-                showFormError(form, 'Please fill in all required fields.');
-                input.focus();
-                return;
-            }
+        if (!fullName || !email || !phoneRaw || !password || (isArtisan ? false : !confirmPassword)) {
+            showFormError(form, 'Please fill in all required fields.');
+            return;
         }
 
         if (!isValidEmail(email)) {
@@ -139,55 +162,53 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Password match check (customer form has confirm password)
-        if (!isArtisan && passwords.length === 2) {
-            if (passwords[0].value !== passwords[1].value) {
-                showFormError(form, 'Passwords do not match.');
-                passwords[1].focus();
-                return;
-            }
+        const phoneDigits = phoneRaw.replace(/\D/g, '');
+        if (!isValidPhoneNumber(phoneDigits)) {
+            showFormError(form, 'Please enter a valid phone number.');
+            return;
+        }
+        const phone = `${countryCode}${phoneDigits}`;
+
+        if (!isValidPasswordStrength(password)) {
+            showFormError(form, 'Password must be at least 8 characters and include uppercase letters and numbers.');
+            form.querySelector('input[name="password"]')?.focus();
+            return;
         }
 
-        if (isValidPasswordStrength(passwords[0].value) === false) {
-            showFormError(form, 'Password must be at least 8 characters.');
-            passwords[0].focus();
+        if (!isArtisan && password !== confirmPassword) {
+            showFormError(form, 'Passwords do not match.');
+            form.querySelector('input[name="confirmPassword"]')?.focus();
             return;
         }
 
         const submitBtn = form.querySelector('button[type="submit"]');
         showButtonLoading(submitBtn, isArtisan ? 'Sending request…' : 'Creating account…');
 
-        let payload = {};
-        let endpoint = '';
-        
+        const payload = {
+            name: fullName,
+            email: email,
+            phone: phone,
+            password: password
+        };
+        let endpoint = '/api/auth/register/customer';
+
         if (isArtisan) {
-            const fullName = inputs[0].value;
-            const phone = inputs[2].value;
-            const password = passwords[0].value;
-            const shopName = form.querySelectorAll('input[type="text"]')[1]?.value;
-            const biography = form.querySelector('textarea')?.value;
-            
-            payload = {
-                name: fullName,
-                email: email,
-                phone: phone,
-                password: password,
-                shopName: shopName,
-                biography: biography
-            };
+            payload.shopName = shopName;
+            payload.biography = biography;
+            const profileInput = document.getElementById('artisan-profile-picture') ||
+                form.querySelector('#artisan-profile-upload input[type="file"]') ||
+                form.querySelectorAll('input[type="file"]')[0];
+
+            if (profileInput?.files?.length) {
+                try {
+                    payload.profilePicture = await readFileAsDataUrl(profileInput.files[0]);
+                } catch (err) {
+                    showFormError(form, err.message || 'Could not read profile picture.');
+                    resetButtonLoading(submitBtn, 'Send Request to Create Artisan Account');
+                    return;
+                }
+            }
             endpoint = '/api/auth/register/artisan';
-        } else {
-            const fullName = inputs[0].value;
-            const phone = inputs[2].value;
-            const password = passwords[0].value;
-            
-            payload = {
-                name: fullName,
-                email: email,
-                phone: phone,
-                password: password
-            };
-            endpoint = '/api/auth/register/customer';
         }
 
         try {
@@ -202,9 +223,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (response.ok && data.success) {
                 if (isArtisan) {
-                    showToast('Your artisan account request has been submitted for review!', 'success');
-                    resetButtonLoading(submitBtn, 'Send Request to Create Artisan Account');
-                    form.reset();
+                    showToast('Registration request sent to admin! You can log in once approved.', 'success');
+                    setTimeout(() => {
+                        window.location.href = '/login?message=' + encodeURIComponent('Your artisan registration request has been submitted and is pending admin approval.');
+                    }, 2500);
                 } else {
                     sessionStorage.setItem('loggedIn', 'true');
                     sessionStorage.setItem('isLoggedIn', 'true');
@@ -214,15 +236,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     sessionStorage.setItem('userId', data.user.userId);
                     sessionStorage.setItem('userProfile', JSON.stringify(data.user));
                     sessionStorage.setItem('cartCount', '0');
-                    
-                    showToast('Account created! Welcome to ArtsyVibe.', 'success');
 
-                    // Redirect back to the originally requested page (if any)
+                    showToast('Account created! Welcome to ArtsyVibe.', 'success');
                     setTimeout(() => {
                         const url = new URL(window.location.href);
-                        const next = url.searchParams.get('next') || sessionStorage.getItem('postLoginNext');
+                        const next = window.AppCore.safeNextPath(url.searchParams.get('next') || sessionStorage.getItem('postLoginNext'));
                         sessionStorage.removeItem('postLoginNext');
-                        window.location.href = next || '/index';
+                        window.location.href = next || '/';
                     }, 1500);
                 }
             } else {
@@ -277,6 +297,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (params.get('tab') === 'register') {
         switchTab('register');
     }
+    const message = params.get('message');
+    if (message === 'Suspended') {
+        showToast('Your account has been suspended because you violated our Terms of Service and Policies.', 'error');
+    } else if (message === 'Unauthorized') {
+        showToast('You are not authorized to access this page.', 'error');
+    } else if (message) {
+        showToast(message, 'info');
+    }
 });
 
 // ============================================================
@@ -309,7 +337,48 @@ function isValidEmail(email) {
 }
 
 function isValidPasswordStrength(password) {
-    return password.length >= 8;
+    return password.length >= 8
+        && /[A-Z]/.test(password)
+        && /[a-z]/.test(password)
+        && /[0-9]/.test(password);
+}
+
+function isValidPhoneNumber(phone) {
+    return /^[0-9]{7,15}$/.test(phone);
+}
+
+function updatePasswordCriteria(input, criteriaId) {
+    const criteriaList = document.getElementById(criteriaId);
+    if (!criteriaList) return;
+    const password = input.value || '';
+    const checks = [
+        { regex: /.{8,}/, item: 'At least 8 characters' },
+        { regex: /[A-Z]/, item: 'At least one uppercase letter' },
+        { regex: /[a-z]/, item: 'At least one lowercase letter' },
+        { regex: /[0-9]/, item: 'At least one number' }
+    ];
+    Array.from(criteriaList.children).forEach((node, index) => {
+        const passed = checks[index] && checks[index].regex.test(password);
+        node.classList.toggle('text-[#065f46]', passed);
+        node.classList.toggle('text-[#8b7355]', !passed);
+        const icon = node.querySelector('i');
+        if (icon) {
+            icon.classList.toggle('text-green-600', passed);
+            icon.classList.toggle('text-[#8b7355]', !passed);
+        }
+    });
+}
+
+function togglePasswordVisibility(button) {
+    const wrapper = button.closest('.password-field');
+    const input = wrapper ? wrapper.querySelector('input[type="password"], input[type="text"]') : null;
+    if (!input) return;
+    const isHidden = input.type === 'password';
+    input.type = isHidden ? 'text' : 'password';
+    const icon = button.querySelector('i');
+    if (icon) {
+        icon.className = isHidden ? 'fas fa-eye-slash' : 'fas fa-eye';
+    }
 }
 
 function showFormError(form, message) {
@@ -342,6 +411,19 @@ function resetButtonLoading(btn, text) {
 function updateFileLabel(area, filename) {
     const para = area.querySelector('p');
     if (para) para.textContent = `Selected: ${filename}`;
+}
+
+function readFileAsDataUrl(file) {
+    const maxBytes = 2 * 1024 * 1024;
+    if (file.size > maxBytes) {
+        return Promise.reject(new Error('Profile picture must be 2MB or smaller.'));
+    }
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result);
+        reader.onerror = () => reject(new Error('Could not read profile picture.'));
+        reader.readAsDataURL(file);
+    });
 }
 
 function showToast(message, type = 'info') {

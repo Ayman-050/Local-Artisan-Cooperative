@@ -2,6 +2,9 @@ package com.example.demo.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -9,14 +12,14 @@ import java.util.List;
 @Entity
 @Table(name = "orders")
 public class Order {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long orderId;
 
     private LocalDate date;
     private String status;
-    private double totalAmount;
+    @Column(precision = 12, scale = 3, nullable = false)
+    private BigDecimal totalAmount = BigDecimal.ZERO;
     private String shippingAddress;
 
     @ManyToOne
@@ -24,8 +27,12 @@ public class Order {
     private Customer customer;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private List<OrderItem> orderItems;
 
     @OneToOne(mappedBy = "order", cascade = CascadeType.ALL)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private Payment payment;
 }
